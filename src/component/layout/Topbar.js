@@ -6,6 +6,11 @@ import styled from "styled-components";
 const StyledLink = styled(Link)`
   color: black;
   text-decoration: none;
+
+  &:hover,
+  &:focus {
+    font-weight: bold;
+  }
 `;
 
 const Topbar = () => {
