@@ -10,6 +10,9 @@ import Speech from "./component/presentation/Speech";
 import Practice from "./component/presentation/Practice";
 import NewPresentation from "./component/presentation/NewPresentation";
 
+import CoachList from "./component/coach/CoachList";
+import Portfolio from "./component/coach/Portfolio";
+
 import Notfound from "./component/Notfound";
 
 function App() {
@@ -22,6 +25,9 @@ function App() {
         <Route path="/presentation/speech" element={<Speech />} />
         <Route path="/presentation/practice" element={<Practice />} />
         <Route path="/presentation/new" element={<NewPresentation />} />
+        <Route path="/coach" element={<CoachList />} />
+        <Route path="/coach/portfolio" element={<Portfolio />} />
+
         <Route path="/*" element={<Notfound />} />
       </Routes>
     </Router>
