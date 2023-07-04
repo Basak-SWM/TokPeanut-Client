@@ -2,6 +2,8 @@ import "./App.css";
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
+import Topbar from "./component/layout/Topbar";
+
 import LandingPage from "./component/LandingPage";
 
 import PresentationList from "./component/presentation/PresentationList";
@@ -25,6 +27,7 @@ import Notfound from "./component/Notfound";
 function App() {
   return (
     <Router>
+      <Topbar />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/presentation" element={<PresentationList />} />
