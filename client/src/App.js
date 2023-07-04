@@ -17,6 +17,9 @@ import Login from "./component/login/Login";
 import SignIn from "./component/signin/SignIn";
 import SignInCoach from "./component/signin/SignInCoach";
 
+import MyPage from "./component/user/MyPage";
+import MyMatching from "./component/user/MyMatching";
+
 import Notfound from "./component/Notfound";
 
 function App() {
@@ -36,6 +39,9 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signin/coach" element={<SignInCoach />} />
+
+        <Route path="/user/mypage" element={<MyPage />} />
+        <Route path="/user/mymatching" element={<MyMatching />} />
 
         <Route path="/*" element={<Notfound />} />
       </Routes>
