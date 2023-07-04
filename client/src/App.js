@@ -2,6 +2,8 @@ import "./App.css";
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
+import Topbar from "./component/layout/Topbar";
+
 import LandingPage from "./component/LandingPage";
 
 import PresentationList from "./component/presentation/PresentationList";
@@ -17,11 +19,15 @@ import Login from "./component/login/Login";
 import SignIn from "./component/signin/SignIn";
 import SignInCoach from "./component/signin/SignInCoach";
 
+import MyPage from "./component/user/MyPage";
+import MyMatching from "./component/user/MyMatching";
+
 import Notfound from "./component/Notfound";
 
 function App() {
   return (
     <Router>
+      <Topbar />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/presentation" element={<PresentationList />} />
@@ -36,6 +42,9 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signin/coach" element={<SignInCoach />} />
+
+        <Route path="/user/mypage" element={<MyPage />} />
+        <Route path="/user/mymatching" element={<MyMatching />} />
 
         <Route path="/*" element={<Notfound />} />
       </Routes>
