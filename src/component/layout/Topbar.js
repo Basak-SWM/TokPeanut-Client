@@ -1,11 +1,16 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import Logo from "../../image/Logo.png";
+// import Logo from "../../image/Logo.png";
 import styled from "styled-components";
 
 const StyledLink = styled(Link)`
   color: black;
   text-decoration: none;
+
+  &:hover,
+  &:focus {
+    font-weight: bold;
+  }
 `;
 
 const Topbar = () => {
@@ -18,9 +23,24 @@ const Topbar = () => {
           justifyContent: "space-between",
           width: "100vw",
           borderBottom: "1px solid orange",
+          height: "8vh",
         }}
       >
-        <img src={Logo} alt="TokPeanut Logo" style={{ height: "8vh" }} />
+        <StyledLink to="/">
+          {/* <img src={Logo} alt="TokPeanut Logo" style={{ height: "8vh" }} /> */}
+          <div
+            style={{
+              fontWeight: "bold",
+              width: "15vw",
+              lineHeight: "8vh",
+              fontSize: "30px",
+              textAlign: "center",
+              color: "#F38025",
+            }}
+          >
+            TokPeanut
+          </div>
+        </StyledLink>
 
         <div
           style={{
