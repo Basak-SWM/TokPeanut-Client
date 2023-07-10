@@ -100,7 +100,7 @@ const WaveContainer = styled.div`
   width: 748px;
   height: 64px;
   border: 1px solid grey;
-  border-radius: 10px;
+  // border-radius: 10px;
 `;
 
 // 페이지네이션
@@ -117,7 +117,7 @@ const Pagination = styled.div`
   box-shadow: 2px 3px 5px 0px grey;
 `;
 
-// custom hook
+// custom hook (timer)
 const useCounter = (initialValue, ms) => {
   const [count, setCount] = useState(initialValue);
   const intervalRef = useRef(null);
@@ -149,6 +149,7 @@ const Speech = () => {
   // tool bar
   const [cursor, setCursor] = useState("");
   const [selectedSymbol, setSelectedSymbol] = useState(NaN); // 커서 관리를 위한 현재 선택된 기호 인덱스
+  // 사용자 기호
   const symbols = [
     highlight,
     faster,
@@ -188,6 +189,8 @@ const Speech = () => {
   const [mouseSymbol, setMouseSymbol] = useState(text.map(() => false));
   const [slashSymbol, setSlashSymbol] = useState(text.map(() => false));
   const [highlighted, setHighlighted] = useState(text.map(() => ""));
+
+  const [waveFormLoaded, setWaveFormLoaded] = useState(false);
 
   const { count, start, stop, reset } = useCounter(0, 1000); // 1초 단위 타이머
 
@@ -253,46 +256,39 @@ const Speech = () => {
     const initWaveSurfer = () => {
       wavesurfer = WaveSurfer.create({
         container: wavesurferRef.current,
-        audioRate: 10, // 재생 속도 (default 1)
+        audioRate: 1, // 재생 속도 (default 1)
         barHeight: 1, // 막대 높이 (default 1)
         barWidth: 3, // 막대 넓이
         barGap: 1,
         cursorColor: "#ddd5e9",
         cursorWidth: 3,
-        fillParent: true, // 부모 요소를 가득 채울지, mixPxPerSec 옵션에 따를지
+        fillParent: false, // 부모 요소를 가득 채울지, mixPxPerSec 옵션에 따를지
         height: 64, // 웨이브 폼 전체의 높이
         hideScrollbar: true, // 가로 스크롤바 표시 여부
         minPxPerSec: 50, // 오디오 파일의 1초당 렌더링 될 픽셀 수의 최솟값. zoom level
         normalize: true, // true면 가장 큰 막대의 길이에 비례하여 막대 높이 설정
         progressColor: "#dd5e98", // 커서 왼쪽의 파형 색상
-        // responsive: true, // 웨이브 폼이 부모 요소보다 길어서 넘치는 경우 스크롤바 or 줄여서 렌더링
+        responsive: false, // 웨이브 폼이 부모 요소보다 길어서 넘치는 경우 스크롤바 or 줄여서 렌더링
         waveColor: "#ff4e00", // 커서 오른쪽의 파형 색상
         interact: true, // 파형 클릭 가능
         splitChannels: false, // 두 줄로 출력
         autoScroll: true, // 자동 스크롤
+        scrollParent: true,
       });
       wavesurfer.load(mp3);
 
       // 플레이/퍼즈 때 버튼 텍스트 변경
       wavesurfer.on("play", () => {
-        playButton.current.textContent = "Pause";
+        playButton.current.textContent = "pause";
       });
       wavesurfer.on("pause", () => {
-        playButton.current.textContent = "Play";
+        playButton.current.textContent = "play";
       });
 
       wavesurfer.on("ready", () => {
+        setWaveFormLoaded(true);
         playButton.current.addEventListener("click", () => {
-          wavesurfer.play();
-          // if (wavesurfer.isPlaying()) {
-          //   stop();
-          //   wavesurfer.pause();
-          // } else {
-          //   wavesurfer.play();
-          // }
-        });
-        pauseButton.current.addEventListener("click", () => {
-          wavesurfer.pause();
+          wavesurfer.playPause();
         });
       });
     };
@@ -338,10 +334,13 @@ const Speech = () => {
             height: "85vh",
           }}
         >
-          <WaveContainer>
-            <div ref={wavesurferRef} />
-          </WaveContainer>
-          {/* <button ref={playButton}>Play</button> */}
+          <div>
+            {waveFormLoaded ? null : (
+              <div style={{ position: "absolute" }}>loading...</div>
+            )}
+            <WaveContainer ref={wavesurferRef} />
+          </div>
+
           <ScriptContainer>
             {text.map((word, i) =>
               started[i] < count ? (
@@ -369,12 +368,15 @@ const Speech = () => {
             )}
           </ScriptContainer>
           <div>
+            {/* <button ref={playButton} onClick={start}> */}
             <button ref={playButton} onClick={start}>
               play
             </button>
+            {/* <button ref={pauseButton} onClick={stop}> */}
             <button ref={pauseButton} onClick={stop}>
               pause
             </button>
+            {/* <button ref={playButton}>play</button> */}
             <button onClick={reset}>reset</button>
           </div>
           <Link to="/presentation/practice">연습 시작</Link>
