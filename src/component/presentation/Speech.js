@@ -371,7 +371,6 @@ const Speech = () => {
         setWaveFormLoaded(true);
         playButton.current.addEventListener("click", () => {
           wavesurfer.playPause();
-          console.log("ready: ", wavesurfer);
         });
       });
     };
@@ -428,7 +427,7 @@ const Speech = () => {
               started[i] < count ? (
                 <PlayedText
                   color={highlighted[i]}
-                  continued={(highlighted[i] === highlighted[i + 1]).toString()} // 형광펜이 연달아 적용 되는지
+                  continued={highlighted[i] === highlighted[i + 1]} // 형광펜이 연달아 적용 되는지
                   onClick={clickWord}
                   key={i}
                   id={i}
@@ -447,7 +446,7 @@ const Speech = () => {
               ) : (
                 <Text
                   color={highlighted[i]}
-                  continued={(highlighted[i] === highlighted[i + 1]).toString()}
+                  continued={highlighted[i] === highlighted[i + 1]}
                   onClick={clickWord}
                   key={i}
                   id={i}
