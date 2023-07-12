@@ -320,6 +320,12 @@ const Speech = () => {
     }
   };
 
+  const onReset = () => {
+    reset();
+    waveSurferInstance.setCurrentTime(0);
+    waveSurferInstance.pause();
+  };
+
   // 파형
   const wavesurferRef = useRef(null);
   const playButton = useRef(null);
@@ -471,7 +477,7 @@ const Speech = () => {
           </ScriptContainer>
           <div>
             <button ref={playButton}>play</button>
-            <button onClick={reset}>reset</button>
+            <button onClick={onReset}>reset</button>
           </div>
           <Link to="/presentation/practice">연습 시작</Link>
           <div>count: {count}</div>
