@@ -66,11 +66,12 @@ const Tool = styled.span`
 const PlayedText = styled.span`
   color: orange;
   background-color: ${(props) => props.color};
-  margin-right: 5px;
+  margin-right: ${(props) => (props.continued ? "none" : "5px")};
+  padding-right: ${(props) => (props.continued ? "5px" : "none")};
   // border-radius: 5px;
 
   &:hover {
-    text-decoration: green wavy underline;
+    text-decoration: orange dashed underline;
   }
 `;
 
@@ -83,7 +84,64 @@ const Text = styled.span`
   // border-radius: 5px;
 
   &:hover {
-    text-decoration: green wavy underline;
+    text-decoration: orange dashed underline;
+  }
+`;
+
+// 수정 영역
+const Edit = styled.span`
+  position: relative;
+  cursor: inherit;
+`;
+
+// 수정된 스크립트
+const EditedText = styled.input.attrs((props) => ({
+  type: "text",
+  placeholder: props.word,
+  size: props.word.length,
+}))`
+  position: relative;
+  height: 30px;
+  border: 2px solid black;
+  border-radius: 5px;
+  font-size: 20px;
+  text-align: center;
+
+  &:hover {
+    text-decoration: orange dashed underline;
+  }
+`;
+
+// 수정 전 스크립트
+const OriginalText = styled.span`
+  visibility: hidden;
+  width: 120px;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -60px;
+  font-size: 14px;
+  background-color: grey;
+  color: #fff;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 5px;
+  position: absolute;
+  z-index: 1;
+
+  ${Edit}:hover & {
+    visibility: visible;
+  }
+
+  // 아래 화살표
+  &::after {
+    content: " ";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: grey transparent transparent transparent;
   }
 `;
 
@@ -190,6 +248,7 @@ const Speech = () => {
   const [mouseSymbol, setMouseSymbol] = useState(text.map(() => false));
   const [slashSymbol, setSlashSymbol] = useState(text.map(() => false));
   const [highlighted, setHighlighted] = useState(text.map(() => ""));
+  const [edited, setEdited] = useState(text.map(() => false));
 
   const [waveFormLoaded, setWaveFormLoaded] = useState(false);
 
@@ -198,8 +257,7 @@ const Speech = () => {
   const clickWord = (e) => {
     // 기호 표시
     const selectedWordIdx = e.target.id; // 클릭된 단어 인덱스
-    // console.log("selectedSymbol: ", selectedSymbol);
-    // console.log("selectedWordIdx: ", selectedWordIdx);
+
     switch (selectedSymbol) {
       case "0":
         highlighted[selectedWordIdx] = "yellow";
@@ -212,6 +270,10 @@ const Speech = () => {
       case "2":
         highlighted[selectedWordIdx] = "yellowgreen";
         setHighlighted([...highlighted]);
+        break;
+      case "3":
+        edited[selectedWordIdx] = true;
+        setEdited([...edited]);
         break;
       case "4":
         enterSymbol[selectedWordIdx] = true;
@@ -240,6 +302,8 @@ const Speech = () => {
         setSlashSymbol([...slashSymbol]);
         highlighted[selectedWordIdx] = "";
         setHighlighted([...highlighted]);
+        edited[selectedWordIdx] = false;
+        setEdited([...edited]);
         break;
       default:
         break;
@@ -346,6 +410,7 @@ const Speech = () => {
               started[i] < count ? (
                 <PlayedText
                   color={highlighted[i]}
+                  continued={highlighted[i] === highlighted[i + 1]} // 형광펜이 연달아 적용 되는지
                   onClick={clickWord}
                   key={i}
                   id={i}
@@ -364,7 +429,7 @@ const Speech = () => {
               ) : (
                 <Text
                   color={highlighted[i]}
-                  continued={highlighted[i] === highlighted[i + 1]} // 형광펜이 연달아 적용 되는지
+                  continued={highlighted[i] === highlighted[i + 1]}
                   onClick={clickWord}
                   key={i}
                   id={i}
@@ -378,7 +443,16 @@ const Speech = () => {
                   {pauseSymbol[i] ? <Tool src={pause} /> : null}
                   {mouseSymbol[i] ? <Tool src={mouse} /> : null}
                   {slashSymbol[i] ? <Tool src={slash} /> : null}
-                  {word}
+                  {edited[i] ? (
+                    <>
+                      <Edit>
+                        <EditedText word={word} />
+                        <OriginalText>수정 전: {word}</OriginalText>
+                      </Edit>
+                    </>
+                  ) : (
+                    word
+                  )}
                 </Text>
               )
             )}
