@@ -16,7 +16,7 @@ import slash from "../../image/icons/slash.png";
 import erase from "../../image/icons/erase.png";
 
 const Container = styled.div`
-  cursor: url(${(props) => props.cursor}) 15 15, auto;
+  cursor: url(${(props) => props.cursor}) 50 50, auto;
   display: flex;
   justify-content: space-evenly;
   align-items: center;
@@ -40,26 +40,26 @@ const Tools = styled.div`
 
 // 툴바의 기호(hover effect)
 const ToolKit = styled.div`
-  width: 30px;
-  height: 30px;
+  width: 50px;
+  height: 50px;
   background-image: url(${(props) => props.src});
   background-size: cover;
-  cursor: url(${(props) => props.cursor}) 25 25, auto;
+  cursor: url(${(props) => props.cursor}) 50 50, auto;
 
   &:hover {
-    width: 40px;
-    height: 40px;
+    width: 65px;
+    height: 65px;
   }
 `;
 
 // 스크립트의 기호
 const Tool = styled.span`
   display: inline-block;
-  width: 20px;
-  height: 20px;
+  width: 25px;
+  height: 25px;
   background-image: url(${(props) => props.src});
   background-size: cover;
-  cursor: url(${(props) => props.cursor}) 25 25, auto;
+  cursor: url(${(props) => props.cursor}) 50 50, auto;
 `;
 
 // 재생된 스크립트
@@ -67,7 +67,7 @@ const PlayedText = styled.span`
   color: orange;
   background-color: ${(props) => props.color};
   margin-right: 5px;
-  border-radius: 5px;
+  // border-radius: 5px;
 
   &:hover {
     text-decoration: green wavy underline;
@@ -78,8 +78,9 @@ const PlayedText = styled.span`
 const Text = styled.span`
   color: black;
   background-color: ${(props) => props.color};
-  margin-right: 5px;
-  border-radius: 5px;
+  margin-right: ${(props) => (props.continued ? "none" : "5px")};
+  padding-right: ${(props) => (props.continued ? "5px" : "none")};
+  // border-radius: 5px;
 
   &:hover {
     text-decoration: green wavy underline;
@@ -312,7 +313,6 @@ const Speech = () => {
 
   return (
     <>
-      {/* <h1>Speech / 스크립트(피드백) 화면</h1> */}
       <Container cursor={cursor}>
         <Tools>
           {symbols.map((c, i) => (
@@ -350,15 +350,31 @@ const Speech = () => {
                   key={i}
                   id={i}
                 >
-                  {enterSymbol[i] ? <Tool src={enter} /> : null}
+                  {enterSymbol[i] ? (
+                    <>
+                      <Tool src={enter} />
+                      <br />
+                    </>
+                  ) : null}
                   {pauseSymbol[i] ? <Tool src={pause} /> : null}
                   {mouseSymbol[i] ? <Tool src={mouse} /> : null}
                   {slashSymbol[i] ? <Tool src={slash} /> : null}
                   {word}
                 </PlayedText>
               ) : (
-                <Text color={highlighted[i]} onClick={clickWord} key={i} id={i}>
-                  {enterSymbol[i] ? <Tool src={enter} /> : null}
+                <Text
+                  color={highlighted[i]}
+                  continued={highlighted[i] === highlighted[i + 1]} // 형광펜이 연달아 적용 되는지
+                  onClick={clickWord}
+                  key={i}
+                  id={i}
+                >
+                  {enterSymbol[i] ? (
+                    <>
+                      <Tool src={enter} />
+                      <br />
+                    </>
+                  ) : null}
                   {pauseSymbol[i] ? <Tool src={pause} /> : null}
                   {mouseSymbol[i] ? <Tool src={mouse} /> : null}
                   {slashSymbol[i] ? <Tool src={slash} /> : null}
