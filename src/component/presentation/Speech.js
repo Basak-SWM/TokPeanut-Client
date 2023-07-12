@@ -264,11 +264,9 @@ const Speech = () => {
 
   const clickWord = (e) => {
     const selectedWordIdx = e.target.id; // 클릭된 단어 인덱스
-    waveSurferInstance.setCurrentTime(started[selectedWordIdx]);
-    setCount(started[selectedWordIdx]);
 
-    // 기호 표시
     switch (selectedSymbol) {
+      // 기호 표시
       case "0":
         highlighted[selectedWordIdx] = "yellow";
         setHighlighted([...highlighted]);
@@ -315,7 +313,10 @@ const Speech = () => {
         edited[selectedWordIdx] = false;
         setEdited([...edited]);
         break;
+      // 재생 바 조절
       default:
+        waveSurferInstance.setCurrentTime(started[selectedWordIdx]);
+        setCount(started[selectedWordIdx]);
         break;
     }
   };
