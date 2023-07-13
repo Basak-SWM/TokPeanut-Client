@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
-import Script from "./Script";
 import WaveSurfer from "wavesurfer.js";
 import MicrophonePlugin from "wavesurfer.js/dist/plugin/wavesurfer.microphone.min.js";
 
@@ -95,13 +94,9 @@ const Practice = () => {
   // 각 기호의 렌더링 여부
   // Practice 컴포넌트에서는 사용자 기호를 수정할 일이 없으므로 상수로 선언
   const enterSymbol = text.map((s, i) => (i === 38 ? true : false));
-
   const pauseSymbol = text.map((s, i) => (i === 100 ? true : false));
-
   const mouseSymbol = text.map((s, i) => (i === 40 ? true : false));
-
   const slashSymbol = text.map((s, i) => (i % 7 === 2 ? true : false));
-
   const highlighted = text.map((s, i) =>
     i === 10 ? "pink" : i === 35 ? "yellow" : ""
   );
@@ -131,16 +126,6 @@ const Practice = () => {
         wavesurfer.microphone.start();
         setMicReady(true);
       }
-
-      console.log("start");
-
-      // console.log(wavesurfer.microphone.active);
-      // wavesurfer.microphone.on("deviceReady", () => {
-      //   // setMicReady(true);
-      //   // console.log(micReady);
-      //   console.log(wavesurfer.microphone.active);
-      //   console.log("파형 준비됨");
-      // });
     };
 
     // 사용자 입력으로 파형 생성
@@ -170,20 +155,23 @@ const Practice = () => {
   const startRecording = () => {
     // 녹음
     navigator.mediaDevices
-      .getUserMedia({ audio: true, video: false, mimeType: "audio/webm" })
+      .getUserMedia({ audio: true, video: false, mimeType: "audio/webm" }) // 마이크 권한 획득
       .then((stream) => {
         setRecording(true);
+        // 미디어 레코더 생성
         const mediaRecorder = new MediaRecorder(stream);
         mediaRecorderRef.current = mediaRecorder;
 
+        // 음성이 잘라질 때마다
         mediaRecorder.ondataavailable = (e) => {
-          console.log(e.data);
           // 현재 blob을 전체 blob 리스트에 저장
           segmentRef.current.push(e.data);
 
-          // 현재 blob을 wav 파일로 변환
+          // 현재 blob을 webm 파일로 변환
           convertWav(e.data);
         };
+
+        // 3초마다 자르도록
         mediaRecorder.start(3000);
 
         // STT 시작
@@ -195,10 +183,6 @@ const Practice = () => {
         // 파형 시작
         waveSurferInstance.microphone.play();
         setRecording(true);
-        // console.log(waveSurferInstance);
-        // if (waveSurferInstance.microphone.active) {
-        //   waveSurferInstance.microphone.start();
-        // }
       });
   };
 
@@ -211,7 +195,7 @@ const Practice = () => {
       setRecording(false);
       mediaRecorder.stop();
     }
-    play();
+    play(); // 지금까지의 세그먼트들을 하나로 합쳐서 재생 가능하게 만들기
 
     // STT 중단
     SpeechRecognition.stopListening();
@@ -220,7 +204,8 @@ const Practice = () => {
     waveSurferInstance.microphone.pause();
   };
 
-  // 전달된 blob을 wav 파일로 변환
+  // 전달된 blob을 webm 파일로 변환
+  // 여기서 변환한 후, 서버에 바로 보내주면 될 듯
   const convertWav = (segments) => {
     const combinedBlob = new Blob([segments], {
       type: "audio/webm",
@@ -228,12 +213,12 @@ const Practice = () => {
     wavList.push(combinedBlob);
   };
 
-  // 전체 녹음 파일 재생
+  // 전체 녹음 파일 재생 (재생 가능하도록 합치기)
   const play = () => {
     const segments = segmentRef.current;
     const audioElement = document.querySelector("#audio");
 
-    const combinedBlob = new Blob(segments, { type: "audio/webm" });
+    const combinedBlob = new Blob(segments, { type: "audio/webm" }); // 지금까지의 음성 데이터
     let audioUrl = URL.createObjectURL(combinedBlob);
     audioElement.src = audioUrl;
   };
