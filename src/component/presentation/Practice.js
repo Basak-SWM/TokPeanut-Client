@@ -18,11 +18,12 @@ const STTContainer = styled.div`
   height: 10vh;
   border: 1px solid grey;
   padding: 24px;
+  overflow-y: scroll;
 `;
 
 const ScriptContainer = styled.div`
   width: 80vw;
-  height: 50vh;
+  height: 40vh;
   overflow-y: scroll;
   font-size: 24px;
   padding: 24px;
@@ -67,6 +68,22 @@ const LoadingText = styled.div`
   font-weight: bold;
   z-index: 1;
   padding: 20px 10px 20px 10px;
+`;
+
+const Controls = styled.div`
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  width: 30vw;
+`;
+
+const Button = styled.button`
+  width: 70px;
+  height: 70px;
+  border-radius: 35px;
+  background-color: orange;
+  color: white;
+  border: none;
 `;
 
 const Practice = () => {
@@ -237,7 +254,13 @@ const Practice = () => {
 
   return (
     <div
-      style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "space-around",
+        height: "90vh",
+      }}
     >
       <ScriptContainer>
         {text.map((word, i) => (
@@ -260,30 +283,23 @@ const Practice = () => {
           </Text>
         ))}
       </ScriptContainer>
-
-      <STTContainer>
-        <div></div>
-        <p>음성 인식 결과</p>
-        <p style={{ overflowY: "scroll" }}>{transcript}</p>
-      </STTContainer>
-      <div>
-        {recording ? (
-          <button onClick={stopRecording}>일시정지</button>
-        ) : (
-          <button onClick={startRecording} disabled={!micReady}>
-            {/* <button onClick={startRecording}> */}
-            녹음시작
-          </button>
-        )}
-        <button onClick={resetTranscript}>Reset</button>
-      </div>
+      <STTContainer>{transcript}</STTContainer>
 
       <div>
         {recording ? null : <LoadingText>녹음을 시작해 보세요</LoadingText>}
         <WaveContainer ref={waveformRef} />
       </div>
-
-      <audio id="audio" controls />
+      <Controls>
+        {recording ? (
+          <Button onClick={stopRecording}>일시정지</Button>
+        ) : (
+          <Button onClick={startRecording} disabled={!micReady}>
+            녹음시작
+          </Button>
+        )}
+        <Button onClick={resetTranscript}>Reset</Button>
+        <audio id="audio" controls />
+      </Controls>
     </div>
   );
 };
