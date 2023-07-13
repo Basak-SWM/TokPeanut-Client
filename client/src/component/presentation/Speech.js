@@ -1,5 +1,4 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
-import Script from "./Script";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import WaveSurfer from "wavesurfer.js";
@@ -264,11 +263,9 @@ const Speech = () => {
 
   const clickWord = (e) => {
     const selectedWordIdx = e.target.id; // 클릭된 단어 인덱스
-    waveSurferInstance.setCurrentTime(started[selectedWordIdx]);
-    setCount(started[selectedWordIdx]);
 
-    // 기호 표시
     switch (selectedSymbol) {
+      // 기호 표시
       case "0":
         highlighted[selectedWordIdx] = "yellow";
         setHighlighted([...highlighted]);
@@ -315,7 +312,10 @@ const Speech = () => {
         edited[selectedWordIdx] = false;
         setEdited([...edited]);
         break;
+      // 재생 바 조절
       default:
+        waveSurferInstance.setCurrentTime(started[selectedWordIdx]);
+        setCount(started[selectedWordIdx]);
         break;
     }
   };
@@ -349,7 +349,7 @@ const Speech = () => {
         progressColor: "#dd5e98", // 커서 왼쪽의 파형 색상
         responsive: false, // 웨이브 폼이 부모 요소보다 길어서 넘치는 경우 스크롤바 or 줄여서 렌더링
         waveColor: "#ff4e00", // 커서 오른쪽의 파형 색상
-        interact: true, // 파형 클릭 가능
+        interact: false, // 파형 클릭 불가능
         splitChannels: false, // 두 줄로 출력
         autoScroll: true, // 자동 스크롤
         scrollParent: true,
@@ -371,7 +371,6 @@ const Speech = () => {
         setWaveFormLoaded(true);
         playButton.current.addEventListener("click", () => {
           wavesurfer.playPause();
-          console.log("ready: ", wavesurfer);
         });
       });
     };
@@ -428,7 +427,7 @@ const Speech = () => {
               started[i] < count ? (
                 <PlayedText
                   color={highlighted[i]}
-                  continued={(highlighted[i] === highlighted[i + 1]).toString()} // 형광펜이 연달아 적용 되는지
+                  continued={highlighted[i] === highlighted[i + 1]} // 형광펜이 연달아 적용 되는지
                   onClick={clickWord}
                   key={i}
                   id={i}
@@ -447,7 +446,7 @@ const Speech = () => {
               ) : (
                 <Text
                   color={highlighted[i]}
-                  continued={(highlighted[i] === highlighted[i + 1]).toString()}
+                  continued={highlighted[i] === highlighted[i + 1]}
                   onClick={clickWord}
                   key={i}
                   id={i}
