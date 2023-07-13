@@ -1,5 +1,4 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
-import Script from "./Script";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import WaveSurfer from "wavesurfer.js";
@@ -350,7 +349,7 @@ const Speech = () => {
         progressColor: "#dd5e98", // 커서 왼쪽의 파형 색상
         responsive: false, // 웨이브 폼이 부모 요소보다 길어서 넘치는 경우 스크롤바 or 줄여서 렌더링
         waveColor: "#ff4e00", // 커서 오른쪽의 파형 색상
-        interact: true, // 파형 클릭 가능
+        interact: false, // 파형 클릭 불가능
         splitChannels: false, // 두 줄로 출력
         autoScroll: true, // 자동 스크롤
         scrollParent: true,
