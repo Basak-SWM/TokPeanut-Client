@@ -246,7 +246,7 @@ const Speech = () => {
   const started = stt.segments.flatMap((seg) =>
     seg.words.map((w) => w[0] * 0.01)
   );
-  console.log(text, started);
+  // console.log(text, started);
 
   // started.unshift(0);
 
@@ -271,6 +271,7 @@ const Speech = () => {
   const [waveSurferInstance, setWaveSurferInstance] = useState(null);
 
   const { count, start, stop, reset, setCount } = useCounter(0, 100); //0.1초 단위 타이머
+  // wavesurfer의 시간 메서드가 1초 단위로만 동작하는데
 
   const clickWord = (e) => {
     const selectedWordIdx = e.target.id; // 클릭된 단어 인덱스
@@ -325,8 +326,16 @@ const Speech = () => {
         break;
       // 재생 바 조절
       default:
-        waveSurferInstance.setCurrentTime(started[selectedWordIdx]);
+        waveSurferInstance.setCurrentTime(started[selectedWordIdx] * 0.1);
+        // waveSurferInstance.setCurrentTime(100);
+
         setCount(started[selectedWordIdx]);
+        console.log(
+          selectedWordIdx,
+          started[selectedWordIdx],
+          "wavesurfer:",
+          waveSurferInstance.getCurrentTime()
+        );
         break;
     }
   };
