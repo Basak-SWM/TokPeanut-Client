@@ -426,7 +426,7 @@ const Speech = () => {
                     e.preventDefault(); // 줄바꿈 방지
                   }
                 }}
-                onInput={(e) => {
+                onBlur={(e) => {
                   console.log("수정 후: ", e.target.innerText);
                   edited[i] = e.target.innerText; // 수정 후 단어를 edited에 저장
                   setEdited([...edited]);
