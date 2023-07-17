@@ -69,7 +69,7 @@ const PlayedText = styled.span`
   background-color: ${(props) => props.color};
   margin-right: ${(props) => (props.continued ? "none" : "5px")};
   padding-right: ${(props) => (props.continued ? "5px" : "none")};
-  // border-radius: 5px;
+  text-decoration: ${(props) => (props.edited ? "underline" : "none")};
 
   &:hover {
     text-decoration: orange dashed underline;
@@ -78,11 +78,12 @@ const PlayedText = styled.span`
 
 // 재생 전 스크립트
 const Text = styled.span`
+  position: relative;
   color: black;
   background-color: ${(props) => props.color};
   margin-right: ${(props) => (props.continued ? "none" : "5px")};
   padding-right: ${(props) => (props.continued ? "5px" : "none")};
-  // border-radius: 5px;
+  text-decoration: ${(props) => (props.edited ? "underline" : "none")};
 
   &:hover {
     text-decoration: orange dashed underline;
@@ -113,7 +114,7 @@ const EditedText = styled.input.attrs((props) => ({
   }
 `;
 
-// 수정 전 스크립트
+// 수정 전 단어
 const OriginalText = styled.span`
   visibility: hidden;
   width: 120px;
@@ -129,7 +130,7 @@ const OriginalText = styled.span`
   position: absolute;
   z-index: 1;
 
-  ${Edit}:hover & {
+  ${Text}:hover & {
     visibility: visible;
   }
 
@@ -260,18 +261,20 @@ const Speech = () => {
   // console.log(started);
 
   // 각 기호의 렌더링 여부
+  // 하나의 {객체}로 합치기
+  // option으로 <Text "도심은", option={} />
+  // useReduce로 묶어보기
   const [enterSymbol, setEnterSymbol] = useState(text.map(() => false));
   const [pauseSymbol, setPauseSymbol] = useState(text.map(() => false));
   const [mouseSymbol, setMouseSymbol] = useState(text.map(() => false));
   const [slashSymbol, setSlashSymbol] = useState(text.map(() => false));
   const [highlighted, setHighlighted] = useState(text.map(() => ""));
-  const [edited, setEdited] = useState(text.map(() => false));
+  const [edited, setEdited] = useState(text.map(() => null));
 
   const [waveFormLoaded, setWaveFormLoaded] = useState(false);
   const [waveSurferInstance, setWaveSurferInstance] = useState(null);
 
   const { count, start, stop, reset, setCount } = useCounter(0, 100); //0.1초 단위 타이머
-  // wavesurfer의 시간 메서드가 1초 단위로만 동작하는데
 
   const clickWord = (e) => {
     const selectedWordIdx = e.target.id; // 클릭된 단어 인덱스
@@ -291,7 +294,8 @@ const Speech = () => {
         setHighlighted([...highlighted]);
         break;
       case "3":
-        edited[selectedWordIdx] = true;
+        edited[selectedWordIdx] = text[selectedWordIdx]; // 원래 단어를 저장
+        console.log("orginal: ", text[selectedWordIdx]);
         setEdited([...edited]);
         break;
       case "4":
@@ -321,7 +325,7 @@ const Speech = () => {
         setSlashSymbol([...slashSymbol]);
         highlighted[selectedWordIdx] = "";
         setHighlighted([...highlighted]);
-        edited[selectedWordIdx] = false;
+        edited[selectedWordIdx] = null;
         setEdited([...edited]);
         break;
       // 재생 바 조절
@@ -470,6 +474,9 @@ const Speech = () => {
                   onClick={clickWord}
                   key={i}
                   id={i}
+                  contentEditable={cursor === edit} // 현재 커서가 수정펜일 때만 수정 모드
+                  editied={edited[i]} // 수정이 되었는가?
+                  spellCheck={false}
                 >
                   {enterSymbol[i] ? (
                     <>
@@ -480,16 +487,10 @@ const Speech = () => {
                   {pauseSymbol[i] ? <Tool src={pause} /> : null}
                   {mouseSymbol[i] ? <Tool src={mouse} /> : null}
                   {slashSymbol[i] ? <Tool src={slash} /> : null}
+                  {word}
                   {edited[i] ? (
-                    <>
-                      <Edit>
-                        <EditedText word={word} />
-                        <OriginalText>수정 전: {word}</OriginalText>
-                      </Edit>
-                    </>
-                  ) : (
-                    word
-                  )}
+                    <OriginalText>수정 전: {edited[i]}</OriginalText>
+                  ) : null}
                 </Text>
               )
             )}
