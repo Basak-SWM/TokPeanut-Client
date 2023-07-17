@@ -63,57 +63,21 @@ const Tool = styled.span`
   cursor: url(${(props) => props.cursor}) 50 50, auto;
 `;
 
-// 재생된 스크립트
-const PlayedText = styled.span`
-  color: orange;
-  background-color: ${(props) => props.color};
-  margin-right: ${(props) => (props.continued ? "none" : "5px")};
-  padding-right: ${(props) => (props.continued ? "5px" : "none")};
-  // border-radius: 5px;
-
-  &:hover {
-    text-decoration: orange dashed underline;
-  }
-`;
-
-// 재생 전 스크립트
+// 스크립트
 const Text = styled.span`
-  color: black;
+  position: relative;
+  color: ${(props) => (props.played ? "orange" : "black")};
   background-color: ${(props) => props.color};
   margin-right: ${(props) => (props.continued ? "none" : "5px")};
   padding-right: ${(props) => (props.continued ? "5px" : "none")};
-  // border-radius: 5px;
+  text-decoration: ${(props) => (props.edited ? "underline" : "none")};
 
   &:hover {
     text-decoration: orange dashed underline;
   }
 `;
 
-// 수정 영역
-const Edit = styled.span`
-  position: relative;
-  cursor: inherit;
-`;
-
-// 수정된 스크립트
-const EditedText = styled.input.attrs((props) => ({
-  type: "text",
-  placeholder: props.word,
-  size: props.word.length,
-}))`
-  position: relative;
-  height: 30px;
-  border: 2px solid black;
-  border-radius: 5px;
-  font-size: 20px;
-  text-align: center;
-
-  &:hover {
-    text-decoration: orange dashed underline;
-  }
-`;
-
-// 수정 전 스크립트
+// 수정 전 단어 (툴팁)
 const OriginalText = styled.span`
   visibility: hidden;
   width: 120px;
@@ -129,7 +93,7 @@ const OriginalText = styled.span`
   position: absolute;
   z-index: 1;
 
-  ${Edit}:hover & {
+  ${Text}:hover & {
     visibility: visible;
   }
 
@@ -260,18 +224,20 @@ const Speech = () => {
   // console.log(started);
 
   // 각 기호의 렌더링 여부
+  // 하나의 {객체}로 합치기
+  // option으로 <Text "도심은", option={} />
+  // useReduce로 묶어보기
   const [enterSymbol, setEnterSymbol] = useState(text.map(() => false));
   const [pauseSymbol, setPauseSymbol] = useState(text.map(() => false));
   const [mouseSymbol, setMouseSymbol] = useState(text.map(() => false));
   const [slashSymbol, setSlashSymbol] = useState(text.map(() => false));
   const [highlighted, setHighlighted] = useState(text.map(() => ""));
-  const [edited, setEdited] = useState(text.map(() => false));
+  const [edited, setEdited] = useState(text.map(() => null));
 
   const [waveFormLoaded, setWaveFormLoaded] = useState(false);
   const [waveSurferInstance, setWaveSurferInstance] = useState(null);
 
   const { count, start, stop, reset, setCount } = useCounter(0, 100); //0.1초 단위 타이머
-  // wavesurfer의 시간 메서드가 1초 단위로만 동작하는데
 
   const clickWord = (e) => {
     const selectedWordIdx = e.target.id; // 클릭된 단어 인덱스
@@ -291,7 +257,8 @@ const Speech = () => {
         setHighlighted([...highlighted]);
         break;
       case "3":
-        edited[selectedWordIdx] = true;
+        edited[selectedWordIdx] = text[selectedWordIdx]; // 원래 단어로 초기화
+        // console.log("orginal: ", text[selectedWordIdx], e.target.innerText);
         setEdited([...edited]);
         break;
       case "4":
@@ -321,22 +288,27 @@ const Speech = () => {
         setSlashSymbol([...slashSymbol]);
         highlighted[selectedWordIdx] = "";
         setHighlighted([...highlighted]);
-        edited[selectedWordIdx] = false;
+        edited[selectedWordIdx] = null;
         setEdited([...edited]);
         break;
       // 재생 바 조절
       default:
         waveSurferInstance.setCurrentTime(started[selectedWordIdx] * 0.1);
-        // waveSurferInstance.setCurrentTime(100);
-
         setCount(started[selectedWordIdx]);
-        console.log(
-          selectedWordIdx,
-          started[selectedWordIdx],
-          "wavesurfer:",
-          waveSurferInstance.getCurrentTime()
-        );
+        // console.log(
+        //   selectedWordIdx,
+        //   started[selectedWordIdx],
+        //   "wavesurfer:",
+        //   waveSurferInstance.getCurrentTime()
+        // );
         break;
+    }
+  };
+
+  const HandleEdit = (e) => {
+    console.log(e);
+    if (e.key === "Enter") {
+      e.preventDefault(); // 줄바꿈 방지
     }
   };
 
@@ -443,56 +415,48 @@ const Speech = () => {
           </div>
 
           <ScriptContainer>
-            {text.map((word, i) =>
-              started[i] < count ? (
-                <PlayedText
-                  color={highlighted[i]}
-                  continued={highlighted[i] === highlighted[i + 1]} // 형광펜이 연달아 적용 되는지
-                  onClick={clickWord}
-                  key={i}
-                  id={i}
-                >
-                  {enterSymbol[i] ? (
-                    <>
-                      <Tool src={enter} />
-                      <br />
-                    </>
-                  ) : null}
-                  {pauseSymbol[i] ? <Tool src={pause} /> : null}
-                  {mouseSymbol[i] ? <Tool src={mouse} /> : null}
-                  {slashSymbol[i] ? <Tool src={slash} /> : null}
-                  {word}
-                </PlayedText>
-              ) : (
-                <Text
-                  color={highlighted[i]}
-                  continued={highlighted[i] === highlighted[i + 1]}
-                  onClick={clickWord}
-                  key={i}
-                  id={i}
-                >
-                  {enterSymbol[i] ? (
-                    <>
-                      <Tool src={enter} />
-                      <br />
-                    </>
-                  ) : null}
-                  {pauseSymbol[i] ? <Tool src={pause} /> : null}
-                  {mouseSymbol[i] ? <Tool src={mouse} /> : null}
-                  {slashSymbol[i] ? <Tool src={slash} /> : null}
-                  {edited[i] ? (
-                    <>
-                      <Edit>
-                        <EditedText word={word} />
-                        <OriginalText>수정 전: {word}</OriginalText>
-                      </Edit>
-                    </>
-                  ) : (
-                    word
-                  )}
-                </Text>
-              )
-            )}
+            {text.map((word, i) => (
+              <Text
+                played={started[i] < count}
+                color={highlighted[i]}
+                continued={highlighted[i] === highlighted[i + 1]} // 형광펜이 연달아 적용 되는지
+                onClick={clickWord}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault(); // 줄바꿈 방지
+                  }
+                }}
+                onInput={(e) => {
+                  console.log("수정 후: ", e.target.innerText);
+                  edited[i] = e.target.innerText; // 수정 후 단어를 edited에 저장
+                  setEdited([...edited]);
+                }}
+                key={i}
+                id={i}
+                contentEditable={cursor === edit} // 현재 커서가 수정펜일 때만 수정 모드
+                edited={edited[i]} // 수정이 되었는가?
+                spellCheck={false}
+                suppressContentEditableWarning={true} // warning 무시..
+              >
+                {enterSymbol[i] ? (
+                  <>
+                    <Tool src={enter} />
+                    <br />
+                  </>
+                ) : null}
+                {pauseSymbol[i] ? <Tool src={pause} /> : null}
+                {mouseSymbol[i] ? <Tool src={mouse} /> : null}
+                {slashSymbol[i] ? <Tool src={slash} /> : null}
+                {edited[i] ? (
+                  <>
+                    {edited[i]}
+                    <OriginalText>수정 전: {word}</OriginalText>
+                  </>
+                ) : (
+                  <>{word}</>
+                )}
+              </Text>
+            ))}
           </ScriptContainer>
           <div>
             <button ref={playButton}>play</button>
