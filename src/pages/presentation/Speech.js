@@ -63,23 +63,10 @@ const Tool = styled.span`
   cursor: url(${(props) => props.cursor}) 50 50, auto;
 `;
 
-// 재생된 스크립트
-const PlayedText = styled.span`
-  color: orange;
-  background-color: ${(props) => props.color};
-  margin-right: ${(props) => (props.continued ? "none" : "5px")};
-  padding-right: ${(props) => (props.continued ? "5px" : "none")};
-  text-decoration: ${(props) => (props.edited ? "underline" : "none")};
-
-  &:hover {
-    text-decoration: orange dashed underline;
-  }
-`;
-
-// 재생 전 스크립트
+// 스크립트
 const Text = styled.span`
   position: relative;
-  color: black;
+  color: ${(props) => (props.played ? "orange" : "black")};
   background-color: ${(props) => props.color};
   margin-right: ${(props) => (props.continued ? "none" : "5px")};
   padding-right: ${(props) => (props.continued ? "5px" : "none")};
@@ -90,31 +77,7 @@ const Text = styled.span`
   }
 `;
 
-// 수정 영역
-const Edit = styled.span`
-  position: relative;
-  cursor: inherit;
-`;
-
-// 수정된 스크립트
-const EditedText = styled.input.attrs((props) => ({
-  type: "text",
-  placeholder: props.word,
-  size: props.word.length,
-}))`
-  position: relative;
-  height: 30px;
-  border: 2px solid black;
-  border-radius: 5px;
-  font-size: 20px;
-  text-align: center;
-
-  &:hover {
-    text-decoration: orange dashed underline;
-  }
-`;
-
-// 수정 전 단어
+// 수정 전 단어 (툴킷)
 const OriginalText = styled.span`
   visibility: hidden;
   width: 120px;
@@ -447,53 +410,33 @@ const Speech = () => {
           </div>
 
           <ScriptContainer>
-            {text.map((word, i) =>
-              started[i] < count ? (
-                <PlayedText
-                  color={highlighted[i]}
-                  continued={highlighted[i] === highlighted[i + 1]} // 형광펜이 연달아 적용 되는지
-                  onClick={clickWord}
-                  key={i}
-                  id={i}
-                >
-                  {enterSymbol[i] ? (
-                    <>
-                      <Tool src={enter} />
-                      <br />
-                    </>
-                  ) : null}
-                  {pauseSymbol[i] ? <Tool src={pause} /> : null}
-                  {mouseSymbol[i] ? <Tool src={mouse} /> : null}
-                  {slashSymbol[i] ? <Tool src={slash} /> : null}
-                  {word}
-                </PlayedText>
-              ) : (
-                <Text
-                  color={highlighted[i]}
-                  continued={highlighted[i] === highlighted[i + 1]}
-                  onClick={clickWord}
-                  key={i}
-                  id={i}
-                  contentEditable={cursor === edit} // 현재 커서가 수정펜일 때만 수정 모드
-                  editied={edited[i]} // 수정이 되었는가?
-                  spellCheck={false}
-                >
-                  {enterSymbol[i] ? (
-                    <>
-                      <Tool src={enter} />
-                      <br />
-                    </>
-                  ) : null}
-                  {pauseSymbol[i] ? <Tool src={pause} /> : null}
-                  {mouseSymbol[i] ? <Tool src={mouse} /> : null}
-                  {slashSymbol[i] ? <Tool src={slash} /> : null}
-                  {word}
-                  {edited[i] ? (
-                    <OriginalText>수정 전: {edited[i]}</OriginalText>
-                  ) : null}
-                </Text>
-              )
-            )}
+            {text.map((word, i) => (
+              <Text
+                played={started[i] < count}
+                color={highlighted[i]}
+                continued={highlighted[i] === highlighted[i + 1]} // 형광펜이 연달아 적용 되는지
+                onClick={clickWord}
+                key={i}
+                id={i}
+                contentEditable={cursor === edit} // 현재 커서가 수정펜일 때만 수정 모드
+                edited={edited[i]} // 수정이 되었는가?
+                spellCheck={false}
+              >
+                {enterSymbol[i] ? (
+                  <>
+                    <Tool src={enter} />
+                    <br />
+                  </>
+                ) : null}
+                {pauseSymbol[i] ? <Tool src={pause} /> : null}
+                {mouseSymbol[i] ? <Tool src={mouse} /> : null}
+                {slashSymbol[i] ? <Tool src={slash} /> : null}
+                {word}
+                {edited[i] ? (
+                  <OriginalText>수정 전: {edited[i]}</OriginalText>
+                ) : null}
+              </Text>
+            ))}
           </ScriptContainer>
           <div>
             <button ref={playButton}>play</button>
