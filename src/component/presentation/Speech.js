@@ -77,7 +77,7 @@ const Text = styled.span`
   }
 `;
 
-// 수정 전 단어 (툴킷)
+// 수정 전 단어 (툴팁)
 const OriginalText = styled.span`
   visibility: hidden;
   width: 120px;
@@ -257,8 +257,8 @@ const Speech = () => {
         setHighlighted([...highlighted]);
         break;
       case "3":
-        edited[selectedWordIdx] = text[selectedWordIdx]; // 원래 단어를 저장
-        console.log("orginal: ", text[selectedWordIdx]);
+        edited[selectedWordIdx] = text[selectedWordIdx]; // 원래 단어로 초기화
+        // console.log("orginal: ", text[selectedWordIdx], e.target.innerText);
         setEdited([...edited]);
         break;
       case "4":
@@ -294,16 +294,21 @@ const Speech = () => {
       // 재생 바 조절
       default:
         waveSurferInstance.setCurrentTime(started[selectedWordIdx] * 0.1);
-        // waveSurferInstance.setCurrentTime(100);
-
         setCount(started[selectedWordIdx]);
-        console.log(
-          selectedWordIdx,
-          started[selectedWordIdx],
-          "wavesurfer:",
-          waveSurferInstance.getCurrentTime()
-        );
+        // console.log(
+        //   selectedWordIdx,
+        //   started[selectedWordIdx],
+        //   "wavesurfer:",
+        //   waveSurferInstance.getCurrentTime()
+        // );
         break;
+    }
+  };
+
+  const HandleEdit = (e) => {
+    console.log(e);
+    if (e.key === "Enter") {
+      e.preventDefault(); // 줄바꿈 방지
     }
   };
 
@@ -416,11 +421,22 @@ const Speech = () => {
                 color={highlighted[i]}
                 continued={highlighted[i] === highlighted[i + 1]} // 형광펜이 연달아 적용 되는지
                 onClick={clickWord}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault(); // 줄바꿈 방지
+                  }
+                }}
+                onInput={(e) => {
+                  console.log("수정 후: ", e.target.innerText);
+                  edited[i] = e.target.innerText; // 수정 후 단어를 edited에 저장
+                  setEdited([...edited]);
+                }}
                 key={i}
                 id={i}
                 contentEditable={cursor === edit} // 현재 커서가 수정펜일 때만 수정 모드
                 edited={edited[i]} // 수정이 되었는가?
                 spellCheck={false}
+                suppressContentEditableWarning={true} // warning 무시..
               >
                 {enterSymbol[i] ? (
                   <>
@@ -431,10 +447,14 @@ const Speech = () => {
                 {pauseSymbol[i] ? <Tool src={pause} /> : null}
                 {mouseSymbol[i] ? <Tool src={mouse} /> : null}
                 {slashSymbol[i] ? <Tool src={slash} /> : null}
-                {word}
                 {edited[i] ? (
-                  <OriginalText>수정 전: {edited[i]}</OriginalText>
-                ) : null}
+                  <>
+                    {edited[i]}
+                    <OriginalText>수정 전: {word}</OriginalText>
+                  </>
+                ) : (
+                  <>{word}</>
+                )}
               </Text>
             ))}
           </ScriptContainer>
