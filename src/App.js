@@ -33,8 +33,15 @@ function App() {
         <Route path="/presentation" element={<PresentationList />} />
         <Route path="/presentation/summary" element={<Summary />} />
         <Route path="/presentation/speech" element={<Speech />} />
-        <Route path="/presentation/practice" element={<Practice />} />
+        <Route
+          path="/presentation/practice"
+          element={<Practice isNew={false} />}
+        />
         <Route path="/presentation/new" element={<NewPresentation />} />
+        <Route
+          path="/presentation/new/practice"
+          element={<Practice isNew={true} />}
+        />
 
         <Route path="/coach" element={<CoachList />} />
         <Route path="/coach/portfolio" element={<Portfolio />} />
