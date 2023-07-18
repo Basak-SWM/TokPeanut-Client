@@ -252,6 +252,12 @@ const Speech = () => {
   const started = stt.segments.flatMap((seg) =>
     seg.words.map((w) => w[0] * 0.01)
   );
+  const ended = stt.segments.flatMap((seg) =>
+    seg.words.map((w) => w[1] * 0.01)
+  );
+  const duration = stt.segments.flatMap((seg) =>
+    seg.words.map((w) => (w[1] - w[0]) * 0.001)
+  );
   // console.log(text, started);
 
   // started.unshift(0);
@@ -468,6 +474,7 @@ const Speech = () => {
                         : "played"
                       : "not played"
                   }
+                  duration={duration[i]}
                   color={highlighted[i]}
                   continued={highlighted[i] === highlighted[i + 1]} // 형광펜이 연달아 적용 되는지
                   onClick={clickWord}
