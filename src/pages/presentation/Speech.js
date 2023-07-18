@@ -2,7 +2,6 @@ import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import WaveSurfer from "wavesurfer.js";
-// import mp3 from "../../sound/mp3ex.mp3";
 import mp3 from "./mp3.mp3";
 import stt from "./stt.json";
 
