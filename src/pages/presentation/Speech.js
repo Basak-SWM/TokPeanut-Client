@@ -2,7 +2,6 @@ import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import WaveSurfer from "wavesurfer.js";
-// import mp3 from "../../sound/mp3ex.mp3";
 import mp3 from "./mp3.mp3";
 import stt from "./stt.json";
 
@@ -67,7 +66,29 @@ const Tool = styled.span`
 // 스크립트
 const Text = styled.span`
   position: relative;
-  color: ${(props) => (props.played ? "orange" : "black")};
+  background-clip: ${(props) => (props.played === "playing" ? "text" : "")};
+  -webkit-background-clip: ${(props) =>
+    props.played === "playing" ? "text" : ""};
+  color: ${(props) =>
+    props.played === "playing"
+      ? "transparent"
+      : props.played === "played"
+      ? "orange"
+      : "black"};
+  background-image: ${(props) =>
+    props.played === "playing"
+      ? "linear-gradient(to right, orange 50%, black 50% 100%)"
+      : ""};
+
+  background-size: 200% 100%;
+  background-position-x: 0%;
+  animation-name: ${(props) => (props.played === "playing" ? PlayingText : "")};
+  animation-duration: ${(props) => props.duration}s;
+  animation-timing-function: linear;
+  animation-iteration-count: 1;
+  animation-direction: reverse;
+  animation-fill-mode: forwards;
+
   background-color: ${(props) => props.color};
   margin-right: ${(props) => (props.continued ? "none" : "5px")};
   padding-right: ${(props) => (props.continued ? "5px" : "none")};
