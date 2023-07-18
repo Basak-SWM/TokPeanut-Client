@@ -431,7 +431,13 @@ const Speech = () => {
             {isDone ? (
               text.map((word, i) => (
                 <Text
-                  played={started[i] < count}
+                  played={
+                    started[i] < count
+                      ? count < ended[i]
+                        ? "playing"
+                        : "played"
+                      : "not played"
+                  }
                   color={highlighted[i]}
                   continued={highlighted[i] === highlighted[i + 1]} // 형광펜이 연달아 적용 되는지
                   onClick={clickWord}
