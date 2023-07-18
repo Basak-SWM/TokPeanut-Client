@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Link } from "react-router-dom";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import WaveSurfer from "wavesurfer.js";
 import mp3 from "./mp3.mp3";
 import stt from "./stt.json";
@@ -61,6 +61,15 @@ const Tool = styled.span`
   background-image: url(${(props) => props.src});
   background-size: cover;
   cursor: url(${(props) => props.cursor}) 50 50, auto;
+`;
+
+const PlayingText = keyframes`
+from {
+  background-position-x: 0%;
+}
+to {
+  background-position-x: 100%;
+}
 `;
 
 // 스크립트
