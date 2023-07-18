@@ -27,6 +27,7 @@ const Container = styled.div`
 
 // 툴바
 const Tools = styled.div`
+  position: relative;
   width: 100px;
   height: 550px;
   border: 1px solid grey;
@@ -141,6 +142,15 @@ const Pagination = styled.div`
   box-shadow: 2px 3px 5px 0px grey;
 `;
 
+const DisableBox = styled.div`
+  position: absolute;
+  width: 100px;
+  height: 550px;
+  background-color: grey;
+  opacity: 0.5;
+  z-index: 100;
+`;
+
 // custom hook (timer)
 const useCounter = (initialValue, ms) => {
   const [count, setCount] = useState(initialValue);
@@ -170,6 +180,8 @@ const useCounter = (initialValue, ms) => {
 };
 
 const Speech = () => {
+  const [isDone, setIsDone] = useState(false); // 서버가 보내주는 결과에 따라 분석 중인지 아닌지 파악
+  console.log("isDone:", isDone);
   // tool bar
   const [cursor, setCursor] = useState("");
   const [selectedSymbol, setSelectedSymbol] = useState(NaN); // 커서 관리를 위한 현재 선택된 기호 인덱스
@@ -397,6 +409,7 @@ const Speech = () => {
               onClick={clickTool}
             />
           ))}
+          {isDone ? null : <DisableBox />}
         </Tools>
         <div
           style={{
@@ -415,57 +428,78 @@ const Speech = () => {
           </div>
 
           <ScriptContainer>
-            {text.map((word, i) => (
-              <Text
-                played={started[i] < count}
-                color={highlighted[i]}
-                continued={highlighted[i] === highlighted[i + 1]} // 형광펜이 연달아 적용 되는지
-                onClick={clickWord}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault(); // 줄바꿈 방지
-                  }
-                }}
-                onBlur={(e) => {
-                  console.log("수정 후: ", e.target.innerText);
-                  edited[i] = e.target.innerText; // 수정 후 단어를 edited에 저장
-                  setEdited([...edited]);
-                }}
-                key={i}
-                id={i}
-                contentEditable={cursor === edit} // 현재 커서가 수정펜일 때만 수정 모드
-                edited={edited[i]} // 수정이 되었는가?
-                spellCheck={false}
-                suppressContentEditableWarning={true} // warning 무시..
-              >
-                {enterSymbol[i] ? (
-                  <>
-                    <Tool src={enter} />
-                    <br />
-                  </>
-                ) : null}
-                {pauseSymbol[i] ? <Tool src={pause} /> : null}
-                {mouseSymbol[i] ? <Tool src={mouse} /> : null}
-                {slashSymbol[i] ? <Tool src={slash} /> : null}
-                {edited[i] ? (
-                  <>
-                    {edited[i]}
-                    <OriginalText>수정 전: {word}</OriginalText>
-                  </>
-                ) : (
-                  <>{word}</>
-                )}
-              </Text>
-            ))}
+            {isDone ? (
+              text.map((word, i) => (
+                <Text
+                  played={started[i] < count}
+                  color={highlighted[i]}
+                  continued={highlighted[i] === highlighted[i + 1]} // 형광펜이 연달아 적용 되는지
+                  onClick={clickWord}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault(); // 줄바꿈 방지
+                    }
+                  }}
+                  onBlur={(e) => {
+                    console.log("수정 후: ", e.target.innerText);
+                    edited[i] = e.target.innerText; // 수정 후 단어를 edited에 저장
+                    setEdited([...edited]);
+                  }}
+                  key={i}
+                  id={i}
+                  contentEditable={cursor === edit} // 현재 커서가 수정펜일 때만 수정 모드
+                  edited={edited[i]} // 수정이 되었는가?
+                  spellCheck={false}
+                  suppressContentEditableWarning={true} // warning 무시..
+                >
+                  {enterSymbol[i] ? (
+                    <>
+                      <Tool src={enter} />
+                      <br />
+                    </>
+                  ) : null}
+                  {pauseSymbol[i] ? <Tool src={pause} /> : null}
+                  {mouseSymbol[i] ? <Tool src={mouse} /> : null}
+                  {slashSymbol[i] ? <Tool src={slash} /> : null}
+                  {edited[i] ? (
+                    <>
+                      {edited[i]}
+                      <OriginalText>수정 전: {word}</OriginalText>
+                    </>
+                  ) : (
+                    <>{word}</>
+                  )}
+                </Text>
+              ))
+            ) : (
+              <>
+                분석중...
+                <button
+                  onClick={() => {
+                    setIsDone(true);
+                  }}
+                >
+                  분석 완료하기
+                </button>
+              </>
+            )}
           </ScriptContainer>
           <div>
-            <button ref={playButton}>play</button>
-            <button onClick={onReset}>reset</button>
+            <button ref={playButton} disabled={!isDone}>
+              play
+            </button>
+            <button onClick={onReset} disabled={!isDone}>
+              reset
+            </button>
           </div>
-          <Link to="/presentation/practice">연습 시작</Link>
+          {isDone ? <Link to="/presentation/practice">연습 시작</Link> : null}
+
           <div>count: {count}</div>
         </div>
-        <Pagination>pagination</Pagination>
+        <Pagination>
+          pagination
+          {isDone ? null : <DisableBox />}
+        </Pagination>
       </Container>
     </>
   );
