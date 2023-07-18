@@ -84,7 +84,7 @@ const LoadingText = styled.div`
   background-color: black;
   color: white;
   font-weight: bold;
-  z-index: 1;
+  z-index: 100;
   padding: 20px 10px 20px 10px;
 `;
 
