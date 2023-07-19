@@ -9,7 +9,7 @@ import LandingPage from "./component/LandingPage";
 import PresentationList from "./component/presentation/PresentationList";
 import Summary from "./component/presentation/Summary";
 import Speech from "./component/presentation/Speech/Speech";
-import Practice from "./component/presentation/Practice";
+import Practice from "./component/presentation/Practice/Practice";
 import NewPresentation from "./component/presentation/NewPresentation";
 
 import CoachList from "./component/coach/CoachList";
