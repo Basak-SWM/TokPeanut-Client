@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-// import Draggable from "react-draggable";
-import peanut_cursor from "../../image/peanut_cursor.png";
 import highlight from "../../image/icons/highlight.png";
 import faster from "../../image/icons/faster.png";
 import slower from "../../image/icons/slower.png";
@@ -35,12 +33,6 @@ const Tool = styled.div`
     width: 60px;
     height: 60px;
   }
-  // &:active,
-  // &:focus {
-  //   width: 30px;
-  //   height: 30px;
-  //   // cursor: url(${peanut_cursor}) 10 10, grab;
-  // }
 `;
 
 const ToolBar = () => {
@@ -50,18 +42,13 @@ const ToolBar = () => {
 
   const clickTool = (e) => {
     setSelected(!selected);
-    // console.log("click tool: ", e.target.id);
     selected ? setCursor("") : setCursor(e.target.id);
-    // e.target.style.cursor = `cursor: url(${peanut_cursor}) 10 10, grab`;
-    // console.log(e.target);
   };
 
   return (
     <Tools>
       {symbols.map((c, i) => (
-        // <Draggable key={i}>
         <Tool key={i} id={c} src={c} cursor={cursor} onClick={clickTool} />
-        // </Draggable>
       ))}
     </Tools>
   );
