@@ -1,108 +1,16 @@
 import React, { useState, useRef, useEffect } from "react";
-import styled from "styled-components";
 import WaveSurfer from "wavesurfer.js";
 import MicrophonePlugin from "wavesurfer.js/dist/plugin/wavesurfer.microphone.min.js";
+import * as s from "./PracticeStyle";
 
-import enter from "../../image/icons/enter.png";
-import pause from "../../image/icons/pause.png";
-import mouse from "../../image/icons/mouse.png";
-import slash from "../../image/icons/slash.png";
+import enter from "../../../image/icons/enter.png";
+import pause from "../../../image/icons/pause.png";
+import mouse from "../../../image/icons/mouse.png";
+import slash from "../../../image/icons/slash.png";
 
 import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
-
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-around;
-  height: 90vh;
-`;
-const STTContainer = styled.div`
-  width: 80vw;
-  height: 10vh;
-  border: 1px solid grey;
-  padding: 24px;
-  overflow-y: scroll;
-`;
-
-const ScriptContainer = styled.div`
-  width: 80vw;
-  height: 40vh;
-  overflow-y: scroll;
-  font-size: 24px;
-  padding: 24px;
-  border: 1px solid grey;
-  border-radius: 10px;
-`;
-
-const NoScript = styled.div`
-  width: 80vw;
-  height: 40vh;
-  padding: 24px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: grey;
-  font-size: 16px;
-  border: 1px solid grey;
-  border-radius: 10px;
-`;
-const Tool = styled.span`
-  display: inline-block;
-  width: 25px;
-  height: 25px;
-  background-image: url(${(props) => props.src});
-  background-size: cover;
-`;
-
-const Text = styled.span`
-  color: black;
-  background-color: ${(props) => props.color};
-  margin-right: ${(props) => (props.continued ? "none" : "5px")};
-  padding-right: ${(props) => (props.continued ? "5px" : "none")};
-`;
-
-const WaveContainer = styled.div`
-  width: 300px;
-  height: 64px;
-  border: 3px solid grey;
-  border-radius: 50px;
-  padding: 20px 10px 20px 10px;
-`;
-
-const LoadingText = styled.div`
-  position: absolute;
-  width: 300px;
-  height: 64px;
-  border: 3px solid grey;
-  border-radius: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: black;
-  color: white;
-  font-weight: bold;
-  z-index: 100;
-  padding: 20px 10px 20px 10px;
-`;
-
-const Controls = styled.div`
-  display: flex;
-  justify-content: space-evenly;
-  align-items: center;
-  width: 30vw;
-`;
-
-const Button = styled.button`
-  width: 70px;
-  height: 70px;
-  border-radius: 35px;
-  background-color: orange;
-  color: white;
-  border: none;
-`;
 
 const Practice = ({ isNew }) => {
   // 스크립트
@@ -257,13 +165,13 @@ const Practice = ({ isNew }) => {
   }
 
   return (
-    <Container>
+    <s.Container>
       {isNew ? (
-        <NoScript>준비된 스크립트가 없습니다.</NoScript>
+        <s.NoScript>준비된 스크립트가 없습니다.</s.NoScript>
       ) : (
-        <ScriptContainer>
+        <s.ScriptContainer>
           {text.map((word, i) => (
-            <Text
+            <s.Text
               color={highlighted[i]}
               continued={highlighted[i] === highlighted[i + 1]}
               key={i}
@@ -271,37 +179,37 @@ const Practice = ({ isNew }) => {
             >
               {enterSymbol[i] ? (
                 <>
-                  <Tool src={enter} />
+                  <s.Tool src={enter} />
                   <br />
                 </>
               ) : null}
-              {pauseSymbol[i] ? <Tool src={pause} /> : null}
-              {mouseSymbol[i] ? <Tool src={mouse} /> : null}
-              {slashSymbol[i] ? <Tool src={slash} /> : null}
+              {pauseSymbol[i] ? <s.Tool src={pause} /> : null}
+              {mouseSymbol[i] ? <s.Tool src={mouse} /> : null}
+              {slashSymbol[i] ? <s.Tool src={slash} /> : null}
               {word}
-            </Text>
+            </s.Text>
           ))}
-        </ScriptContainer>
+        </s.ScriptContainer>
       )}
 
-      <STTContainer>{transcript}</STTContainer>
+      <s.STTContainer>{transcript}</s.STTContainer>
 
       <div>
-        {recording ? null : <LoadingText>녹음을 시작해 보세요</LoadingText>}
-        <WaveContainer ref={waveformRef} />
+        {recording ? null : <s.WaveCover>녹음을 시작해 보세요</s.WaveCover>}
+        <s.WaveContainer ref={waveformRef} />
       </div>
-      <Controls>
+      <s.Controls>
         {recording ? (
-          <Button onClick={stopRecording}>일시정지</Button>
+          <s.Button onClick={stopRecording}>일시정지</s.Button>
         ) : (
-          <Button onClick={startRecording} disabled={!micReady}>
+          <s.Button onClick={startRecording} disabled={!micReady}>
             녹음시작
-          </Button>
+          </s.Button>
         )}
-        <Button onClick={resetTranscript}>Reset</Button>
+        <s.Button onClick={resetTranscript}>Reset</s.Button>
         <audio id="audio" controls />
-      </Controls>
-    </Container>
+      </s.Controls>
+    </s.Container>
   );
 };
 
