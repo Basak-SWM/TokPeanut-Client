@@ -8,7 +8,7 @@ import LandingPage from "./component/LandingPage";
 
 import PresentationList from "./component/presentation/PresentationList";
 import Summary from "./component/presentation/Summary";
-import Speech from "./component/presentation/Speech";
+import Speech from "./component/presentation/Speech/Speech";
 import Practice from "./component/presentation/Practice";
 import NewPresentation from "./component/presentation/NewPresentation";
 
