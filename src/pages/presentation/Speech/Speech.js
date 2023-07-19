@@ -1,185 +1,19 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Link } from "react-router-dom";
-import styled, { keyframes } from "styled-components";
 import WaveSurfer from "wavesurfer.js";
-import mp3 from "./mp3.mp3";
-import stt from "./stt.json";
+import mp3 from "../mp3.mp3";
+import stt from "../stt.json";
+import * as s from "./SpeechStyle";
 
-import highlight from "../../image/icons/highlight.png";
-import faster from "../../image/icons/faster.png";
-import slower from "../../image/icons/slower.png";
-import edit from "../../image/icons/edit.png";
-import enter from "../../image/icons/enter.png";
-import pause from "../../image/icons/pause.png";
-import mouse from "../../image/icons/mouse.png";
-import slash from "../../image/icons/slash.png";
-import erase from "../../image/icons/erase.png";
-
-const Container = styled.div`
-  cursor: url(${(props) => props.cursor}) 50 50, auto;
-  display: flex;
-  justify-content: space-evenly;
-  align-items: center;
-  width: 100vw;
-  height: 90vh;
-`;
-
-// 툴바
-const Tools = styled.div`
-  position: relative;
-  width: 100px;
-  height: 550px;
-  border: 1px solid grey;
-  border-radius: 5px;
-  margin: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-around;
-  box-shadow: 2px 3px 5px 0px grey;
-`;
-
-// 툴바의 기호(hover effect)
-const ToolKit = styled.div`
-  width: 50px;
-  height: 50px;
-  background-image: url(${(props) => props.src});
-  background-size: cover;
-  cursor: url(${(props) => props.cursor}) 50 50, auto;
-
-  &:hover {
-    width: 65px;
-    height: 65px;
-  }
-`;
-
-// 스크립트의 기호
-const Tool = styled.span`
-  display: inline-block;
-  width: 25px;
-  height: 25px;
-  background-image: url(${(props) => props.src});
-  background-size: cover;
-  cursor: url(${(props) => props.cursor}) 50 50, auto;
-`;
-
-const PlayingText = keyframes`
-from {
-  background-position-x: 0%;
-}
-to {
-  background-position-x: 100%;
-}
-`;
-
-// 스크립트
-const Text = styled.span`
-  position: relative;
-  background-clip: ${(props) => (props.played === "playing" ? "text" : "")};
-  -webkit-background-clip: ${(props) =>
-    props.played === "playing" ? "text" : ""};
-  color: ${(props) =>
-    props.played === "playing"
-      ? "transparent"
-      : props.played === "played"
-      ? "orange"
-      : "black"};
-  background-image: ${(props) =>
-    props.played === "playing"
-      ? "linear-gradient(to right, orange 50%, black 50% 100%)"
-      : ""};
-
-  background-size: 200% 100%;
-  background-position-x: 0%;
-  animation-name: ${(props) => (props.played === "playing" ? PlayingText : "")};
-  animation-duration: ${(props) => props.duration}s;
-  animation-timing-function: linear;
-  animation-iteration-count: 1;
-  animation-direction: reverse;
-  animation-fill-mode: forwards;
-
-  background-color: ${(props) => props.color};
-  margin-right: ${(props) => (props.continued ? "none" : "5px")};
-  padding-right: ${(props) => (props.continued ? "5px" : "none")};
-  text-decoration: ${(props) => (props.edited ? "underline" : "none")};
-
-  &:hover {
-    text-decoration: orange dashed underline;
-  }
-`;
-
-// 수정 전 단어 (툴팁)
-const OriginalText = styled.span`
-  visibility: hidden;
-  width: 120px;
-  bottom: 100%;
-  left: 50%;
-  margin-left: -60px;
-  font-size: 14px;
-  background-color: grey;
-  color: #fff;
-  text-align: center;
-  padding: 5px 0;
-  border-radius: 5px;
-  position: absolute;
-  z-index: 1;
-
-  ${Text}:hover & {
-    visibility: visible;
-  }
-
-  // 아래 화살표
-  &::after {
-    content: " ";
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    margin-left: -5px;
-    border-width: 5px;
-    border-style: solid;
-    border-color: grey transparent transparent transparent;
-  }
-`;
-
-const ScriptContainer = styled.div`
-  width: 700px;
-  height: 50vh;
-  overflow-y: scroll;
-  font-size: 24px;
-  padding: 24px;
-  border: 1px solid grey;
-  border-radius: 10px;
-`;
-
-const WaveContainer = styled.div`
-  width: 748px;
-  height: 64px;
-  border: 1px solid grey;
-  // border-radius: 10px;
-`;
-
-// 페이지네이션
-const Pagination = styled.div`
-  width: 100px;
-  height: 550px;
-  border: 1px solid grey;
-  border-radius: 5px;
-  margin: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-around;
-  box-shadow: 2px 3px 5px 0px grey;
-`;
-
-const DisableBox = styled.div`
-  position: absolute;
-  width: 100px;
-  height: 550px;
-  background-color: grey;
-  opacity: 0.5;
-  z-index: 100;
-`;
+import highlight from "../../../image/icons/highlight.png";
+import faster from "../../../image/icons/faster.png";
+import slower from "../../../image/icons/slower.png";
+import edit from "../../../image/icons/edit.png";
+import enter from "../../../image/icons/enter.png";
+import pause from "../../../image/icons/pause.png";
+import mouse from "../../../image/icons/mouse.png";
+import slash from "../../../image/icons/slash.png";
+import erase from "../../../image/icons/erase.png";
 
 // custom hook (timer)
 const useCounter = (initialValue, ms) => {
@@ -241,12 +75,6 @@ const Speech = () => {
     selectedSymbol ? setCursor("") : setCursor(symbols[selectedSymbolIdx]);
   };
 
-  // script
-  // const text =
-  //   "저희는 음성 데이터 분석을 통해 스피치에 있어 중요한 요소들을 평가하고, 연습에 유용한 도구를 제공하여 반복을 통한 스피치 실력 향상을 도우며, 스피치 전문가와의 부담 없는 코칭 환경을 제공하는 솔루션인 톡피넛을 개발하려고 합니다. 기존에도 발표 연습 도우미와 같은 서비스들은 존재합니다. 그러나 이런 서비스들은 스피치 교정이라기 보다는 연습 보조에 치우쳐 있습니다. 스피치 학원같이 전문가의 코칭을 받는 방법도 있지만 설문조사 결과 사용자들은 이런 코칭에 부담감을 느끼는 것으로 나타났습니다. 또한 많은 사용자들이 스피치를 혼자 녹음한 후 다시 들어보며 연습한다고 응답했기 때문에, 저희는 그 과정에 필요한 도구를 제공하고 보완점을 교정해주며, 나아가 전문가의 도움을 부담 없이 받도록 해주는 솔루션을 제공하고자 합니다. 저희가 생각한 기능은 크게 스피치 녹음 및 피드백, 교정 표시와 사용자 기호, 스피치 전문가 매칭으로 나뉩니다. 이에 대해서는 뒤에서 자세히 설명드리겠습니다. 프로젝트 중에는 최대한 사용자들의 의견을 많이 반영하려고 합니다. 다양한 스피치 분야 중 특히 발표에 특화된 솔루션을 먼저 제작해 8월과 10월에 총 두 번 베타테스트를 진행할 예정입니다. 사용자의 피드백을 받아 기능을 개선한 후 다른 분야의 스피치도 지원하도록 수평적으로 확장할 계획입니다. 결과물은 웹 서비스와 하이브리드 앱으로 생각하고 있고, 솔루션에 대해 특허 출원을 할 것입니다. 저희 솔루션을 통해 스피치 교정에 대한 진입 장벽이 완화되어 잠재 고객이 스피치 교정 시장의 고객으로 전환될 수 있을 것입니다. 기획에 앞서 설문조사를 진행해 보았습니다. 총 91.2%의 사용자가 말하기 실력 향상을 위해 따로 시간을 들여 노력해 본 경험이 있다고 답했으며, 62.1%의 사용자가 전문가에게 스피치 코칭을 받아 볼 의향은 있으나 경험은 없다고 답했습니다. 스피치 코칭을 주저하는 이유로는 비용의 부담, 시공간적 제약, 심리적 부담감을 꼽았습니다. 가장 많은 응답을 받은 비용의 부담에 관해 조사해 보니 실제 스피치 학원의 수업료는 1회 20만원으로 금전적 부담이 컸습니다. 또한 대부분 대면 수업으로 진행되므로 시공간적 제약도 항상 존재했습니다. 스피치 학원 대신, 사용자들은 주로 혼자 발표 내용을 녹음해 들어보며 연습하는 것으로 나타났습니다. 그 과정에서 예상되는 어려움과 그를 해결하기 위한 기능에 대해 사용자가 얼마나 긍정적인 반응을 보일 지 조사해 보았습니다. 보다시피 대부분의 사용자가 저희가 제공하고자 하는 기능에 긍정적인 반응을 보였습니다. 지금까지 설명드린 설문조사 결과에서, 저희는 효과적이고 효율적인 스피치 연습을 가능하게 하고, 스피치 교정에 대한 사용자의 부담을 덜 수 있는 솔루션의 필요성을 확인했습니다.".split(
-  //     " "
-  //   );
-
   // stt 결과 형식에 맞게 데이터 파싱
   const text = stt.segments.flatMap((seg) => seg.words.map((w) => w[2]));
   const started = stt.segments.flatMap((seg) =>
@@ -258,18 +86,6 @@ const Speech = () => {
   const duration = stt.segments.flatMap((seg) =>
     seg.words.map((w) => (w[1] - w[0]) * 0.001)
   );
-  // console.log(text, started);
-
-  // started.unshift(0);
-
-  // 임시로 단어별 시작 시간 서정
-  // 각 단어의 소요 시간은 단어 길이와 같다고 가정
-  // let z = 0;
-  // const started = text.map((word) => {
-  //   z += word.length;
-  //   return z;
-  // });
-  // console.log(started);
 
   // 각 기호의 렌더링 여부
   // 하나의 {객체}로 합치기
@@ -353,13 +169,6 @@ const Speech = () => {
     }
   };
 
-  const HandleEdit = (e) => {
-    console.log(e);
-    if (e.key === "Enter") {
-      e.preventDefault(); // 줄바꿈 방지
-    }
-  };
-
   const onReset = () => {
     reset();
     waveSurferInstance.setCurrentTime(0);
@@ -434,10 +243,10 @@ const Speech = () => {
 
   return (
     <>
-      <Container cursor={cursor}>
-        <Tools>
+      <s.Container cursor={cursor}>
+        <s.Tools>
           {symbols.map((c, i) => (
-            <ToolKit
+            <s.ToolKit
               key={i}
               id={i}
               src={c}
@@ -445,28 +254,18 @@ const Speech = () => {
               onClick={clickTool}
             />
           ))}
-          {isDone ? null : <DisableBox />}
-        </Tools>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "space-around",
-            height: "85vh",
-          }}
-        >
+          {isDone ? null : <s.DisableBox />}
+        </s.Tools>
+        <s.Script>
           <div>
-            {waveFormLoaded ? null : (
-              <div style={{ position: "absolute" }}>loading...</div>
-            )}
-            <WaveContainer ref={wavesurferRef} />
+            {waveFormLoaded ? null : <s.LoadingBox>loading...</s.LoadingBox>}
+            <s.WaveWrapper ref={wavesurferRef} />
           </div>
 
-          <ScriptContainer>
+          <s.ScriptContainer>
             {isDone ? (
               text.map((word, i) => (
-                <Text
+                <s.Text
                   played={
                     started[i] < count
                       ? count < ended[i]
@@ -497,22 +296,22 @@ const Speech = () => {
                 >
                   {enterSymbol[i] ? (
                     <>
-                      <Tool src={enter} />
+                      <s.Tool src={enter} />
                       <br />
                     </>
                   ) : null}
-                  {pauseSymbol[i] ? <Tool src={pause} /> : null}
-                  {mouseSymbol[i] ? <Tool src={mouse} /> : null}
-                  {slashSymbol[i] ? <Tool src={slash} /> : null}
+                  {pauseSymbol[i] ? <s.Tool src={pause} /> : null}
+                  {mouseSymbol[i] ? <s.Tool src={mouse} /> : null}
+                  {slashSymbol[i] ? <s.Tool src={slash} /> : null}
                   {edited[i] ? (
                     <>
                       {edited[i]}
-                      <OriginalText>수정 전: {word}</OriginalText>
+                      <s.OriginalText>수정 전: {word}</s.OriginalText>
                     </>
                   ) : (
                     <>{word}</>
                   )}
-                </Text>
+                </s.Text>
               ))
             ) : (
               <>
@@ -526,7 +325,7 @@ const Speech = () => {
                 </button>
               </>
             )}
-          </ScriptContainer>
+          </s.ScriptContainer>
           <div>
             <button ref={playButton} disabled={!isDone}>
               play
@@ -538,12 +337,13 @@ const Speech = () => {
           {isDone ? <Link to="/presentation/practice">연습 시작</Link> : null}
 
           <div>count: {count}</div>
-        </div>
-        <Pagination>
+        </s.Script>
+
+        <s.Pagination>
           pagination
-          {isDone ? null : <DisableBox />}
-        </Pagination>
-      </Container>
+          {isDone ? null : <s.DisableBox />}
+        </s.Pagination>
+      </s.Container>
     </>
   );
 };
