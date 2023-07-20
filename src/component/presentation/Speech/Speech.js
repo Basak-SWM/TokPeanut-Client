@@ -4,6 +4,7 @@ import WaveSurfer from "wavesurfer.js";
 import mp3 from "../mp3.mp3";
 import stt from "../stt.json";
 import * as s from "./SpeechStyle";
+import Pagination from "../Pagination/Pagination";
 
 import highlight from "../../../image/icons/highlight.png";
 import faster from "../../../image/icons/faster.png";
@@ -339,10 +340,11 @@ const Speech = () => {
           <div>count: {count}</div>
         </s.Script>
 
-        <s.Pagination>
+        {/* <s.Pagination>
           pagination
           {isDone ? null : <s.DisableBox />}
-        </s.Pagination>
+        </s.Pagination> */}
+        <Pagination />
       </s.Container>
     </>
   );
