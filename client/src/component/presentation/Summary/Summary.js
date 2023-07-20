@@ -13,22 +13,22 @@ const Summary = () => {
       yScale={{
         type: "linear",
         min: 0,
-        max: "auto",
+        max: recommended ? recommended[1] * 1.5 : "auto",
         stacked: true,
         reverse: false,
       }}
       yFormat=" >-.2~f"
       // axisTop={null}
       // axisRight={null}
-      axisBottom={{
-        orient: "bottom",
-        tickSize: 5,
-        tickPadding: 5,
-        tickRotation: 0,
-        legend: "스피치",
-        legendOffset: 36,
-        legendPosition: "middle",
-      }}
+      // axisBottom={{
+      //   orient: "bottom",
+      //   tickSize: 5,
+      //   tickPadding: 5,
+      //   tickRotation: 0,
+      //   legend: "스피치",
+      //   legendOffset: 36,
+      //   legendPosition: "middle",
+      // }}
       axisLeft={null}
       enableGridY={false}
       colors={{ scheme: "nivo" }}
@@ -38,10 +38,47 @@ const Summary = () => {
       pointBorderColor={{ from: "serieColor" }}
       enablePointLabel={true}
       pointLabelYOffset={-16}
-      enableArea={recommended ? true : false}
-      areaBaselineValue={recommended}
+      // enableArea={recommended ? true : false}
+      // areaBaselineValue={recommended}
       useMesh={true}
       legends={[]}
+      markers={
+        recommended
+          ? [
+              {
+                axis: "y",
+                value: recommended[0],
+                lineStyle: {
+                  stroke: "grey",
+                  strokeWidth: recommended[0] > 0 ? 0.5 : 0,
+                },
+              },
+              {
+                axis: "y",
+                value: recommended[1],
+                lineStyle: { stroke: "grey", strokeWidth: 0.5 },
+                legend: "권장 범위",
+                textStyle: {
+                  fill: "grey",
+                  fontSize: 10,
+                },
+              },
+            ]
+          : []
+      }
+      // layers 설정 안해주니까 마커 안보임
+      layers={[
+        "grid",
+        "axes",
+        "areas",
+        "crosshair",
+        "lines",
+        "points",
+        "slices",
+        "mesh",
+        "legends",
+        "markers", // 마커를 제일 뒤에 둬서 위로 오도록
+      ]}
     />
   );
 
@@ -52,15 +89,15 @@ const Summary = () => {
       color: "hsl(279, 70%, 50%)",
       data: [
         {
-          x: 1,
+          x: "speech 1",
           y: 27,
         },
         {
-          x: 2,
+          x: "speech 2",
           y: 11,
         },
         {
-          x: 3,
+          x: "speech 3",
           y: 15,
         },
       ],
@@ -72,15 +109,15 @@ const Summary = () => {
       color: "hsl(279, 70%, 50%)",
       data: [
         {
-          x: 1,
+          x: "speech 1",
           y: 420,
         },
         {
-          x: 2,
+          x: "speech 2",
           y: 234,
         },
         {
-          x: 3,
+          x: "speech 3",
           y: 302,
         },
       ],
@@ -92,15 +129,15 @@ const Summary = () => {
       color: "hsl(279, 70%, 50%)",
       data: [
         {
-          x: 1,
+          x: "speech 1",
           y: 27,
         },
         {
-          x: 2,
+          x: "speech 2",
           y: 20,
         },
         {
-          x: 3,
+          x: "speech 3",
           y: 15,
         },
       ],
@@ -112,15 +149,15 @@ const Summary = () => {
       color: "hsl(279, 70%, 50%)",
       data: [
         {
-          x: 1,
-          y: 420,
+          x: "speech 1",
+          y: 440,
         },
         {
-          x: 2,
+          x: "speech 2",
           y: 390,
         },
         {
-          x: 3,
+          x: "speech 3",
           y: 300,
         },
       ],
@@ -145,19 +182,19 @@ const Summary = () => {
           <s.SummaryWrapper>
             <s.SummaryText>평균 속도</s.SummaryText>
             <s.Graph>
-              <MyResponsiveLine data={speed} recommended={350} />
+              <MyResponsiveLine data={speed} recommended={[0, 350]} />
             </s.Graph>
           </s.SummaryWrapper>
           <s.SummaryWrapper>
             <s.SummaryText>평균 휴지</s.SummaryText>
             <s.Graph>
-              <MyResponsiveLine data={pause} recommended={25} />
+              <MyResponsiveLine data={pause} recommended={[0, 25]} />
             </s.Graph>
           </s.SummaryWrapper>
           <s.SummaryWrapper>
             <s.SummaryText>평균 음높이</s.SummaryText>
             <s.Graph>
-              <MyResponsiveLine data={hz} recommended={300} />
+              <MyResponsiveLine data={hz} recommended={[200, 400]} />
             </s.Graph>
           </s.SummaryWrapper>
         </s.SummaryContainer>
