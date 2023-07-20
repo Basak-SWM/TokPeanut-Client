@@ -10,18 +10,18 @@ export const Container = styled.div`
 `;
 
 // 페이지네이션
-export const Pagination = styled.div`
-  width: 200px;
-  height: 500px;
-  border: 1px solid grey;
-  border-radius: 5px;
-  margin: 40px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-around;
-  box-shadow: 2px 3px 5px 0px grey;
-`;
+// export const Pagination = styled.div`
+//   width: 200px;
+//   height: 500px;
+//   border: 1px solid grey;
+//   border-radius: 5px;
+//   margin: 40px;
+//   display: flex;
+//   flex-direction: column;
+//   align-items: center;
+//   justify-content: space-around;
+//   box-shadow: 2px 3px 5px 0px grey;
+// `;
 
 // 모든 요약 정보들의 컨테이너
 export const SummaryContainer = styled.div`
