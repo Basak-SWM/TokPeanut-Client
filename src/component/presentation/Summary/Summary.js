@@ -4,11 +4,11 @@ import * as s from "./SummaryStyle";
 import { ResponsiveLine } from "@nivo/line";
 
 const Summary = () => {
-  const MyResponsiveLine = ({ data, recommended }) => (
+  const MyResponsiveLine = ({ data, recommended, unit }) => (
     <ResponsiveLine
       data={data}
       margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
-      // xScale={{ type: "linear" }}
+      xScale={{ type: "point" }}
       xFormat=" >-"
       yScale={{
         type: "linear",
@@ -31,8 +31,9 @@ const Summary = () => {
       // }}
       axisLeft={null}
       enableGridY={false}
+      isInteractive={false}
       colors={{ scheme: "nivo" }}
-      pointSize={10}
+      pointSize={5}
       pointColor={{ theme: "background" }}
       pointBorderWidth={2}
       pointBorderColor={{ from: "serieColor" }}
@@ -57,7 +58,7 @@ const Summary = () => {
                 axis: "y",
                 value: recommended[1],
                 lineStyle: { stroke: "grey", strokeWidth: 0.5 },
-                legend: "권장 범위",
+                legend: `권장 범위 (${recommended[0]} ~ ${recommended[1]}${unit})`,
                 textStyle: {
                   fill: "grey",
                   fontSize: 10,
@@ -182,19 +183,23 @@ const Summary = () => {
           <s.SummaryWrapper>
             <s.SummaryText>평균 속도</s.SummaryText>
             <s.Graph>
-              <MyResponsiveLine data={speed} recommended={[0, 350]} />
+              <MyResponsiveLine
+                data={speed}
+                recommended={[0, 350]}
+                unit="음절/min"
+              />
             </s.Graph>
           </s.SummaryWrapper>
           <s.SummaryWrapper>
             <s.SummaryText>평균 휴지</s.SummaryText>
             <s.Graph>
-              <MyResponsiveLine data={pause} recommended={[0, 25]} />
+              <MyResponsiveLine data={pause} recommended={[0, 25]} unit="%" />
             </s.Graph>
           </s.SummaryWrapper>
           <s.SummaryWrapper>
             <s.SummaryText>평균 음높이</s.SummaryText>
             <s.Graph>
-              <MyResponsiveLine data={hz} recommended={[200, 400]} />
+              <MyResponsiveLine data={hz} recommended={[200, 400]} unit="Hz" />
             </s.Graph>
           </s.SummaryWrapper>
         </s.SummaryContainer>
