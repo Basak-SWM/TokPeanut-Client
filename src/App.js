@@ -7,7 +7,7 @@ import Topbar from "./component/layout/Topbar";
 import LandingPage from "./component/LandingPage";
 
 import PresentationList from "./component/presentation/PresentationList";
-import Summary from "./component/presentation/Summary";
+import Summary from "./component/presentation/Summary/Summary";
 import Speech from "./component/presentation/Speech/Speech";
 import Practice from "./component/presentation/Practice/Practice";
 import NewPresentation from "./component/presentation/NewPresentation";
