@@ -1,8 +1,19 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import * as s from "./PresentationListStyle";
+import axios from "axios";
 
 const PresentationList = () => {
+  axios
+    .get("/presentations", {
+      params: { "account-uuid": "63e11bdb-e4b6-4160-8fdf-b3cd94a0e4c9" },
+    })
+    .then((res) => {
+      console.log(res);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
   const navigate = useNavigate();
 
   const navigateToPresentation = (e) => {
