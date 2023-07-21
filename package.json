@@ -2,6 +2,7 @@
   "name": "client",
   "version": "0.1.0",
   "private": true,
+  "proxy": "http://api.tokpeanut.com:8080/api/v1",
   "dependencies": {
     "@nivo/core": "^0.83.0",
     "@nivo/line": "^0.83.0",
