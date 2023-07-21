@@ -10,7 +10,7 @@ import PresentationList from "./component/presentation/PresentationList/Presenta
 import Summary from "./component/presentation/Summary/Summary";
 import Speech from "./component/presentation/Speech/Speech";
 import Practice from "./component/presentation/Practice/Practice";
-import NewPresentation from "./component/presentation/NewPresentation";
+import NewPresentation from "./component/presentation/NewPresentation/NewPresentation";
 
 import CoachList from "./component/coach/CoachList";
 import Portfolio from "./component/coach/Portfolio";
