@@ -20,7 +20,7 @@ export const Title = styled.div`
 `;
 
 // 정보 입력 컨테이너
-export const InputContainer = styled.div`
+export const InputContainer = styled.form`
   display: flex;
   flex-direction: column;
   justify-content: space-around;
