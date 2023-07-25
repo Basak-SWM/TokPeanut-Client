@@ -37,7 +37,7 @@ export const PresentationTitle = styled.div`
   font-size: 36px;
   color: orange;
 `;
-export const PresentationDate = styled.div`
+export const PresentationOutline = styled.div`
   color: grey;
   font-size: 15px;
 `;
