@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as s from "./NewPresentationStyle";
+import axios from "axios";
 
 const NewPresentation = () => {
   const [title, setTitle] = useState(""); // 제목
@@ -18,12 +19,25 @@ const NewPresentation = () => {
     setCheckpoint(e.target.value);
   };
 
-  const createPresentation = () => {
-    // 새 프레젠테이션 생성 api로 정보 넘겨주기
-    console.log({
-      accountUid: "string",
-      presentation: { title: title, outline: outline, checkpoint: checkpoint },
-    });
+  const createPresentation = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await axios.post("/presentations", {
+        accountUuid: "63e11bdb-e4b6-4160-8fdf-b3cd94a0e4c9",
+        presentation: {
+          title: title,
+          outline: outline,
+          checkpoint: checkpoint,
+        },
+      });
+      console.log("new presentation response:", res);
+    } catch (err) {
+      console.log("new presentation error: ", err);
+    }
+    // console.log({
+    //   accountUuid: "63e11bdb-e4b6-4160-8fdf-b3cd94a0e4c9",
+    //   presentation: { title: title, outline: outline, checkpoint: checkpoint },
+    // });
 
     navigate("/presentation/new/practice");
   };
@@ -31,12 +45,13 @@ const NewPresentation = () => {
     <>
       <s.Container>
         <s.Title> 프레젠테이션 생성 </s.Title>
-        <s.InputContainer>
+        <s.InputContainer onSubmit={createPresentation}>
           <s.InputBox
             height="24px"
             onChange={onChangeTitle}
             placeholder={"제목을 입력하세요."}
             maxLength={20}
+            required
           />
           <s.InputBox
             height="200px"
@@ -54,8 +69,9 @@ const NewPresentation = () => {
             }
             maxLength={8000}
           />
+
+          <s.Button type="submit">스피치 시작하기</s.Button>
         </s.InputContainer>
-        <s.Button onClick={createPresentation}>스피치 시작하기</s.Button>
       </s.Container>
     </>
   );
