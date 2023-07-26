@@ -98,6 +98,7 @@ const Speech = () => {
   const [slashSymbol, setSlashSymbol] = useState(text.map(() => false));
   const [highlighted, setHighlighted] = useState(text.map(() => ""));
   const [edited, setEdited] = useState(text.map(() => null));
+  // const [edited, setEdited] = useState(text.map(() => false));
 
   const [waveFormLoaded, setWaveFormLoaded] = useState(false);
   const [waveSurferInstance, setWaveSurferInstance] = useState(null);
@@ -123,8 +124,8 @@ const Speech = () => {
         break;
       case "3":
         edited[selectedWordIdx] = text[selectedWordIdx]; // 원래 단어로 초기화
-        // console.log("orginal: ", text[selectedWordIdx], e.target.innerText);
-        setEdited([...edited]);
+        // // console.log("orginal: ", text[selectedWordIdx], e.target.innerText);
+        // setEdited([...edited]);
         break;
       case "4":
         enterSymbol[selectedWordIdx] = true;
@@ -154,6 +155,7 @@ const Speech = () => {
         highlighted[selectedWordIdx] = "";
         setHighlighted([...highlighted]);
         edited[selectedWordIdx] = null;
+        // edited[selectedWordIdx] = false;
         setEdited([...edited]);
         break;
       // 재생 바 조절
@@ -242,6 +244,30 @@ const Speech = () => {
     };
   }, []);
 
+  const handleBlur = useCallback(
+    (e, i) => {
+      console.log("수정 후: ", e.target.innerText, "수정 전: ", text[i]);
+      let updated = [...edited];
+      // 수정 여부를 edited에 저장
+      // 다 지워졌을 경우 빈칸으로 처리
+      if (e.target.innerText === text[i]) {
+        updated[i] = null;
+        // edited[i] = false;
+      } else if (e.target.innerText.trim() === "") {
+        updated[i] = "deleted";
+        e.target.innerText = "-";
+        // edited[i] = true;
+        // e.target.innerText = "\u00A0";
+        // e.target.innerText = "-";
+      } else {
+        updated[i] = e.target.innerText;
+        // edited[i] = true;
+      }
+      setEdited(updated);
+    },
+    [edited, text]
+  );
+
   return (
     <>
       <s.Container cursor={cursor}>
@@ -281,19 +307,24 @@ const Speech = () => {
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault(); // 줄바꿈 방지
+                      // handleBlur(e, i);
                     }
                   }}
                   onBlur={(e) => {
-                    console.log("수정 후: ", e.target.innerText);
-                    edited[i] = e.target.innerText; // 수정 후 단어를 edited에 저장
-                    setEdited([...edited]);
+                    handleBlur(e, i);
+                  }}
+                  onFocus={(e) => {
+                    // 삭제된 단어 복구
+                    if (edited[i] === "deleted") {
+                      e.target.innerText = text[i];
+                    }
                   }}
                   key={i}
                   id={i}
                   contentEditable={cursor === edit} // 현재 커서가 수정펜일 때만 수정 모드
                   edited={edited[i]} // 수정이 되었는가?
                   spellCheck={false}
-                  suppressContentEditableWarning={true} // warning 무시..
+                  suppressContentEditableWarning={true} // warning 무시
                 >
                   {enterSymbol[i] ? (
                     <>
@@ -305,12 +336,14 @@ const Speech = () => {
                   {mouseSymbol[i] ? <s.Tool src={mouse} /> : null}
                   {slashSymbol[i] ? <s.Tool src={slash} /> : null}
                   {edited[i] ? (
-                    <>
+                    <span>
                       {edited[i]}
-                      <s.OriginalText>수정 전: {word}</s.OriginalText>
-                    </>
+                      <s.OriginalText contentEditable={false}>
+                        수정 전: {word}
+                      </s.OriginalText>
+                    </span>
                   ) : (
-                    <>{word}</>
+                    <span>{word}</span>
                   )}
                 </s.Text>
               ))
