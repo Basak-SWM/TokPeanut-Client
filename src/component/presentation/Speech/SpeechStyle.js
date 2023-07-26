@@ -77,6 +77,7 @@ to {
 `;
 // 스크립트의 단어
 export const Text = styled.span`
+  min-width: 50px;
   position: relative;
   background-clip: ${(props) => (props.played === "playing" ? "text" : "")};
   -webkit-background-clip: ${(props) =>
@@ -109,6 +110,9 @@ export const Text = styled.span`
   &:hover {
     text-decoration: orange dashed underline;
   }
+  // &:empty::before {
+  //   content: ${(props) => props.placeholder}};
+  // }
 `;
 // 스크립트의 기호
 export const Tool = styled.span`
