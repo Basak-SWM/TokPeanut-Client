@@ -122,9 +122,9 @@ const Speech = () => {
         setHighlighted([...highlighted]);
         break;
       case "3":
-        edited[selectedWordIdx] = text[selectedWordIdx]; // 원래 단어로 초기화
-        // console.log("orginal: ", text[selectedWordIdx], e.target.innerText);
-        setEdited([...edited]);
+        // edited[selectedWordIdx] = text[selectedWordIdx]; // 원래 단어로 초기화
+        // // console.log("orginal: ", text[selectedWordIdx], e.target.innerText);
+        // setEdited([...edited]);
         break;
       case "4":
         enterSymbol[selectedWordIdx] = true;
@@ -242,6 +242,23 @@ const Speech = () => {
     };
   }, []);
 
+  const handleBlur = (e, i) => {
+    // console.log("수정 후: ", e.target.innerText);
+    // 수정 후 단어를 edited에 저장
+    // 다 지워졌을 경우 빈칸으로 처리
+    if (e.target.innerText.trim() === text[i]) {
+      return;
+    }
+    if (e.target.innerText.trim() === "") {
+      console.log("빈칸");
+      edited[i] = "\u00A0\u00A0\u00A0\u00A0";
+    } else {
+      edited[i] = e.target.innerText;
+    }
+
+    setEdited([...edited]);
+  };
+
   return (
     <>
       <s.Container cursor={cursor}>
@@ -283,11 +300,7 @@ const Speech = () => {
                       e.preventDefault(); // 줄바꿈 방지
                     }
                   }}
-                  onBlur={(e) => {
-                    console.log("수정 후: ", e.target.innerText);
-                    edited[i] = e.target.innerText; // 수정 후 단어를 edited에 저장
-                    setEdited([...edited]);
-                  }}
+                  onBlur={(e) => handleBlur(e, i)}
                   key={i}
                   id={i}
                   contentEditable={cursor === edit} // 현재 커서가 수정펜일 때만 수정 모드
@@ -307,7 +320,9 @@ const Speech = () => {
                   {edited[i] ? (
                     <>
                       {edited[i]}
-                      <s.OriginalText>수정 전: {word}</s.OriginalText>
+                      <s.OriginalText contentEditable={false}>
+                        수정 전: {word}
+                      </s.OriginalText>
                     </>
                   ) : (
                     <>{word}</>
