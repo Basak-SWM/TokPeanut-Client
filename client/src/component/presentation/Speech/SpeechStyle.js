@@ -110,9 +110,9 @@ export const Text = styled.span`
   &:hover {
     text-decoration: orange dashed underline;
   }
-  // &:empty::before {
-  //   content: ${(props) => props.placeholder}};
-  // }
+`;
+export const EditedText = styled.span`
+  // text-decoration: underline;
 `;
 // 스크립트의 기호
 export const Tool = styled.span`
@@ -155,20 +155,6 @@ export const OriginalText = styled.span`
     border-color: grey transparent transparent transparent;
   }
 `;
-
-// 페이지네이션
-// export const Pagination = styled.div`
-//   width: 100px;
-//   height: 550px;
-//   border: 1px solid grey;
-//   border-radius: 5px;
-//   margin: 20px;
-//   display: flex;
-//   flex-direction: column;
-//   align-items: center;
-//   justify-content: space-around;
-//   box-shadow: 2px 3px 5px 0px grey;
-// `;
 
 // 비활성화 박스 (툴바, 페이지네이션에 적용)
 export const DisableBox = styled.div`
