@@ -46,7 +46,7 @@ const useCounter = (initialValue, ms) => {
 
 const Speech = () => {
   const [isDone, setIsDone] = useState(false); // 서버가 보내주는 결과에 따라 분석 중인지 아닌지 파악
-  console.log("isDone:", isDone);
+  // console.log("isDone:", isDone);
   // tool bar
   const [cursor, setCursor] = useState("");
   const [selectedSymbol, setSelectedSymbol] = useState(NaN); // 커서 관리를 위한 현재 선택된 기호 인덱스
@@ -98,6 +98,7 @@ const Speech = () => {
   const [slashSymbol, setSlashSymbol] = useState(text.map(() => false));
   const [highlighted, setHighlighted] = useState(text.map(() => ""));
   const [edited, setEdited] = useState(text.map(() => null));
+  const wordRef = useRef([]);
   // const [edited, setEdited] = useState(text.map(() => false));
 
   const [waveFormLoaded, setWaveFormLoaded] = useState(false);
@@ -107,6 +108,7 @@ const Speech = () => {
 
   const clickWord = (e) => {
     const selectedWordIdx = e.currentTarget.id; // 클릭된 단어 인덱스
+    wordRef.current[selectedWordIdx].focus();
 
     switch (selectedSymbol) {
       // 기호 표시
@@ -126,8 +128,12 @@ const Speech = () => {
         edited[selectedWordIdx] = edited[selectedWordIdx]
           ? edited[selectedWordIdx]
           : text[selectedWordIdx]; // 원래 단어로 초기화
-        console.log(e.target);
+        // console.log(e.target, selected.current);
+        // selected.current.focus();
         setEdited([...edited]);
+
+        // console.log(document.querySelectorAll(".edited"));
+
         break;
       case "4":
         enterSymbol[selectedWordIdx] = true;
@@ -262,6 +268,7 @@ const Speech = () => {
         <s.Tools>
           {symbols.map((c, i) => (
             <s.ToolKit
+              className="word"
               key={i}
               id={i}
               src={c}
@@ -294,6 +301,7 @@ const Speech = () => {
                   onClick={clickWord}
                   key={i}
                   id={i}
+                  edited={edited[i] ? true : false}
                 >
                   {enterSymbol[i] ? (
                     <>
@@ -304,37 +312,33 @@ const Speech = () => {
                   {pauseSymbol[i] ? <s.Tool src={pause} /> : null}
                   {mouseSymbol[i] ? <s.Tool src={mouse} /> : null}
                   {slashSymbol[i] ? <s.Tool src={slash} /> : null}
-                  {edited[i] ? (
-                    <span>
-                      <s.EditedText
-                        autoFocus
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault(); // 줄바꿈 방지
-                            // handleBlur(e, i);
-                          }
-                        }}
-                        onBlur={(e) => {
-                          handleBlur(e, i);
-                        }}
-                        onFocus={(e) => {
-                          console.log("focus");
-                        }}
-                        contentEditable={cursor === edit} // 현재 커서가 수정펜일 때만 수정 모드
-                        edited={edited[i]} // 수정이 되었는가?
-                        spellCheck={false}
-                        suppressContentEditableWarning={true} // warning 무시
-                      >
-                        {edited[i]}
-                      </s.EditedText>
-
+                  <span>
+                    <span
+                      ref={(el) => (wordRef.current[i] = el)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault(); // 줄바꿈 방지
+                        }
+                      }}
+                      onBlur={(e) => {
+                        handleBlur(e, i);
+                      }}
+                      onFocus={(e) => {
+                        console.log("focused ", e.target);
+                      }}
+                      contentEditable={cursor === edit} // 현재 커서가 수정펜일 때만 수정 모드
+                      edited={edited[i]}
+                      spellCheck={false}
+                      suppressContentEditableWarning={true} // warning 무시
+                    >
+                      {edited[i] ? edited[i] : word}
+                    </span>
+                    {edited[i] ? (
                       <s.OriginalText contentEditable={false}>
                         수정 전: {word}
                       </s.OriginalText>
-                    </span>
-                  ) : (
-                    <span>{word}</span>
-                  )}
+                    ) : null}
+                  </span>
                 </s.Text>
               ))
             ) : (
