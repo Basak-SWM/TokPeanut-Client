@@ -42,7 +42,7 @@ const NewPresentation = () => {
     e.preventDefault();
     try {
       const res = await axios.post("/presentations", {
-        accountUuid: "63e11bdb-e4b6-4160-8fdf-b3cd94a0e4c9",
+        accountUuid: "b646969a-c87d-482f-82c5-6ec89c917412",
         presentation: {
           title: title,
           outline: outline,
