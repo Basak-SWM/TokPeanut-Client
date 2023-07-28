@@ -2,7 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 import GlobalStyle from "./style/GlobalStyle";
-import Topbar from "./component/layout/Topbar";
+import Topbar from "./component/layout/Nav";
 
 import LandingPage from "./component/LandingPage";
 
@@ -29,7 +29,7 @@ function App() {
     <>
       <GlobalStyle />
       <Router>
-        <Topbar />
+        {/* <Topbar /> */}
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/presentation" element={<PresentationList />} />
