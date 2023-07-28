@@ -25,7 +25,7 @@ const PresentationList = () => {
     },
   });
   // 임시 계정
-  const uuid = "63e11bdb-e4b6-4160-8fdf-b3cd94a0e4c9";
+  const uuid = "b646969a-c87d-482f-82c5-6ec89c917412";
   const [presentationList, setPresentationList] = useState([]);
   const getPresentationList = async () => {
     let res = null;

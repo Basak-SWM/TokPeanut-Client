@@ -16,6 +16,25 @@ import mouse from "../../../image/icons/mouse.png";
 import slash from "../../../image/icons/slash.png";
 import erase from "../../../image/icons/erase.png";
 
+import styled from "@emotion/styled";
+import { createGlobalStyle } from "styled-components";
+import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
+import { Box, IconButton, Button } from "@mui/material";
+import ToolBarPC from "../../script/ToolbarPC";
+import PageBtn from "../../script/PageBtn";
+import ScriptBar from "../../script/ScriptBar";
+import Tooltip from "@mui/material/Tooltip";
+import ToolBarMo from "../../script/ToolbarMo";
+
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import FilledBtn from "../../button/FilledBtn";
+
+import Nav from "../../layout/Nav";
+import theme from "../../../style/theme";
+
+import AiFeedbackModal from "../../modal/AiFeedbackModal";
+import StatisticsModal from "../../modal/StatisticsModal";
+
 // custom hook (timer)
 const useCounter = (initialValue, ms) => {
   const [count, setCount] = useState(initialValue);
@@ -45,35 +64,59 @@ const useCounter = (initialValue, ms) => {
 };
 
 const Speech = () => {
+  const theme = createTheme({
+    typography: {
+      fontFamily: "Pretendard",
+    },
+    palette: {
+      primary: {
+        main: "#FF7134",
+      },
+    },
+  });
   const [isDone, setIsDone] = useState(false); // 서버가 보내주는 결과에 따라 분석 중인지 아닌지 파악
-  // console.log("isDone:", isDone);
+
   // tool bar
   const [cursor, setCursor] = useState("");
   const [selectedSymbol, setSelectedSymbol] = useState(NaN); // 커서 관리를 위한 현재 선택된 기호 인덱스
   // 사용자 기호
+  // const symbols = [
+  //   highlight,
+  //   faster,
+  //   slower,
+  //   edit,
+  //   enter,
+  //   pause,
+  //   mouse,
+  //   slash,
+  //   erase,
+  // ];
+
   const symbols = [
-    highlight,
-    faster,
-    slower,
-    edit,
-    enter,
-    pause,
-    mouse,
-    slash,
-    erase,
+    { name: "강조", src: "/img/script/toolbar/color/pencil1.svg" },
+    { name: "빠르게", src: "/img/script/toolbar/color/pencil2.svg" },
+    { name: "느리게", src: "/img/script/toolbar/color/pencil3.svg" },
+    { name: "수정", src: "/img/script/toolbar/pencil.svg" },
+    { name: "엔터", src: "/img/script/toolbar/down-left.svg" },
+    { name: "쉬기", src: "/img/script/toolbar/pause.svg" },
+    { name: "클릭", src: "/img/script/toolbar/mouse.svg" },
+    { name: "끊어읽기", src: "/img/script/toolbar/slash.svg" },
+    { name: "지우개", src: erase },
   ];
 
   // 기호 클릭시 selectedSymbol을 해당 기호 이미지로 변경 -> 커서 변경
   // 한 번 더 클릭시 기본 커서로 변경
-  const clickTool = (e) => {
-    const selectedSymbolIdx = e.target.id;
+  const clickTool = (i) => {
+    // const selectedSymbolIdx = e.target.id;
+    const selectedSymbolIdx = i;
+
     if (selectedSymbol) {
       setSelectedSymbol(NaN);
     } else {
       setSelectedSymbol(selectedSymbolIdx);
     }
     // 커서 변경
-    selectedSymbol ? setCursor("") : setCursor(symbols[selectedSymbolIdx]);
+    selectedSymbol ? setCursor("") : setCursor(symbols[selectedSymbolIdx].src);
   };
 
   // stt 결과 형식에 맞게 데이터 파싱
@@ -112,19 +155,19 @@ const Speech = () => {
 
     switch (selectedSymbol) {
       // 기호 표시
-      case "0":
+      case 0:
         highlighted[selectedWordIdx] = "yellow";
         setHighlighted([...highlighted]);
         break;
-      case "1":
+      case 1:
         highlighted[selectedWordIdx] = "pink";
         setHighlighted([...highlighted]);
         break;
-      case "2":
+      case 2:
         highlighted[selectedWordIdx] = "yellowgreen";
         setHighlighted([...highlighted]);
         break;
-      case "3":
+      case 3:
         edited[selectedWordIdx] = edited[selectedWordIdx]
           ? edited[selectedWordIdx]
           : text[selectedWordIdx]; // 원래 단어로 초기화
@@ -135,23 +178,23 @@ const Speech = () => {
         // console.log(document.querySelectorAll(".edited"));
 
         break;
-      case "4":
+      case 4:
         enterSymbol[selectedWordIdx] = true;
         setEnterSymbol([...enterSymbol]);
         break;
-      case "5":
+      case 5:
         pauseSymbol[selectedWordIdx] = true;
         setPauseSymbol([...pauseSymbol]);
         break;
-      case "6":
+      case 6:
         mouseSymbol[selectedWordIdx] = true;
         setMouseSymbol([...mouseSymbol]);
         break;
-      case "7":
+      case 7:
         slashSymbol[selectedWordIdx] = true;
         setSlashSymbol([...slashSymbol]);
         break;
-      case "8":
+      case 8:
         enterSymbol[selectedWordIdx] = false;
         setEnterSymbol([...enterSymbol]);
         pauseSymbol[selectedWordIdx] = false;
@@ -264,112 +307,557 @@ const Speech = () => {
 
   return (
     <>
-      <s.Container cursor={cursor}>
-        <s.Tools>
-          {symbols.map((c, i) => (
-            <s.ToolKit
-              className="word"
-              key={i}
-              id={i}
-              src={c}
-              cursor={cursor}
-              onClick={clickTool}
-            />
-          ))}
-          {isDone ? null : <s.DisableBox />}
-        </s.Tools>
-        <s.Script>
-          <div>
-            {waveFormLoaded ? null : <s.LoadingBox>loading...</s.LoadingBox>}
-            <s.WaveWrapper ref={wavesurferRef} />
-          </div>
-
-          <s.ScriptContainer>
-            {isDone ? (
-              text.map((word, i) => (
-                <s.Text
-                  played={
-                    started[i] < count
-                      ? count < ended[i]
-                        ? "playing"
-                        : "played"
-                      : "not played"
-                  }
-                  duration={duration[i]}
-                  color={highlighted[i]}
-                  continued={highlighted[i] === highlighted[i + 1]} // 형광펜이 연달아 적용 되는지
-                  onClick={clickWord}
-                  key={i}
-                  id={i}
-                  edited={edited[i] ? true : false}
-                >
-                  {enterSymbol[i] ? (
-                    <>
-                      <s.Tool src={enter} />
-                      <br />
-                    </>
-                  ) : null}
-                  {pauseSymbol[i] ? <s.Tool src={pause} /> : null}
-                  {mouseSymbol[i] ? <s.Tool src={mouse} /> : null}
-                  {slashSymbol[i] ? <s.Tool src={slash} /> : null}
-                  <span>
-                    <span
-                      ref={(el) => (wordRef.current[i] = el)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault(); // 줄바꿈 방지
-                        }
-                      }}
-                      onBlur={(e) => {
-                        handleBlur(e, i);
-                      }}
-                      onFocus={(e) => {
-                        console.log("focused ", e.target);
-                      }}
-                      contentEditable={cursor === edit} // 현재 커서가 수정펜일 때만 수정 모드
-                      edited={edited[i]}
-                      spellCheck={false}
-                      suppressContentEditableWarning={true} // warning 무시
-                    >
-                      {edited[i] ? edited[i] : word}
-                    </span>
-                    {edited[i] ? (
-                      <s.OriginalText contentEditable={false}>
-                        수정 전: {word}
-                      </s.OriginalText>
-                    ) : null}
-                  </span>
-                </s.Text>
-              ))
+      <ThemeProvider theme={theme}>
+        <GlobalStyle />
+        <Nav />
+        <Container cursor={cursor}>
+          {
+            // 툴바
+            isDone ? (
+              <Activate>
+                <ToolBarWrap cursor={cursor}>
+                  <ul className="activate">
+                    {symbols.map((c, i) => (
+                      <li>
+                        <Button
+                          className="color"
+                          id="color1"
+                          onClick={() => {
+                            clickTool(i);
+                          }}
+                        >
+                          <img src={c.src} />
+                          <p>{c.name}</p>
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                </ToolBarWrap>
+              </Activate>
             ) : (
-              <>
-                분석중...
-                <button
-                  onClick={() => {
-                    setIsDone(true);
-                  }}
-                >
-                  분석 완료하기
-                </button>
-              </>
-            )}
-          </s.ScriptContainer>
-          <div>
-            <button ref={playButton} disabled={!isDone}>
-              play
-            </button>
-            <button onClick={onReset} disabled={!isDone}>
-              reset
-            </button>
-          </div>
-          {isDone ? <Link to="/presentation/practice">연습 시작</Link> : null}
+              <Disabled>
+                <ToolBarWrap>
+                  <ul className="disabled">
+                    {symbols.map((c, i) => (
+                      <li>
+                        <Button disabled>
+                          <img src={c.src} />
+                          <p>{c.name}</p>
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                </ToolBarWrap>
+              </Disabled>
+            )
+          }
 
-          <div>count: {count}</div>
-        </s.Script>
-        <Pagination />
-      </s.Container>
+          {/* <s.Tools>
+            {symbols.map((c, i) => (
+              <s.ToolKit
+                className="word"
+                key={i}
+                id={i}
+                src={c}
+                cursor={cursor}
+                onClick={clickTool}
+              />
+            ))}
+            {isDone ? null : <s.DisableBox />}
+          </s.Tools> */}
+
+          <Script>
+            {/* <s.ScriptContainer> */}
+            <Screen>
+              <TextArea>
+                <p>
+                  {isDone ? (
+                    text.map((word, i) => (
+                      <s.Text
+                        played={
+                          started[i] < count
+                            ? count < ended[i]
+                              ? "playing"
+                              : "played"
+                            : "not played"
+                        }
+                        duration={duration[i]}
+                        color={highlighted[i]}
+                        continued={highlighted[i] === highlighted[i + 1]} // 형광펜이 연달아 적용 되는지
+                        onClick={clickWord}
+                        key={i}
+                        id={i}
+                        edited={edited[i] ? true : false}
+                      >
+                        {enterSymbol[i] ? (
+                          <>
+                            <s.Tool src={enter} />
+                            <br />
+                          </>
+                        ) : null}
+                        {pauseSymbol[i] ? <s.Tool src={pause} /> : null}
+                        {mouseSymbol[i] ? <s.Tool src={mouse} /> : null}
+                        {slashSymbol[i] ? <s.Tool src={slash} /> : null}
+                        <span>
+                          <span
+                            ref={(el) => (wordRef.current[i] = el)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault(); // 줄바꿈 방지
+                              }
+                            }}
+                            onBlur={(e) => {
+                              handleBlur(e, i);
+                            }}
+                            onFocus={(e) => {
+                              console.log("focused ", e.target);
+                            }}
+                            // contentEditable={cursor === edit} // 현재 커서가 수정펜일 때만 수정 모드
+                            contentEditable={selectedSymbol === 3} // 현재 커서가 수정펜일 때만 수정 모드
+                            edited={edited[i]}
+                            spellCheck={false}
+                            suppressContentEditableWarning={true} // warning 무시
+                          >
+                            {edited[i] ? edited[i] : word}
+                          </span>
+                          {edited[i] ? (
+                            <s.OriginalText contentEditable={false}>
+                              수정 전: {word}
+                            </s.OriginalText>
+                          ) : null}
+                        </span>
+                      </s.Text>
+                    ))
+                  ) : (
+                    <>
+                      분석중...
+                      <button
+                        onClick={() => {
+                          setIsDone(true);
+                        }}
+                      >
+                        분석 완료하기
+                      </button>
+                    </>
+                  )}
+                </p>
+              </TextArea>
+              {/* </s.ScriptContainer> */}
+            </Screen>
+
+            <div className="sound-wave">
+              {waveFormLoaded ? null : <s.LoadingBox>loading...</s.LoadingBox>}
+              <s.WaveWrapper ref={wavesurferRef} />
+            </div>
+
+            <PC>
+              <ScriptBarWrap>
+                {isDone ? (
+                  <ul className="btn-wrap activate">
+                    <li>
+                      <FilledBtn text={"코치 연결하기"} />
+                      <Link to="/presentation/practice">
+                        <FilledBtn text={"연습 시작하기"} />
+                      </Link>
+                    </li>
+                    <li>
+                      <PlayBtn variant="contained" ref={playButton}>
+                        <PlayArrowIcon />
+                      </PlayBtn>
+                      {/* <FilledBtn text={"Reset"} onClick={onReset} /> */}
+                      <PlayBtn variant="contained" onClick={onReset}>
+                        R
+                      </PlayBtn>
+                    </li>
+                    <li>
+                      <FilledBtn text={"X 1"} />
+                      <StatisticsModal />
+                      <AiFeedbackModal />
+                    </li>
+                  </ul>
+                ) : (
+                  <ul className="btn-wrap">
+                    <li>
+                      <FilledBtn text={"코치 연결하기"} state={"disabled"} />
+                      <FilledBtn text={"연습 시작하기"} state={"disabled"} />
+                    </li>
+                    <li>
+                      <PlayBtn variant="contained" disabled>
+                        <PlayArrowIcon />
+                      </PlayBtn>
+                      <PlayBtn variant="contained" disabled>
+                        R
+                      </PlayBtn>
+                    </li>
+                    <li>
+                      <FilledBtn text={"X 1"} state={"disabled"} />
+                      <FilledBtn text={"통계보기"} state={"disabled"} />
+                      <FilledBtn text={"AI 피드백"} state={"disabled"} />
+                    </li>
+                  </ul>
+                )}
+              </ScriptBarWrap>
+            </PC>
+
+            {/* <div>
+              <button ref={playButton} disabled={!isDone}>
+                play
+              </button>
+              <button onClick={onReset} disabled={!isDone}>
+                reset
+              </button>
+            </div>
+            {isDone ? <Link to="/presentation/practice">연습 시작</Link> : null}
+            <div>count: {count}</div> */}
+          </Script>
+
+          <Pagination />
+        </Container>
+      </ThemeProvider>
     </>
   );
 };
+
+const GlobalStyle = createGlobalStyle`
+    body{
+        background-color: #FAFAFA;
+    }
+`;
+const Container = styled(Box)`
+  cursor: url(${(props) => props.cursor}) 50 50, auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+  height: 100vh;
+  @media ${() => theme.device.mobile} {
+    flex-direction: column-reverse;
+    width: 90%;
+    margin: 0 auto;
+    padding-bottom: 3rem;
+    height: auto;
+  }
+`;
+
+const Script = styled(Box)`
+  width: 100%;
+  height: 80vh;
+  margin: 13rem 10rem 0 5rem;
+  background-color: #fff;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  @media ${() => theme.device.mobile} {
+    margin: 0;
+    height: auto;
+  }
+`;
+
+const Screen = styled(Box)`
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  position: relative;
+
+  .sound-wave {
+    margin-bottom: 3rem;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    img {
+      width: 40%;
+    }
+  }
+  @media ${() => theme.device.desktop2} {
+  }
+  @media ${() => theme.device.mobile} {
+    .sound-wave {
+      img {
+        width: 80%;
+      }
+    }
+  }
+`;
+
+const TextArea = styled(Box)`
+  padding: 3rem;
+  p {
+    /* height: fit-content; */
+    max-height: 420px;
+    overflow-y: scroll;
+    padding: 3rem;
+    background-color: #f5f5f5;
+    font-size: 2rem;
+    line-height: 200%;
+    color: #3b3b3b;
+    .pencil3 {
+      background-color: #cbf5ca;
+    }
+    .pencil2 {
+      background-color: #ffdefc;
+    }
+    .pencil1 {
+      background-color: #fff2c2;
+    }
+  }
+  @media ${() => theme.device.mobile} {
+    padding: 2rem;
+    p {
+      height: auto;
+      font-size: 1.8rem;
+    }
+  }
+`;
+
+const Disabled = styled(Box)`
+  height: 100vh;
+  background-color: #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: sticky;
+  top: 0;
+  left: 0;
+  .disabled {
+    background-color: #e0e0e0;
+  }
+  @media ${() => theme.device.mobile} {
+    display: none;
+  }
+`;
+
+const Activate = styled(Box)`
+  height: 100vh;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: sticky;
+  top: 0;
+  left: 0;
+  @media ${() => theme.device.mobile} {
+    display: none;
+  }
+`;
+
+// tool bar
+const ToolBarWrap = styled(Box)`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  & > ul {
+    margin-top: 5rem;
+    background-color: #fff;
+    .select {
+      background-color: #ffe9d9;
+      #color1 {
+        p {
+          color: #ffe609;
+        }
+      }
+      #color2 {
+        p {
+          color: #ff5eef;
+        }
+      }
+      #color3 {
+        p {
+          color: #0ff80a;
+        }
+      }
+      p {
+        font-weight: bold;
+        color: #838383;
+      }
+    }
+    li:last-of-type {
+      border-bottom: none;
+    }
+    li {
+      width: 10rem;
+      height: 10rem;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      p {
+        font-size: 1.4rem;
+        color: #aeaeae;
+        line-height: 150%;
+      }
+      button {
+        cursor: url(${(props) => props.cursor}) 50 50, auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        img {
+          width: 2rem;
+          height: 2rem;
+          margin-bottom: 1rem;
+        }
+      }
+    }
+  }
+  .activate {
+    li {
+      button:not(.color) {
+        img {
+          filter: invert(53%) sepia(0%) saturate(0%) hue-rotate(352deg)
+            brightness(98%) contrast(89%);
+        }
+      }
+    }
+  }
+
+  @media ${() => theme.device.desktop} {
+    & > ul {
+      li {
+        width: 8rem;
+        height: 8rem;
+      }
+    }
+  }
+  @media ${() => theme.device.desktop2} {
+    & > ul {
+      li {
+        width: 7rem;
+        height: 7rem;
+      }
+    }
+  }
+`;
+
+// 하단 바
+const PC = styled(Box)`
+  width: 100%;
+  @media ${() => theme.device.mobile} {
+    display: none;
+  }
+`;
+const Mobile = styled(Box)`
+  display: none;
+  width: 100%;
+  @media ${() => theme.device.mobile} {
+    display: block;
+  }
+`;
+
+const ScriptBarWrap = styled(Box)`
+  background-color: #ff7134;
+  width: 100%;
+  height: 10rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+  .activate {
+    button {
+      svg {
+        color: #ff7134 !important;
+      }
+    }
+  }
+  .btn-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
+    width: 65%;
+    li {
+      display: flex;
+      align-items: center;
+    }
+    button {
+      font-size: 1.6rem;
+      padding: 1rem 3rem;
+      margin-right: 2rem;
+    }
+    .Mui-disabled {
+      background-color: #e0e0e0;
+    }
+  }
+  @media ${() => theme.device.desktop} {
+    .btn-wrap {
+      width: 100%;
+    }
+  }
+  @media ${() => theme.device.desktop2} {
+    .btn-wrap {
+      button {
+        font-size: 1.4rem;
+        padding: 0.5rem 2rem;
+      }
+    }
+  }
+  @media ${() => theme.device.mobile} {
+    height: 20rem;
+    padding: 2rem 0;
+    .btn-wrap {
+      li {
+        margin: 0;
+      }
+      button {
+        margin-bottom: 1rem;
+      }
+      button:last-of-type {
+        margin-bottom: 1rem;
+      }
+      li:last-of-type {
+        width: 100%;
+        margin-top: 1rem;
+        padding: 0 5%;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+  }
+`;
+
+const PlayBtn = styled(IconButton)`
+  width: 5rem;
+  height: 5rem;
+  padding: 0 !important;
+  background-color: #fff;
+  &:hover {
+    background-color: #fff;
+  }
+  svg {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+  @media ${() => theme.device.desktop2} {
+    width: 3.5rem;
+    height: 3.5rem;
+    svg {
+      width: 2rem;
+      height: 2rem;
+    }
+  }
+  @media ${() => theme.device.mobile} {
+    width: 5rem;
+    height: 5rem;
+    margin-bottom: 0 1rem 0 0 !important;
+    svg {
+      width: 3rem;
+      height: 3rem;
+    }
+  }
+`;
 
 export default Speech;

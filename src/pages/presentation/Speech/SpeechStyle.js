@@ -50,11 +50,19 @@ export const Script = styled.div`
 export const WaveWrapper = styled.div`
   width: 748px;
   height: 64px;
-  border: 1px solid grey;
+  /* width: 100%;
+  height: 100%; */
+  margin-bottom: 3rem;
+  /* border: 1px solid grey; */
 `;
 // 파형 로딩 박스
 export const LoadingBox = styled.div`
   position: absolute;
+  font-size: large;
+  background-color: antiquewhite;
+  /* display: flex;
+  justify-content: center;
+  align-items: center; */
 `;
 // 스크립트
 export const ScriptContainer = styled.div`
