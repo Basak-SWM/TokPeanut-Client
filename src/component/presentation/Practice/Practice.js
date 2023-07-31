@@ -109,6 +109,7 @@ const Practice = ({ isNew }) => {
   }, []);
 
   const [recording, setRecording] = useState(false);
+  // const [canPlay, setCanPlay] = useState(false);
   const mediaRecorderRef = useRef(null);
   const segmentRef = useRef([]); // 모든 blob 저장
   let wavList = []; // 단위 시간당 생성된 wav 파일
@@ -163,7 +164,7 @@ const Practice = ({ isNew }) => {
     };
 
     // 3초마다 자르도록
-    mediaRecorder.start(10000);
+    mediaRecorder.start(3000);
 
     // STT 시작
     SpeechRecognition.startListening({
@@ -186,7 +187,8 @@ const Practice = ({ isNew }) => {
       setRecording(false);
       mediaRecorder.stop();
     }
-    play(); // 지금까지의 세그먼트들을 하나로 합쳐서 재생 가능하게 만들기
+    console.log("hhhh");
+    // combineToAudio(); // 지금까지의 세그먼트들을 하나로 합쳐서 재생 가능하게 만들기
 
     // STT 중단
     SpeechRecognition.stopListening();
@@ -223,7 +225,7 @@ const Practice = ({ isNew }) => {
     return combinedBlob;
   };
 
-  // 전체 녹음 파일 재생 (재생 가능하도록 합치기)
+  // 전체 녹음 파일 재생 가능하도록 합치고 재생
   const play = () => {
     const segments = segmentRef.current;
     const audioElement = document.querySelector("#audio");
@@ -231,7 +233,18 @@ const Practice = ({ isNew }) => {
     const combinedBlob = new Blob(segments, { type: "audio/webm" }); // 지금까지의 음성 데이터
     let audioUrl = URL.createObjectURL(combinedBlob);
     audioElement.src = audioUrl;
+    if (audioUrl) {
+      // console.log(audioUrl, audioElement);
+      // setCanPlay(true);
+      audioElement.play();
+    }
   };
+
+  // const play = () => {
+  //   const audioElement = document.querySelector("#audio");
+  //   console.log(audioElement);
+  //   audioElement.play();
+  // };
 
   // STT
   const {
@@ -256,7 +269,17 @@ const Practice = ({ isNew }) => {
           <Script>
             <Screen>
               {isNew ? (
-                <s.NoScript>준비된 스크립트가 없습니다.</s.NoScript>
+                <TextArea>
+                  <div className="text-wrap">
+                    <p>준비된 스크립트가 없습니다.</p>
+                    <STTField>{transcript}</STTField>
+                    <span className="stt-text">
+                      * 이 텍스트 인식 결과는 스피치 진행 정도를 체크하기 위한
+                      것으로, 실제 분석은 더 정확한 데이터로 이루어 질
+                      예정입니다.
+                    </span>
+                  </div>
+                </TextArea>
               ) : (
                 // <s.ScriptContainer>
                 <TextArea>
@@ -338,7 +361,18 @@ const Practice = ({ isNew }) => {
                     <FilledBtn text={"취소하기"} />
                   </li>
                   <li>
-                    <PlayBtn variant="contained">
+                    {/* <span onClick={play}>
+                      <SolideBtn
+                        text={"녹음본 들어보기"}
+                        color={"white"}
+                        // onClick={play}
+                      />
+                    </span> */}
+                    <PlayBtn
+                      variant="contained"
+                      onClick={play}
+                      disabled={recording || segmentRef.current.length === 0}
+                    >
                       <PlayArrowIcon />
                     </PlayBtn>
                     {recording ? (
@@ -354,9 +388,9 @@ const Practice = ({ isNew }) => {
                         <KeyboardVoiceIcon />
                       </PlayBtn>
                     )}
-                    <PlayBtn variant="contained" onClick={resetTranscript}>
+                    {/* <PlayBtn variant="contained" onClick={resetTranscript}>
                       R
-                    </PlayBtn>
+                    </PlayBtn> */}
                   </li>
                   <li>
                     <SolideBtn text={"완료하기"} color={"white"} />
@@ -369,15 +403,26 @@ const Practice = ({ isNew }) => {
               <ScriptBarWrap>
                 <ul className="btn-wrap">
                   <li>
-                    <PlayBtn variant="contained">
+                    <PlayBtn
+                      variant="contained"
+                      onClick={play}
+                      disabled={recording || segmentRef.current.length === 0}
+                    >
                       <PlayArrowIcon />
                     </PlayBtn>
-                    <PlayBtn variant="contained">
-                      <KeyboardVoiceIcon />
-                    </PlayBtn>
-                    <PlayBtn variant="contained">
-                      <PauseIcon />
-                    </PlayBtn>
+                    {recording ? (
+                      <PlayBtn variant="contained" onClick={stopRecording}>
+                        <PauseIcon />
+                      </PlayBtn>
+                    ) : (
+                      <PlayBtn
+                        variant="contained"
+                        onClick={startRecording}
+                        disabled={!micReady}
+                      >
+                        <KeyboardVoiceIcon />
+                      </PlayBtn>
+                    )}
                   </li>
                   <li>
                     <FilledBtn text={"취소하기"} />
@@ -483,6 +528,7 @@ const TextArea = styled(Box)`
     color: #3b3b3b;
     margin-bottom: 2rem;
   }
+
   .stt-text {
     font-size: 1.4rem;
     color: #f38025;
@@ -491,6 +537,7 @@ const TextArea = styled(Box)`
     margin-top: 1rem;
     display: inline-block;
   }
+
   @media ${() => theme.device.mobile} {
     p {
       height: auto;
