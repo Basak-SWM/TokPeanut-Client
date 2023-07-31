@@ -11,7 +11,7 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import Collapse from "@mui/material/Collapse";
 import Link from "@mui/material/Link";
-const Topbar = () => {
+const Nav = () => {
   const theme = createTheme({
     typography: {
       fontFamily: "Pretendard",
@@ -263,7 +263,7 @@ const RBtn = styled(Button)`
   }
 `;
 
-export default Topbar;
+export default Nav;
 
 // import React from "react";
 // import { Link } from "react-router-dom";
