@@ -60,7 +60,7 @@ export const STTContainer = styled.div`
 // 실시간 파형
 export const WaveContainer = styled.div`
   /* width: 300px; */
-  width: 80%;
+  width: 50%;
   height: 5rem;
   border: 3px 0 0 0 solid grey;
   /* border-radius: 50px; */
@@ -69,7 +69,7 @@ export const WaveContainer = styled.div`
 // 파형 덮개
 export const WaveCover = styled.div`
   position: absolute;
-  width: 80%;
+  width: 50%;
   height: 64px;
   display: flex;
   align-items: center;

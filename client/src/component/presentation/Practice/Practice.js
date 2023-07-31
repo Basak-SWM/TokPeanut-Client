@@ -23,6 +23,7 @@ import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import SolideBtn from "../../button/SolidBtn";
 import KeyboardVoiceIcon from "@mui/icons-material/KeyboardVoice";
 import PauseIcon from "@mui/icons-material/Pause";
+import StopIcon from "@mui/icons-material/Stop";
 
 import SpeechRecognition, {
   useSpeechRecognition,
@@ -71,10 +72,10 @@ const Practice = ({ isNew }) => {
     const initWaveSurfer = () => {
       wavesurfer = WaveSurfer.create({
         container: waveformRef.current,
-        waveColor: "black",
+        waveColor: "#ff7134",
         hideScrollbar: true,
         // progressColor: "red",
-        // barWidth: 3,
+        barWidth: 3,
         barHeight: 5,
         interact: false,
         cursorWidth: 0,
@@ -109,7 +110,7 @@ const Practice = ({ isNew }) => {
   }, []);
 
   const [recording, setRecording] = useState(false);
-  // const [canPlay, setCanPlay] = useState(false);
+  const [playing, setPlaying] = useState(false);
   const mediaRecorderRef = useRef(null);
   const segmentRef = useRef([]); // 모든 blob 저장
   let wavList = []; // 단위 시간당 생성된 wav 파일
@@ -187,7 +188,6 @@ const Practice = ({ isNew }) => {
       setRecording(false);
       mediaRecorder.stop();
     }
-    console.log("hhhh");
     // combineToAudio(); // 지금까지의 세그먼트들을 하나로 합쳐서 재생 가능하게 만들기
 
     // STT 중단
@@ -234,17 +234,20 @@ const Practice = ({ isNew }) => {
     let audioUrl = URL.createObjectURL(combinedBlob);
     audioElement.src = audioUrl;
     if (audioUrl) {
-      // console.log(audioUrl, audioElement);
-      // setCanPlay(true);
+      setPlaying(true);
       audioElement.play();
     }
+    audioElement.onended = (event) => {
+      setPlaying(false);
+    };
   };
 
-  // const play = () => {
-  //   const audioElement = document.querySelector("#audio");
-  //   console.log(audioElement);
-  //   audioElement.play();
-  // };
+  const pausePlaying = () => {
+    const audioElement = document.querySelector("#audio");
+    audioElement.pause();
+    setPlaying(false);
+    console.log("pause playing");
+  };
 
   // STT
   const {
@@ -368,13 +371,20 @@ const Practice = ({ isNew }) => {
                         // onClick={play}
                       />
                     </span> */}
-                    <PlayBtn
-                      variant="contained"
-                      onClick={play}
-                      disabled={recording || segmentRef.current.length === 0}
-                    >
-                      <PlayArrowIcon />
-                    </PlayBtn>
+                    {playing ? (
+                      <PlayBtn variant="contained" onClick={pausePlaying}>
+                        <StopIcon />
+                      </PlayBtn>
+                    ) : (
+                      <PlayBtn
+                        variant="contained"
+                        onClick={play}
+                        disabled={recording || segmentRef.current.length === 0}
+                      >
+                        <PlayArrowIcon />
+                      </PlayBtn>
+                    )}
+
                     {recording ? (
                       <PlayBtn variant="contained" onClick={stopRecording}>
                         <PauseIcon />
@@ -403,13 +413,19 @@ const Practice = ({ isNew }) => {
               <ScriptBarWrap>
                 <ul className="btn-wrap">
                   <li>
-                    <PlayBtn
-                      variant="contained"
-                      onClick={play}
-                      disabled={recording || segmentRef.current.length === 0}
-                    >
-                      <PlayArrowIcon />
-                    </PlayBtn>
+                    {playing ? (
+                      <PlayBtn variant="contained" onClick={pausePlaying}>
+                        <StopIcon />
+                      </PlayBtn>
+                    ) : (
+                      <PlayBtn
+                        variant="contained"
+                        onClick={play}
+                        disabled={recording || segmentRef.current.length === 0}
+                      >
+                        <PlayArrowIcon />
+                      </PlayBtn>
+                    )}
                     {recording ? (
                       <PlayBtn variant="contained" onClick={stopRecording}>
                         <PauseIcon />
