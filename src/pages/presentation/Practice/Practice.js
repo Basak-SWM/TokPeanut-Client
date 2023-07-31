@@ -9,11 +9,37 @@ import pause from "../../../image/icons/pause.png";
 import mouse from "../../../image/icons/mouse.png";
 import slash from "../../../image/icons/slash.png";
 
+import styled from "@emotion/styled";
+import { createGlobalStyle } from "styled-components";
+import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
+import { Box, IconButton, Button } from "@mui/material";
+import Nav from "../../layout/Nav";
+import theme from "../../../style/theme";
+// import ScriptBar2 from "../../component/script/ScriptBar2";
+import TextField from "@mui/material/TextField";
+
+import FilledBtn from "../../button/FilledBtn";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import SolideBtn from "../../button/SolidBtn";
+import KeyboardVoiceIcon from "@mui/icons-material/KeyboardVoice";
+import PauseIcon from "@mui/icons-material/Pause";
+import StopIcon from "@mui/icons-material/Stop";
+
 import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
 
 const Practice = ({ isNew }) => {
+  const theme = createTheme({
+    typography: {
+      fontFamily: "Pretendard",
+    },
+    palette: {
+      primary: {
+        main: "#FF7134",
+      },
+    },
+  });
   // const [presignedUrl, setPresignedUrl] = useState(null);
   // presigned url 받아오기
   // mock data
@@ -46,10 +72,10 @@ const Practice = ({ isNew }) => {
     const initWaveSurfer = () => {
       wavesurfer = WaveSurfer.create({
         container: waveformRef.current,
-        waveColor: "black",
+        waveColor: "#ff7134",
         hideScrollbar: true,
         // progressColor: "red",
-        // barWidth: 3,
+        barWidth: 3,
         barHeight: 5,
         interact: false,
         cursorWidth: 0,
@@ -84,6 +110,7 @@ const Practice = ({ isNew }) => {
   }, []);
 
   const [recording, setRecording] = useState(false);
+  const [playing, setPlaying] = useState(false);
   const mediaRecorderRef = useRef(null);
   const segmentRef = useRef([]); // 모든 blob 저장
   let wavList = []; // 단위 시간당 생성된 wav 파일
@@ -138,7 +165,7 @@ const Practice = ({ isNew }) => {
     };
 
     // 3초마다 자르도록
-    mediaRecorder.start(10000);
+    mediaRecorder.start(3000);
 
     // STT 시작
     SpeechRecognition.startListening({
@@ -161,7 +188,7 @@ const Practice = ({ isNew }) => {
       setRecording(false);
       mediaRecorder.stop();
     }
-    play(); // 지금까지의 세그먼트들을 하나로 합쳐서 재생 가능하게 만들기
+    // combineToAudio(); // 지금까지의 세그먼트들을 하나로 합쳐서 재생 가능하게 만들기
 
     // STT 중단
     SpeechRecognition.stopListening();
@@ -196,23 +223,9 @@ const Practice = ({ isNew }) => {
     const combinedBlob = new Blob([segments], { type: "audio/webm" });
     wavList.push(combinedBlob);
     return combinedBlob;
-    // return new Promise((resolve, reject) => {
-    //   getPresignedUrl().then(() => {
-    //     console.log("presigned url: ", presignedUrl);
-    //     const combinedBlob = new Blob([segments], {
-    //       type: "audio/webm",
-    //     });
-    //     wavList.push(combinedBlob);
-    //     if (combinedBlob) {
-    //       resolve(combinedBlob);
-    //     } else {
-    //       reject("blob is null");
-    //     }
-    //   });
-    // });
   };
 
-  // 전체 녹음 파일 재생 (재생 가능하도록 합치기)
+  // 전체 녹음 파일 재생 가능하도록 합치고 재생
   const play = () => {
     const segments = segmentRef.current;
     const audioElement = document.querySelector("#audio");
@@ -220,6 +233,20 @@ const Practice = ({ isNew }) => {
     const combinedBlob = new Blob(segments, { type: "audio/webm" }); // 지금까지의 음성 데이터
     let audioUrl = URL.createObjectURL(combinedBlob);
     audioElement.src = audioUrl;
+    if (audioUrl) {
+      setPlaying(true);
+      audioElement.play();
+    }
+    audioElement.onended = (event) => {
+      setPlaying(false);
+    };
+  };
+
+  const pausePlaying = () => {
+    const audioElement = document.querySelector("#audio");
+    audioElement.pause();
+    setPlaying(false);
+    console.log("pause playing");
   };
 
   // STT
@@ -237,52 +264,430 @@ const Practice = ({ isNew }) => {
   }
 
   return (
-    <s.Container>
-      {isNew ? (
-        <s.NoScript>준비된 스크립트가 없습니다.</s.NoScript>
-      ) : (
-        <s.ScriptContainer>
-          {text.map((word, i) => (
-            <s.Text
-              color={highlighted[i]}
-              continued={highlighted[i] === highlighted[i + 1]}
-              key={i}
-              id={i}
-            >
-              {enterSymbol[i] ? (
-                <>
-                  <s.Tool src={enter} />
-                  <br />
-                </>
-              ) : null}
-              {pauseSymbol[i] ? <s.Tool src={pause} /> : null}
-              {mouseSymbol[i] ? <s.Tool src={mouse} /> : null}
-              {slashSymbol[i] ? <s.Tool src={slash} /> : null}
-              {word}
-            </s.Text>
-          ))}
-        </s.ScriptContainer>
-      )}
+    <>
+      <ThemeProvider theme={theme}>
+        <GlobalStyle />
+        <Nav />
+        <Container>
+          <Script>
+            <Screen>
+              {isNew ? (
+                <TextArea>
+                  <div className="text-wrap">
+                    <p>준비된 스크립트가 없습니다.</p>
+                    <STTField>{transcript}</STTField>
+                    <span className="stt-text">
+                      * 이 텍스트 인식 결과는 스피치 진행 정도를 체크하기 위한
+                      것으로, 실제 분석은 더 정확한 데이터로 이루어 질
+                      예정입니다.
+                    </span>
+                  </div>
+                </TextArea>
+              ) : (
+                // <s.ScriptContainer>
+                <TextArea>
+                  <div className="text-wrap">
+                    <p>
+                      {text.map((word, i) => (
+                        <s.Text
+                          color={highlighted[i]}
+                          continued={highlighted[i] === highlighted[i + 1]}
+                          key={i}
+                          id={i}
+                        >
+                          {enterSymbol[i] ? (
+                            <>
+                              <s.Tool src={enter} />
+                              <br />
+                            </>
+                          ) : null}
+                          {pauseSymbol[i] ? <s.Tool src={pause} /> : null}
+                          {mouseSymbol[i] ? <s.Tool src={mouse} /> : null}
+                          {slashSymbol[i] ? <s.Tool src={slash} /> : null}
+                          {word}
+                        </s.Text>
+                      ))}
+                    </p>
+                    {/* <StyledTextField
+                    id="outlined-multiline-static"
+                    multiline
+                    rows={4}
+                    fullWidth
+                    defaultValue=""
+                    >
+                      {transcript}
+                    </StyledTextField> */}
+                    <STTField>{transcript}</STTField>
+                    <span className="stt-text">
+                      * 이 텍스트 인식 결과는 스피치 진행 정도를 체크하기 위한
+                      것으로, 실제 분석은 더 정확한 데이터로 이루어 질
+                      예정입니다.
+                    </span>
+                  </div>
+                </TextArea>
+                // </s.ScriptContainer>
+              )}
 
-      <s.STTContainer>{transcript}</s.STTContainer>
+              {/* <s.STTContainer>{transcript}</s.STTContainer> */}
 
-      <div>
-        {recording ? null : <s.WaveCover>녹음을 시작해 보세요</s.WaveCover>}
-        <s.WaveContainer ref={waveformRef} />
-      </div>
-      <s.Controls>
-        {recording ? (
-          <s.Button onClick={stopRecording}>일시정지</s.Button>
-        ) : (
-          <s.Button onClick={startRecording} disabled={!micReady}>
-            녹음시작
-          </s.Button>
-        )}
-        <s.Button onClick={resetTranscript}>Reset</s.Button>
-        <audio id="audio" controls />
-      </s.Controls>
-    </s.Container>
+              {/* <div className="sound-wave">
+                {recording ? null : (
+                  <s.WaveCover>녹음을 시작해 보세요</s.WaveCover>
+                )}
+                <s.WaveContainer ref={waveformRef} />
+              </div> */}
+
+              <div className="sound-wave">
+                {recording ? null : (
+                  <s.WaveCover>녹음을 시작해 보세요</s.WaveCover>
+                )}
+                <s.WaveContainer ref={waveformRef} />
+              </div>
+
+              {/* <s.Controls>
+                {recording ? (
+                  <s.Button onClick={stopRecording}>일시정지</s.Button>
+                ) : (
+                  <s.Button onClick={startRecording} disabled={!micReady}>
+                    녹음시작
+                  </s.Button>
+                )}
+                <s.Button onClick={resetTranscript}>Reset</s.Button>
+                <audio id="audio" controls />
+              </s.Controls> */}
+            </Screen>
+            {/* 재생 바 */}
+            <PC>
+              <ScriptBarWrap>
+                <ul className="btn-wrap">
+                  <li>
+                    <FilledBtn text={"취소하기"} />
+                  </li>
+                  <li>
+                    {/* <span onClick={play}>
+                      <SolideBtn
+                        text={"녹음본 들어보기"}
+                        color={"white"}
+                        // onClick={play}
+                      />
+                    </span> */}
+                    {playing ? (
+                      <PlayBtn variant="contained" onClick={pausePlaying}>
+                        <StopIcon />
+                      </PlayBtn>
+                    ) : (
+                      <PlayBtn
+                        variant="contained"
+                        onClick={play}
+                        disabled={recording || segmentRef.current.length === 0}
+                      >
+                        <PlayArrowIcon />
+                      </PlayBtn>
+                    )}
+
+                    {recording ? (
+                      <PlayBtn variant="contained" onClick={stopRecording}>
+                        <PauseIcon />
+                      </PlayBtn>
+                    ) : (
+                      <PlayBtn
+                        variant="contained"
+                        onClick={startRecording}
+                        disabled={!micReady}
+                      >
+                        <KeyboardVoiceIcon />
+                      </PlayBtn>
+                    )}
+                    {/* <PlayBtn variant="contained" onClick={resetTranscript}>
+                      R
+                    </PlayBtn> */}
+                  </li>
+                  <li>
+                    <SolideBtn text={"완료하기"} color={"white"} />
+                  </li>
+                </ul>
+                <audio id="audio" />
+              </ScriptBarWrap>
+            </PC>
+            <Mobile>
+              <ScriptBarWrap>
+                <ul className="btn-wrap">
+                  <li>
+                    {playing ? (
+                      <PlayBtn variant="contained" onClick={pausePlaying}>
+                        <StopIcon />
+                      </PlayBtn>
+                    ) : (
+                      <PlayBtn
+                        variant="contained"
+                        onClick={play}
+                        disabled={recording || segmentRef.current.length === 0}
+                      >
+                        <PlayArrowIcon />
+                      </PlayBtn>
+                    )}
+                    {recording ? (
+                      <PlayBtn variant="contained" onClick={stopRecording}>
+                        <PauseIcon />
+                      </PlayBtn>
+                    ) : (
+                      <PlayBtn
+                        variant="contained"
+                        onClick={startRecording}
+                        disabled={!micReady}
+                      >
+                        <KeyboardVoiceIcon />
+                      </PlayBtn>
+                    )}
+                  </li>
+                  <li>
+                    <FilledBtn text={"취소하기"} />
+                    <SolideBtn text={"완료하기"} color={"white"} />
+                  </li>
+                </ul>
+              </ScriptBarWrap>
+            </Mobile>
+          </Script>
+        </Container>
+      </ThemeProvider>
+    </>
   );
 };
+
+const GlobalStyle = createGlobalStyle`
+    body{
+        background-color: #FAFAFA;
+    }
+`;
+const Container = styled(Box)`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+  height: 100vh;
+  @media ${() => theme.device.mobile} {
+    flex-direction: column-reverse;
+    width: 90%;
+    margin: 0 auto;
+    padding-bottom: 3rem;
+    height: auto;
+  }
+`;
+
+const Script = styled(Box)`
+  width: 90%;
+  height: 80vh;
+
+  margin: 13rem auto 0 auto;
+  background-color: #fff;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  @media ${() => theme.device.desktop} {
+  }
+  @media ${() => theme.device.mobile} {
+    width: 100%;
+    margin-top: 10rem;
+    height: auto;
+  }
+`;
+
+const Screen = styled(Box)`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  position: relative;
+
+  .sound-wave {
+    margin-bottom: 3rem;
+    width: 100%;
+    /* width: 300px; */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* height: 64px; */
+    /* img {
+      width: 40%;
+    } */
+  }
+  @media ${() => theme.device.desktop2} {
+  }
+  @media ${() => theme.device.mobile} {
+    .sound-wave {
+      img {
+        width: 80%;
+      }
+    }
+  }
+`;
+
+const TextArea = styled(Box)`
+  width: 100%;
+  .text-wrap {
+    padding: 3rem;
+  }
+  p {
+    height: fit-content;
+    height: 250px;
+    max-height: 250px;
+    overflow-y: scroll;
+    padding: 3rem;
+    background-color: #f5f5f5;
+    font-size: 2rem;
+    line-height: 200%;
+    color: #3b3b3b;
+    margin-bottom: 2rem;
+  }
+
+  .stt-text {
+    font-size: 1.4rem;
+    color: #f38025;
+    font-weight: 400;
+    line-height: 150%;
+    margin-top: 1rem;
+    display: inline-block;
+  }
+
+  @media ${() => theme.device.mobile} {
+    p {
+      height: auto;
+      font-size: 1.8rem;
+    }
+  }
+`;
+
+const STTField = styled.div`
+  padding: 3rem;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  font-size: 1.6rem;
+  color: #3b3b3b;
+  line-height: 150%;
+  /* width: 100%; */
+  height: 6rem;
+`;
+
+// const StyledTextField = styled(TextField)`
+//   textarea {
+//     font-size: 1.6rem;
+//     color: #3b3b3b;
+//     line-height: 150%;
+//   }
+// `;
+
+const PC = styled(Box)`
+  width: 100%;
+  @media ${() => theme.device.mobile} {
+    display: none;
+  }
+`;
+const Mobile = styled(Box)`
+  display: none;
+  width: 100%;
+  @media ${() => theme.device.mobile} {
+    display: block;
+  }
+`;
+
+const ScriptBarWrap = styled(Box)`
+  background-color: #ff7134;
+  width: 100%;
+  height: 10rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+  .btn-wrap {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    padding: 0 3rem;
+    button {
+      font-size: 1.6rem;
+      padding: 1rem 3rem;
+      margin-right: 2rem;
+      svg {
+        color: #ff7134 !important;
+      }
+    }
+    button:last-of-type {
+      margin: 0;
+    }
+    .Mui-disabled {
+      background-color: #e0e0e0;
+    }
+  }
+  @media ${() => theme.device.desktop2} {
+    .btn-wrap {
+      button {
+        font-size: 1.4rem;
+        padding: 0.5rem 2rem;
+      }
+    }
+  }
+  @media ${() => theme.device.mobile} {
+    height: 20rem;
+    .btn-wrap {
+      justify-content: center;
+      li {
+        margin: 0;
+      }
+      button {
+        margin-bottom: 1rem;
+      }
+      button:last-of-type {
+        margin-bottom: 1rem;
+      }
+      li:last-of-type {
+        width: 100%;
+        margin-top: 1rem;
+        padding: 0 5%;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+  }
+`;
+
+const PlayBtn = styled(IconButton)`
+  width: 5rem;
+  height: 5rem;
+  padding: 0 !important;
+  background-color: #fff;
+  &:hover {
+    background-color: #fff;
+  }
+  svg {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+  @media ${() => theme.device.desktop2} {
+    width: 3.5rem;
+    height: 3.5rem;
+    svg {
+      width: 2rem;
+      height: 2rem;
+    }
+  }
+  @media ${() => theme.device.mobile} {
+    width: 5rem;
+    height: 5rem;
+    svg {
+      width: 3rem;
+      height: 3rem;
+    }
+  }
+`;
 
 export default Practice;
