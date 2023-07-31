@@ -104,7 +104,7 @@ const Container = styled(Box)`
 const Banner = styled(Box)`
   width: 100%;
   height: 30rem;
-  margin-top: 8rem;
+  margin-top: 5rem;
   background-color: #fff8f3;
   background-image: url(../img/banner.png);
   background-position: center;
