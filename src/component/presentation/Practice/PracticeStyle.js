@@ -34,7 +34,7 @@ export const ScriptContainer = styled.div`
 `;
 // 스트립트의 단어
 export const Text = styled.span`
-  color: black;
+  /* color: black; */
   background-color: ${(props) => props.color};
   margin-right: ${(props) => (props.continued ? "none" : "5px")};
   padding-right: ${(props) => (props.continued ? "5px" : "none")};
@@ -59,25 +59,24 @@ export const STTContainer = styled.div`
 
 // 실시간 파형
 export const WaveContainer = styled.div`
-  width: 300px;
-  height: 64px;
-  border: 3px solid grey;
-  border-radius: 50px;
+  /* width: 300px; */
+  width: 50%;
+  height: 5rem;
+  border: 3px 0 0 0 solid grey;
+  /* border-radius: 50px; */
   padding: 20px 10px 20px 10px;
 `;
 // 파형 덮개
 export const WaveCover = styled.div`
   position: absolute;
-  width: 300px;
+  width: 50%;
   height: 64px;
-  border: 3px solid grey;
-  border-radius: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: black;
-  color: white;
-  font-weight: bold;
+  background-color: white;
+  color: #3b3b3b;
+  font-size: 2rem;
   z-index: 100;
   padding: 20px 10px 20px 10px;
 `;
