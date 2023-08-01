@@ -40,8 +40,9 @@ const NewPresentation = () => {
 
   const createPresentation = async (e) => {
     e.preventDefault();
+    let res = null;
     try {
-      const res = await axios.post("/presentations", {
+      res = await axios.post("/presentations", {
         accountUuid: "b646969a-c87d-482f-82c5-6ec89c917412",
         presentation: {
           title: title,
@@ -53,8 +54,9 @@ const NewPresentation = () => {
     } catch (err) {
       console.log("new presentation error: ", err);
     }
-
-    navigate("/presentation/new/practice");
+    // 새로 생성된 presentation의 id를 받아서 practice 페이지로 이동
+    const presentation_id = res.data.id;
+    navigate(`/presentation/new/practice?presentation_id=${presentation_id}`);
   };
   return (
     <>
