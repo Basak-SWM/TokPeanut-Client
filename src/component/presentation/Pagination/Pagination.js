@@ -109,7 +109,8 @@ const Pagination = () => {
                   {...label}
                   icon={<StarBorderIcon />}
                   checkedIcon={<StarIcon />}
-                  checked={speech.stared}
+                  // checked={speech.stared}
+                  onClick={(e) => e.stopPropagation()}
                 />
               </li>
             ))}
