@@ -48,11 +48,19 @@ const Practice = ({ isNew }) => {
   });
   const presentation_id = query.presentation_id;
   console.log("presentation_id: ", presentation_id);
-  // const [presignedUrl, setPresignedUrl] = useState(null);
-  // presigned url 받아오기
-  // mock data
-  // const presentation_id = 2;
-  const speech_id = 3;
+  const [speech_id, setSpeech_id] = useState(-1);
+  const createSpeech = async () => {
+    let res = null;
+    try {
+      res = await axios.post(`/presentations/${presentation_id}/speeches`, {
+        params: { "presentation-id": presentation_id },
+      });
+      console.log("new speech response:", res);
+    } catch (err) {
+      console.log("new speech error: ", err);
+    }
+    setSpeech_id(res.data.id);
+  };
 
   // 스크립트
   const text =
@@ -75,6 +83,7 @@ const Practice = ({ isNew }) => {
   const [micReady, setMicReady] = useState(false);
 
   useEffect(() => {
+    createSpeech();
     // 파형 초기화
     let wavesurfer = null;
     const initWaveSurfer = () => {
@@ -210,8 +219,8 @@ const Practice = ({ isNew }) => {
         `/presentations/${presentation_id}/speeches/${speech_id}/audio-segments/upload-url`,
         {
           params: {
-            presentation_id: presentation_id,
-            speech_id: speech_id,
+            "presentation-id": presentation_id,
+            "speech-id": speech_id,
           },
           extension: "webm",
         }
@@ -222,6 +231,10 @@ const Practice = ({ isNew }) => {
       // console.log("presigned url: ", presignedUrl);
     } catch (err) {
       console.log("presigned url 응답 에러: ", err);
+      console.log(
+        "post url: ",
+        `/presentations/${presentation_id}/speeches/${speech_id}/audio-segments/upload-url`
+      );
     }
   };
   // 전달된 blob을 webm 파일로 변환
