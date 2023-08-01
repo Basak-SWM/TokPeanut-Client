@@ -47,7 +47,6 @@ const Practice = ({ isNew }) => {
     ignoreQueryPrefix: true,
   });
   const presentation_id = query.presentation_id;
-  console.log("presentation_id: ", presentation_id);
   const [speech_id, setSpeech_id] = useState(-1);
   const createSpeech = async () => {
     let res = null;
@@ -165,8 +164,9 @@ const Practice = ({ isNew }) => {
 
       // 현재 blob을 webm 파일로 변환
       const data = await convertWav(e.data);
+
       try {
-        console.log("전송 중인 presigned url: ", presignedUrl);
+        // console.log("전송 중인 presigned url: ", presignedUrl);
         const res = await axios.put(presignedUrl, data, {
           withCredentials: true,
           headers: { "Content-Type": "audio/webm" },
@@ -177,6 +177,27 @@ const Practice = ({ isNew }) => {
         console.log("S3 에러: ", err);
         console.log("전송 data: ", data);
       }
+
+      // presigned url 업로드 완료 통지
+      try {
+        const res = await axios.post(
+          `/presentations/${presentation_id}/speeches/${speech_id}/audio-segment/upload-url/done`,
+          {
+            params: {
+              "presentation-id": presentation_id,
+              "speech-id": speech_id,
+            },
+            url: presignedUrl,
+          }
+        );
+        console.log("업로드 완료 통지 응답: ", res);
+      } catch (err) {
+        console.log("업로드 완료 통지 에러: ", err);
+        console.log(presentation_id, speech_id);
+      }
+
+      // 새 presigned url 받아오기
+      getPresignedUrl();
     };
 
     // 3초마다 자르도록
