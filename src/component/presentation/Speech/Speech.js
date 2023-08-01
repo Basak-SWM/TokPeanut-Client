@@ -1,10 +1,11 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import WaveSurfer from "wavesurfer.js";
 import mp3 from "../mp3.mp3";
 import stt from "../stt.json";
 import * as s from "./SpeechStyle";
 import Pagination from "../Pagination/Pagination";
+import qs from "qs";
 
 import highlight from "../../../image/icons/highlight.png";
 import faster from "../../../image/icons/faster.png";
@@ -75,7 +76,11 @@ const Speech = () => {
     },
   });
   const [isDone, setIsDone] = useState(false); // 서버가 보내주는 결과에 따라 분석 중인지 아닌지 파악
-
+  const location = useLocation();
+  const query = qs.parse(location.search, {
+    ignoreQueryPrefix: true,
+  });
+  const presentation_id = query.presentation_id;
   // tool bar
   const [cursor, setCursor] = useState("");
   const [selectedSymbol, setSelectedSymbol] = useState(NaN); // 커서 관리를 위한 현재 선택된 기호 인덱스
@@ -409,9 +414,6 @@ const Speech = () => {
                             onBlur={(e) => {
                               handleBlur(e, i);
                             }}
-                            onFocus={(e) => {
-                              console.log("focused ", e.target);
-                            }}
                             // contentEditable={cursor === edit} // 현재 커서가 수정펜일 때만 수정 모드
                             contentEditable={selectedSymbol === 3} // 현재 커서가 수정펜일 때만 수정 모드
                             edited={edited[i]}
@@ -456,7 +458,9 @@ const Speech = () => {
                   <ul className="btn-wrap activate">
                     <li>
                       <FilledBtn text={"코치 연결하기"} />
-                      <Link to="/presentation/practice">
+                      <Link
+                        to={`/presentation/practice?presentation_id=${presentation_id}`}
+                      >
                         <FilledBtn text={"연습 시작하기"} />
                       </Link>
                     </li>
