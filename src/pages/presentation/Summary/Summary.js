@@ -261,7 +261,7 @@ const Summary = () => {
           <Content>
             {/* 페이지네이션 */}
             <div className="list-box">
-              <h2>프레젠테이션 목록</h2>
+              <h2>스피치 목록</h2>
               <ul className="prsentaition-list">
                 {speechList.map((speech, i) => (
                   <li key={i}>
@@ -273,7 +273,8 @@ const Summary = () => {
                         {...label}
                         icon={<StarBorderIcon />}
                         checkedIcon={<StarIcon />}
-                        checked
+                        // checked
+                        onClick={(e) => e.stopPropagation()}
                       />
                       <div className="name">
                         <h3>Speech {i + 1}</h3>

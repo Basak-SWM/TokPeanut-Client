@@ -36,6 +36,8 @@ import theme from "../../../style/theme";
 import AiFeedbackModal from "../../modal/AiFeedbackModal";
 import StatisticsModal from "../../modal/StatisticsModal";
 
+import peanut_run from "../../../image/peanut_run.png";
+
 // custom hook (timer)
 const useCounter = (initialValue, ms) => {
   const [count, setCount] = useState(initialValue);
@@ -346,7 +348,7 @@ const Speech = () => {
                     {symbols.map((c, i) => (
                       <li>
                         <Button disabled>
-                          <img src={c.src} />
+                          <img src={i < 3 ? symbols[3].src : c.src} />
                           <p>{c.name}</p>
                         </Button>
                       </li>
@@ -374,10 +376,10 @@ const Speech = () => {
           <Script>
             {/* <s.ScriptContainer> */}
             <Screen>
-              <TextArea>
-                <p>
-                  {isDone ? (
-                    text.map((word, i) => (
+              {isDone ? (
+                <TextArea>
+                  <p>
+                    {text.map((word, i) => (
                       <s.Text
                         played={
                           started[i] < count
@@ -396,13 +398,13 @@ const Speech = () => {
                       >
                         {enterSymbol[i] ? (
                           <>
-                            <s.Tool src={enter} />
+                            <img src={symbols[4].src} />
                             <br />
                           </>
                         ) : null}
-                        {pauseSymbol[i] ? <s.Tool src={pause} /> : null}
-                        {mouseSymbol[i] ? <s.Tool src={mouse} /> : null}
-                        {slashSymbol[i] ? <s.Tool src={slash} /> : null}
+                        {pauseSymbol[i] ? <img src={symbols[5].src} /> : null}
+                        {mouseSymbol[i] ? <img src={symbols[6].src} /> : null}
+                        {slashSymbol[i] ? <img src={symbols[7].src} /> : null}
                         <span>
                           <span
                             ref={(el) => (wordRef.current[i] = el)}
@@ -429,28 +431,36 @@ const Speech = () => {
                           ) : null}
                         </span>
                       </s.Text>
-                    ))
-                  ) : (
-                    <>
-                      분석중...
-                      <button
-                        onClick={() => {
-                          setIsDone(true);
-                        }}
-                      >
-                        분석 완료하기
-                      </button>
-                    </>
-                  )}
-                </p>
-              </TextArea>
+                    ))}{" "}
+                  </p>
+                </TextArea>
+              ) : (
+                <>
+                  <div className="logo-box">
+                    <img src={peanut_run} />
+                  </div>
+                  <h1>열심히 분석 중...</h1>
+                </>
+              )}
+
               {/* </s.ScriptContainer> */}
             </Screen>
-
-            <div className="sound-wave">
-              {waveFormLoaded ? null : <s.LoadingBox>loading...</s.LoadingBox>}
-              <s.WaveWrapper ref={wavesurferRef} />
-            </div>
+            {isDone ? (
+              <div className="sound-wave">
+                {waveFormLoaded ? null : (
+                  <s.LoadingBox>loading...</s.LoadingBox>
+                )}
+                <s.WaveWrapper ref={wavesurferRef} />
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  setIsDone(true);
+                }}
+              >
+                완료
+              </button>
+            )}
 
             <PC>
               <ScriptBarWrap>
@@ -580,12 +590,38 @@ const Screen = styled(Box)`
       width: 40%;
     }
   }
+  .logo-box {
+    img {
+      width: 45rem;
+      opacity: 0.8;
+    }
+  }
+  h1 {
+    font-size: 3rem;
+    color: #ff7134;
+    /* font-weight: bold; */
+    margin-top: 2rem;
+    text-align: center;
+  }
   @media ${() => theme.device.desktop2} {
+    .logo-box {
+      img {
+        width: 30rem;
+      }
+    }
+    h1 {
+      font-size: 2.5rem;
+    }
   }
   @media ${() => theme.device.mobile} {
     .sound-wave {
       img {
         width: 80%;
+      }
+    }
+    .logo-box {
+      img {
+        width: 20rem;
       }
     }
   }
@@ -610,6 +646,13 @@ const TextArea = styled(Box)`
     }
     .pencil1 {
       background-color: #fff2c2;
+    }
+    img {
+      width: 1.5rem;
+      height: 1.5rem;
+      margin: 0 0.5rem 0 0.5rem;
+      filter: invert(43%) sepia(98%) saturate(401%) hue-rotate(346deg)
+        brightness(101%) contrast(88%);
     }
   }
   @media ${() => theme.device.mobile} {
