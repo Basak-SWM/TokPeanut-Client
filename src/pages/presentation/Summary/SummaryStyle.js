@@ -48,7 +48,7 @@ export const SummaryText = styled.div`
 // 요약 정보 그래프
 export const Graph = styled.div`
   height: 250px;
-  border: 1px solid grey;
+  /* border: 1px solid grey;
   border-radius: 5px;
-  margin-top: 10px;
+  margin-top: 10px; */
 `;
