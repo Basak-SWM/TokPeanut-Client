@@ -30,7 +30,6 @@ const Pagination = () => {
     ignoreQueryPrefix: true,
   });
   const speech_id = query.speech_id;
-  console.log(speech_id);
   // 임시 프레젠테이션 id
   const presentation_id = 2;
 

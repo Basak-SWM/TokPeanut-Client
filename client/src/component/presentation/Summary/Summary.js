@@ -224,7 +224,6 @@ const Summary = () => {
     ignoreQueryPrefix: true,
   });
   const presentation_id = query.presentation_id;
-  console.log(presentation_id);
 
   const [speechList, setSpeechList] = useState([]);
   const getSpeechList = async () => {
@@ -245,7 +244,9 @@ const Summary = () => {
   const navigate = useNavigate();
 
   const navigateToSpeech = (i) => {
-    navigate(`/presentation/speech?speech_id=${i}`);
+    navigate(
+      `/presentation/speech?presentation_id=${presentation_id}&speech_id=${i}`
+    );
   };
 
   return (
