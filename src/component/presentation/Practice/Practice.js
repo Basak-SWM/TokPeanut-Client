@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import WaveSurfer from "wavesurfer.js";
 import MicrophonePlugin from "wavesurfer.js/dist/plugin/wavesurfer.microphone.min.js";
 import * as s from "./PracticeStyle";
 import axios from "axios";
+import qs from "qs";
 
 import enter from "../../../image/icons/enter.png";
 import pause from "../../../image/icons/pause.png";
@@ -40,10 +42,16 @@ const Practice = ({ isNew }) => {
       },
     },
   });
+  const location = useLocation();
+  const query = qs.parse(location.search, {
+    ignoreQueryPrefix: true,
+  });
+  const presentation_id = query.presentation_id;
+  console.log("presentation_id: ", presentation_id);
   // const [presignedUrl, setPresignedUrl] = useState(null);
   // presigned url 받아오기
   // mock data
-  const presentation_id = 2;
+  // const presentation_id = 2;
   const speech_id = 3;
 
   // 스크립트
@@ -94,8 +102,6 @@ const Practice = ({ isNew }) => {
       if (!wavesurfer) {
         initWaveSurfer();
         wavesurfer.microphone.pause();
-
-        console.log("pause");
         document.removeEventListener("click", handleUserGesture);
         console.log("remove click event listener");
       }
