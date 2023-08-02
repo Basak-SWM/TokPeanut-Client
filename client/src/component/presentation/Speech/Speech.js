@@ -86,6 +86,71 @@ const Speech = () => {
   const presentation_id = query.presentation_id;
   const speech_id = query.speech_id;
   const navigate = useNavigate();
+  let audioSegments = [];
+  const [audio, setAudio] = useState(null);
+
+  const getSpeech = async () => {
+    let res = null;
+    try {
+      res = await axios.get(
+        `/presentations/${presentation_id}/speeches/${speech_id}`
+      );
+      console.log("speech response:", res);
+      const audioSegmentsUrl = res.data.audioSegments;
+      combineAudio(audioSegmentsUrl);
+    } catch (err) {
+      console.log("speech error:", err);
+    }
+  };
+
+  const combineAudio = async (audioSegmentsUrl) => {
+    try {
+      for (const url of audioSegmentsUrl) {
+        const res = await axios.get(url);
+        const blob = convertToBlob(res.data);
+        audioSegments.push(blob);
+      }
+
+      const combinedBlob = new Blob(audioSegments, { type: "audio/webm" });
+      console.log("Combined Blob: ", combinedBlob);
+      setAudio(combinedBlob);
+    } catch (error) {
+      console.error("Error combining audio:", error);
+    }
+
+    // for (let i = 0; i < audioSegmentsUrl.length; i++) {
+    //   const audioSegment = await axios.get(audioSegmentsUrl[i]);
+    //   audioSegments.push(convertToBlob(audioSegment.data));
+    //   // console.log("audio segment res: ", audioSegment);
+    // }
+    // console.log(audioSegments);
+    // setAudio(new Blob(audioSegments, { type: "audio/webm" }));
+  };
+
+  const convertToBlob = (audioSegmentString) => {
+    const encoder = new TextEncoder();
+    const uint8Array = encoder.encode(audioSegmentString);
+
+    const blob = new Blob([uint8Array], { type: "audio/webm" });
+    console.log("blob: ", blob);
+    return blob;
+  };
+
+  const getResult = async () => {
+    let res = null;
+    try {
+      res = await axios.get(
+        `/presentations/${presentation_id}/speeches/${speech_id}/analysis-records`
+      );
+      console.log("분석 결과 url response:", res);
+    } catch (err) {
+      console.log("분석 결과 url error:", err);
+    }
+  };
+  useEffect(() => {
+    getSpeech();
+    getResult();
+  }, []);
 
   // tool bar
   const [cursor, setCursor] = useState("");
@@ -239,66 +304,79 @@ const Speech = () => {
   const playButton = useRef(null);
 
   useEffect(() => {
-    let wavesurfer = null;
-    const initWaveSurfer = () => {
-      wavesurfer = WaveSurfer.create({
-        container: wavesurferRef.current,
-        audioRate: 1, // 재생 속도 (default 1)
-        barHeight: 1, // 막대 높이 (default 1)
-        barWidth: 3, // 막대 넓이
-        barGap: 1,
-        cursorColor: "#ddd5e9",
-        cursorWidth: 3,
-        fillParent: false, // 부모 요소를 가득 채울지, mixPxPerSec 옵션에 따를지
-        height: 64, // 웨이브 폼 전체의 높이
-        hideScrollbar: true, // 가로 스크롤바 표시 여부
-        minPxPerSec: 50, // 오디오 파일의 1초당 렌더링 될 픽셀 수의 최솟값. zoom level
-        normalize: true, // true면 가장 큰 막대의 길이에 비례하여 막대 높이 설정
-        progressColor: "#dd5e98", // 커서 왼쪽의 파형 색상
-        responsive: false, // 웨이브 폼이 부모 요소보다 길어서 넘치는 경우 스크롤바 or 줄여서 렌더링
-        waveColor: "#ff4e00", // 커서 오른쪽의 파형 색상
-        interact: false, // 파형 클릭 불가능
-        splitChannels: false, // 두 줄로 출력
-        autoScroll: true, // 자동 스크롤
-        scrollParent: true,
-      });
-      wavesurfer.load(mp3);
-      setWaveSurferInstance(wavesurfer);
+    if (audio) {
+      console.log("audio:", audio);
 
-      // 플레이/퍼즈 때 버튼 텍스트 변경
-      wavesurfer.on("play", () => {
-        start();
-        playButton.current.textContent = "pause";
-      });
-      wavesurfer.on("pause", () => {
-        stop();
-        playButton.current.textContent = "play";
-      });
+      const audioElement = document.querySelector("#audio");
+      let audioUrl = URL.createObjectURL(audio);
+      audioElement.src = audioUrl;
+      // audioElement.play();
 
-      wavesurfer.on("ready", () => {
-        setWaveFormLoaded(true);
-        playButton.current.addEventListener("click", () => {
-          wavesurfer.playPause();
+      let wavesurfer = null;
+      const initWaveSurfer = () => {
+        wavesurfer = WaveSurfer.create({
+          container: wavesurferRef.current,
+          audioRate: 1, // 재생 속도 (default 1)
+          barHeight: 1, // 막대 높이 (default 1)
+          barWidth: 3, // 막대 넓이
+          barGap: 1,
+          cursorColor: "#ddd5e9",
+          cursorWidth: 3,
+          fillParent: false, // 부모 요소를 가득 채울지, mixPxPerSec 옵션에 따를지
+          height: 64, // 웨이브 폼 전체의 높이
+          hideScrollbar: true, // 가로 스크롤바 표시 여부
+          minPxPerSec: 50, // 오디오 파일의 1초당 렌더링 될 픽셀 수의 최솟값. zoom level
+          normalize: true, // true면 가장 큰 막대의 길이에 비례하여 막대 높이 설정
+          progressColor: "#dd5e98", // 커서 왼쪽의 파형 색상
+          responsive: false, // 웨이브 폼이 부모 요소보다 길어서 넘치는 경우 스크롤바 or 줄여서 렌더링
+          waveColor: "#ff4e00", // 커서 오른쪽의 파형 색상
+          interact: false, // 파형 클릭 불가능
+          splitChannels: false, // 두 줄로 출력
+          autoScroll: true, // 자동 스크롤
+          scrollParent: true,
         });
-      });
-    };
+        wavesurfer.load(mp3);
+        // wavesurfer.load(audio);
 
-    const handleUserGesture = () => {
-      if (!wavesurfer) {
-        initWaveSurfer();
+        setWaveSurferInstance(wavesurfer);
+        // 플레이/퍼즈 때 버튼 텍스트 변경
+        wavesurfer.on("play", () => {
+          start();
+          playButton.current.textContent = "pause";
+        });
+        wavesurfer.on("pause", () => {
+          stop();
+          playButton.current.textContent = "play";
+        });
 
+        wavesurfer.on("ready", () => {
+          console.log("waveform ready");
+          setWaveFormLoaded(true);
+          playButton.current.addEventListener("click", () => {
+            wavesurfer.playPause();
+          });
+        });
+      };
+
+      const handleUserGesture = () => {
+        if (!wavesurfer) {
+          initWaveSurfer();
+
+          document.removeEventListener("click", handleUserGesture);
+          console.log("remove click event listener");
+        }
+      };
+      document.addEventListener("click", handleUserGesture);
+      return () => {
+        if (wavesurfer) {
+          wavesurfer.destroy();
+        }
         document.removeEventListener("click", handleUserGesture);
-        console.log("remove click event listener");
-      }
-    };
-    document.addEventListener("click", handleUserGesture);
-    return () => {
-      if (wavesurfer) {
-        wavesurfer.destroy();
-      }
-      document.removeEventListener("click", handleUserGesture);
-    };
-  }, []);
+      };
+    } else {
+      console.log("audio not loaded");
+    }
+  }, [audio]);
 
   const handleBlur = useCallback(
     (e, i) => {
@@ -477,6 +555,7 @@ const Speech = () => {
               )}
               <s.WaveWrapper ref={wavesurferRef} />
             </div>
+            <audio id="audio" controls />
             {isDone ? null : (
               <button
                 onClick={() => {
@@ -486,7 +565,6 @@ const Speech = () => {
                 완료
               </button>
             )}
-
             <PC>
               <ScriptBarWrap>
                 {isDone ? (
@@ -539,7 +617,6 @@ const Speech = () => {
                 )}
               </ScriptBarWrap>
             </PC>
-
             {/* <div>
               <button ref={playButton} disabled={!isDone}>
                 play
