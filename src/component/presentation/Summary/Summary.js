@@ -247,7 +247,7 @@ const Summary = () => {
     // 녹음이 완료되지 않은 경우 연습 화면으로 이동
     if (!speechList[index].recordDone) {
       navigate(
-        `/presentation/new/practice?presentation_id=${presentation_id}&speech_id=${speech_id}`
+        `/presentation/practice?presentation_id=${presentation_id}&speech_id=${speech_id}`
       );
     } else {
       navigate(
