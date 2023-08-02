@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import WaveSurfer from "wavesurfer.js";
 import MicrophonePlugin from "wavesurfer.js/dist/plugin/wavesurfer.microphone.min.js";
 import * as s from "./PracticeStyle";
@@ -17,7 +17,6 @@ import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
 import { Box, IconButton, Button } from "@mui/material";
 import Nav from "../../layout/Nav";
 import theme from "../../../style/theme";
-// import ScriptBar2 from "../../component/script/ScriptBar2";
 import TextField from "@mui/material/TextField";
 
 import FilledBtn from "../../button/FilledBtn";
@@ -48,8 +47,9 @@ const Practice = ({ isNew }) => {
   });
   const presentation_id = query.presentation_id;
   const speech_id = query.speech_id;
+  const navigate = useNavigate();
   // 기존 스피치에서 새 스피치를 생성한 경우 이전 스피치의 id 존재
-  const prev_speech = query.prev_speech ? query.prev_speech : null;
+
   // const createSpeech = async () => {
   //   let res = null;
   //   try {
@@ -132,10 +132,6 @@ const Practice = ({ isNew }) => {
   let wavList = []; // 단위 시간당 생성된 wav 파일
 
   const startRecording = async () => {
-    // if (!presignedUrl) {
-    //   console.log("presigned url이 없습니다.");
-    //   return;
-    // }
     // 녹음
     let stream = null;
     try {
@@ -149,26 +145,29 @@ const Practice = ({ isNew }) => {
       console.log("마이크 권한 획득 실패:", err);
     }
 
-    // .then((stream) => {
     setRecording(true);
     // 미디어 레코더 생성
     const mediaRecorder = new MediaRecorder(stream);
     mediaRecorderRef.current = mediaRecorder;
 
     // 음성이 잘라질 때마다
+    // presigned url 받아오기: getPresignedUrl()
+    // 현재 blob을 webm 파일로 변환: convertWav()
+    // presigned url 업로드
+    // presigned url 업로드 완료 통지
     mediaRecorder.ondataavailable = async (e) => {
       // 현재 blob을 전체 blob 리스트에 저장
       segmentRef.current.push(e.data);
 
       // presigned url 받아오기
       const presignedUrl = await getPresignedUrl();
-      // setPresignedUrl(presignedUrl);
 
       // 현재 blob을 webm 파일로 변환
       const data = await convertWav(e.data);
 
+      // presigned url 업로드
       try {
-        // console.log("전송 중인 presigned url: ", presignedUrl);
+        console.log("전송 중인 presigned url: ", presignedUrl);
         const res = await axios.put(presignedUrl, data, {
           withCredentials: true,
           headers: { "Content-Type": "audio/webm" },
@@ -195,11 +194,8 @@ const Practice = ({ isNew }) => {
         console.log("업로드 완료 통지 응답: ", res);
       } catch (err) {
         console.log("업로드 완료 통지 에러: ", err);
-        console.log(presentation_id, speech_id);
+        // console.log(presentation_id, speech_id);
       }
-
-      // 새 presigned url 받아오기
-      getPresignedUrl();
     };
 
     // 3초마다 자르도록
@@ -305,6 +301,27 @@ const Practice = ({ isNew }) => {
     // console.log("Browser supports speech recognition.");
   }
 
+  // 녹음 완료 요청 후 분석 페이지로 이동
+  const finishRecording = async () => {
+    try {
+      const res = await axios.post(
+        `/presentations/${presentation_id}/speeches/${speech_id}/record-done`,
+        {
+          params: {
+            "presentation-id": presentation_id,
+            "speech-id": speech_id,
+          },
+        }
+      );
+      console.log("record done response: ", res);
+      navigate(
+        `/presentation/speech?presentation_id=${presentation_id}&speech_id=${speech_id}`
+      );
+    } catch (err) {
+      console.log("record done error: ", err);
+    }
+  };
+
   return (
     <>
       <ThemeProvider theme={theme}>
@@ -369,15 +386,6 @@ const Practice = ({ isNew }) => {
                 </TextArea>
                 // </s.ScriptContainer>
               )}
-
-              {/* <s.STTContainer>{transcript}</s.STTContainer> */}
-
-              {/* <div className="sound-wave">
-                {recording ? null : (
-                  <s.WaveCover>녹음을 시작해 보세요</s.WaveCover>
-                )}
-                <s.WaveContainer ref={waveformRef} />
-              </div> */}
 
               <div className="sound-wave">
                 {recording ? null : (
@@ -445,7 +453,11 @@ const Practice = ({ isNew }) => {
                     </PlayBtn> */}
                   </li>
                   <li>
-                    <SolideBtn text={"완료하기"} color={"white"} />
+                    <SolideBtn
+                      text={"완료하기"}
+                      color={"white"}
+                      onClick={finishRecording}
+                    />
                   </li>
                 </ul>
                 <audio id="audio" />
