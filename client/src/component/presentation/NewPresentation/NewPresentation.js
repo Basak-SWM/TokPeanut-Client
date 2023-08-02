@@ -54,9 +54,24 @@ const NewPresentation = () => {
     } catch (err) {
       console.log("new presentation error: ", err);
     }
-    // 새로 생성된 presentation의 id를 받아서 practice 페이지로 이동
-    const presentation_id = res.data.id;
-    navigate(`/presentation/new/practice?presentation_id=${presentation_id}`);
+    // 새로 생성된 presentation의 id로 새 스피치 생성
+    createSpeech(res.data.id);
+  };
+
+  const createSpeech = async (presentation_id) => {
+    let res = null;
+    try {
+      res = await axios.post(`/presentations/${presentation_id}/speeches`, {
+        params: { "presentation-id": presentation_id },
+      });
+      console.log("new speech response:", res);
+    } catch (err) {
+      console.log("new speech error: ", err);
+    }
+    // 새로 생성된 speech의 id로 practice 페이지로 이동
+    navigate(
+      `/presentation/new/practice?presentation_id=${presentation_id}&speech_id=${res.data.id}`
+    );
   };
   return (
     <>

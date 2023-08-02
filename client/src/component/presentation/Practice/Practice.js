@@ -47,19 +47,21 @@ const Practice = ({ isNew }) => {
     ignoreQueryPrefix: true,
   });
   const presentation_id = query.presentation_id;
-  const [speech_id, setSpeech_id] = useState(-1);
-  const createSpeech = async () => {
-    let res = null;
-    try {
-      res = await axios.post(`/presentations/${presentation_id}/speeches`, {
-        params: { "presentation-id": presentation_id },
-      });
-      console.log("new speech response:", res);
-    } catch (err) {
-      console.log("new speech error: ", err);
-    }
-    setSpeech_id(res.data.id);
-  };
+  const speech_id = query.speech_id;
+  // 기존 스피치에서 새 스피치를 생성한 경우 이전 스피치의 id 존재
+  const prev_speech = query.prev_speech ? query.prev_speech : null;
+  // const createSpeech = async () => {
+  //   let res = null;
+  //   try {
+  //     res = await axios.post(`/presentations/${presentation_id}/speeches`, {
+  //       params: { "presentation-id": presentation_id },
+  //     });
+  //     console.log("new speech response:", res);
+  //   } catch (err) {
+  //     console.log("new speech error: ", err);
+  //   }
+  //   setSpeech_id(res.data.id);
+  // };
 
   // 스크립트
   const text =
@@ -82,7 +84,7 @@ const Practice = ({ isNew }) => {
   const [micReady, setMicReady] = useState(false);
 
   useEffect(() => {
-    createSpeech();
+    // createSpeech();
     // 파형 초기화
     let wavesurfer = null;
     const initWaveSurfer = () => {
