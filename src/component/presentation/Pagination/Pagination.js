@@ -29,80 +29,87 @@ const Pagination = () => {
   const query = qs.parse(location.search, {
     ignoreQueryPrefix: true,
   });
+  const presentation_id = query.presentation_id;
   const speech_id = query.speech_id;
-  // 임시 프레젠테이션 id
-  const presentation_id = 2;
 
-  // const [speechList, setSpeechList] = useState([]);
-  // const getSpeechList = async () => {
-  //   let res = null;
-  //   try {
-  //     res = await axios.get(`/presentations/${presentation_id}/speeches`);
-  //     console.log("speech list response:", res);
-  //   } catch (err) {
-  //     console.log("speech list error:", err);
-  //   }
-  //   setSpeechList(res.data);
-  // };
+  const [speechList, setSpeechList] = useState([]);
+  const getSpeechList = async () => {
+    let res = null;
+    try {
+      res = await axios.get(`/presentations/${presentation_id}/speeches`);
+      console.log("speech list response:", res);
+    } catch (err) {
+      console.log("speech list error:", err);
+    }
+    setSpeechList(res.data);
+  };
 
-  // useEffect(() => {
-  //   getSpeechList();
-  // }, []);
+  useEffect(() => {
+    getSpeechList();
+  }, []);
 
   const navigate = useNavigate();
 
-  const navigateToSpeech = (i) => {
-    // const id = e.currentTarget.id;
-    navigate(`/presentation/speech?speech_id=${i}`);
+  const navigateToSpeech = (speech_id, index) => {
+    // 녹음이 완료되지 않은 경우 연습 화면으로 이동
+    if (!speechList[index].recordDone) {
+      navigate(
+        `/presentation/practice?presentation_id=${presentation_id}&speech_id=${speech_id}`
+      );
+    } else {
+      navigate(
+        `/presentation/speech?presentation_id=${presentation_id}&speech_id=${speech_id}`
+      );
+    }
   };
   // mock data
-  const speechList = [
-    {
-      id: 1,
-      title: "Speech 1",
-      date: "2023-07-01",
-      stared: false,
-    },
-    {
-      id: 2,
-      title: "Speech 2",
-      date: "2023-06-01",
-      stared: true,
-    },
-    {
-      id: 3,
-      title: "Speech 3",
-      date: "2023-05-01",
-      stared: false,
-    },
-    {
-      id: 4,
-      title: "Speech 3",
-      date: "2023-05-01",
-      stared: false,
-    },
-    {
-      id: 5,
-      title: "Speech 3",
-      date: "2023-05-01",
-      stared: false,
-    },
-    {
-      id: 6,
-      title: "Speech 3",
-      date: "2023-05-01",
-      stared: false,
-    },
-  ];
+  // const speechList = [
+  //   {
+  //     id: 1,
+  //     title: "Speech 1",
+  //     date: "2023-07-01",
+  //     stared: false,
+  //   },
+  //   {
+  //     id: 2,
+  //     title: "Speech 2",
+  //     date: "2023-06-01",
+  //     stared: true,
+  //   },
+  //   {
+  //     id: 3,
+  //     title: "Speech 3",
+  //     date: "2023-05-01",
+  //     stared: false,
+  //   },
+  //   {
+  //     id: 4,
+  //     title: "Speech 3",
+  //     date: "2023-05-01",
+  //     stared: false,
+  //   },
+  //   {
+  //     id: 5,
+  //     title: "Speech 3",
+  //     date: "2023-05-01",
+  //     stared: false,
+  //   },
+  //   {
+  //     id: 6,
+  //     title: "Speech 3",
+  //     date: "2023-05-01",
+  //     stared: false,
+  //   },
+  // ];
 
   return (
     <>
       <ThemeProvider theme={theme}>
         <PageBtnWrap>
           <ul>
-            {speechList.map((speech) => (
+            {speechList.map((speech, i) => (
               <li className={speech.id === speech_id * 1 ? "select" : ""}>
-                <Button onClick={() => navigateToSpeech(speech.id)}>
+                <Button onClick={() => navigateToSpeech(speech.id, i)}>
                   {speech.id}
                 </Button>
                 <Checkbox
