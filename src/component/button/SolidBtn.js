@@ -3,7 +3,7 @@ import styled from "@emotion/styled";
 import { createTheme, ThemeProvider } from "@mui/material";
 import { Box, IconButton, Button } from "@mui/material";
 
-export default function SolidBtn({ text, color }) {
+export default function SolidBtn({ text, color, onClick }) {
   const theme = createTheme({
     typography: {
       fontFamily: "Pretendard",
@@ -18,9 +18,13 @@ export default function SolidBtn({ text, color }) {
     <>
       <ThemeProvider theme={theme}>
         {color == "white" ? (
-          <SolidButton2 variant="outlined">{text}</SolidButton2>
+          <SolidButton2 variant="outlined" onClick={onClick}>
+            {text}
+          </SolidButton2>
         ) : (
-          <SolidButton variant="outlined">{text}</SolidButton>
+          <SolidButton variant="outlined" onClick={onClick}>
+            {text}
+          </SolidButton>
         )}
       </ThemeProvider>
     </>
