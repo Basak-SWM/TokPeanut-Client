@@ -1,11 +1,12 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import WaveSurfer from "wavesurfer.js";
 import mp3 from "../mp3.mp3";
 import stt from "../stt.json";
 import * as s from "./SpeechStyle";
 import Pagination from "../Pagination/Pagination";
 import qs from "qs";
+import axios from "axios";
 
 import highlight from "../../../image/icons/highlight.png";
 import faster from "../../../image/icons/faster.png";
@@ -83,6 +84,9 @@ const Speech = () => {
     ignoreQueryPrefix: true,
   });
   const presentation_id = query.presentation_id;
+  const speech_id = query.speech_id;
+  const navigate = useNavigate();
+
   // tool bar
   const [cursor, setCursor] = useState("");
   const [selectedSymbol, setSelectedSymbol] = useState(NaN); // 커서 관리를 위한 현재 선택된 기호 인덱스
@@ -312,6 +316,24 @@ const Speech = () => {
     [edited, text]
   );
 
+  const createSpeech = async () => {
+    // prev_speech 전달 필요
+    let res = null;
+    try {
+      res = await axios.post(`/presentations/${presentation_id}/speeches`, {
+        params: { "presentation-id": presentation_id },
+      });
+      console.log("new speech response:", res);
+    } catch (err) {
+      console.log("new speech error: ", err);
+    }
+    // 새로 생성된 speech의 id로 practice 페이지로 이동
+    navigate(
+      // `/presentation/practice?presentation_id=${presentation_id}&speech_id=${res.data.id}&prev_speech=${speech_id}`
+      `/presentation/practice?presentation_id=${presentation_id}&speech_id=${res.data.id}`
+    );
+  };
+
   return (
     <>
       <ThemeProvider theme={theme}>
@@ -431,7 +453,7 @@ const Speech = () => {
                           ) : null}
                         </span>
                       </s.Text>
-                    ))}{" "}
+                    ))}
                   </p>
                 </TextArea>
               ) : (
@@ -445,14 +467,17 @@ const Speech = () => {
 
               {/* </s.ScriptContainer> */}
             </Screen>
-            {isDone ? (
-              <div className="sound-wave">
-                {waveFormLoaded ? null : (
+            <div className="sound-wave">
+              {isDone ? (
+                waveFormLoaded ? null : (
                   <s.LoadingBox>loading...</s.LoadingBox>
-                )}
-                <s.WaveWrapper ref={wavesurferRef} />
-              </div>
-            ) : (
+                )
+              ) : (
+                <s.LoadingBox>analyzing...</s.LoadingBox>
+              )}
+              <s.WaveWrapper ref={wavesurferRef} />
+            </div>
+            {isDone ? null : (
               <button
                 onClick={() => {
                   setIsDone(true);
@@ -468,11 +493,13 @@ const Speech = () => {
                   <ul className="btn-wrap activate">
                     <li>
                       <FilledBtn text={"코치 연결하기"} />
-                      <Link
+                      {/* <Link
                         to={`/presentation/practice?presentation_id=${presentation_id}`}
-                      >
+                      > */}
+                      <span onClick={createSpeech}>
                         <FilledBtn text={"연습 시작하기"} />
-                      </Link>
+                      </span>
+                      {/* </Link> */}
                     </li>
                     <li>
                       <PlayBtn variant="contained" ref={playButton}>

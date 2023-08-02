@@ -243,10 +243,17 @@ const Summary = () => {
 
   const navigate = useNavigate();
 
-  const navigateToSpeech = (i) => {
-    navigate(
-      `/presentation/speech?presentation_id=${presentation_id}&speech_id=${i}`
-    );
+  const navigateToSpeech = (speech_id, index) => {
+    // 녹음이 완료되지 않은 경우 연습 화면으로 이동
+    if (!speechList[index].recordDone) {
+      navigate(
+        `/presentation/practice?presentation_id=${presentation_id}&speech_id=${speech_id}`
+      );
+    } else {
+      navigate(
+        `/presentation/speech?presentation_id=${presentation_id}&speech_id=${speech_id}`
+      );
+    }
   };
 
   return (
@@ -267,7 +274,7 @@ const Summary = () => {
                   <li key={i}>
                     <OutlinedBtn
                       variant="outlined"
-                      onClick={() => navigateToSpeech(speech.id)}
+                      onClick={() => navigateToSpeech(speech.id, i)}
                     >
                       <Checkbox
                         {...label}
