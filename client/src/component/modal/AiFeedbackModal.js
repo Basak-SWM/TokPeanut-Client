@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useState } from "react";
 import Box from "@mui/material/Box";
 import { createTheme, Dialog, ThemeProvider } from "@mui/material";
 import Modal from "@mui/material/Modal";
@@ -7,6 +7,7 @@ import FilledBtn from "../button/FilledBtn";
 import { IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import SmartToyIcon from "@mui/icons-material/SmartToy";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import theme from "../../style/theme";
@@ -14,7 +15,7 @@ import theme from "../../style/theme";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 
-export default function AiFeedbackModal() {
+export default function AiFeedbackModal({ presentaion_id, speech_id }) {
   const theme = createTheme({
     typography: {
       fontFamily: "Pretendard",
@@ -32,6 +33,39 @@ export default function AiFeedbackModal() {
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+
+  // mock data
+  const [data, setData] = useState([
+    {
+      checkpoint: "초기 요구사항(프레젠테이션 생성 시 입력)",
+      feedback: "첫번째 피드백",
+    },
+    {
+      checkpoint: "두 번쩨 요구사항~ 전 이거이거를 잘 하고 싶어요~",
+      feedback: "두 번째 피드백: 어쩌고저쩌고 이런걸 신경 써보세요",
+    },
+    {
+      checkpoint:
+        "세 번째 요구사항: 텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트",
+      feedback:
+        "세번째 피드백: 피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백",
+    },
+    {
+      checkpoint: "네 번째 요구사항",
+      feedback: "네번째 피드백",
+    },
+  ]);
+
+  const newCheckPoint = (e) => {
+    e.preventDefault();
+    const newCheckPoint = {
+      checkpoint: e.target[0].value,
+      feedback: "새로운 피드백 입력 중...",
+    };
+    // console.log(e.target[0].value);
+    data.push(newCheckPoint);
+    setData([...data]);
+  };
 
   return (
     <ThemeProvider theme={theme}>
@@ -52,47 +86,37 @@ export default function AiFeedbackModal() {
           </div>
           <div className="message-wrap">
             <div className="msg">
-              <div className="me-msg">
-                <h3>초기 요구사항</h3>
-              </div>
-              <div className="ai-msg">
-                <div className="profile">
-                  <AccountCircleIcon />
-                </div>
-                <h3>첫번째 피드백</h3>
-              </div>
-              <div className="me-msg">
-                <h3>초기 요구사항</h3>
-              </div>
-              <div className="ai-msg">
-                <div className="profile">
-                  <AccountCircleIcon />
-                </div>
-                <h3>두번째 피드백</h3>
-              </div>
-              <div className="me-msg">
-                <h3>초기 요구사항</h3>
-              </div>
-              <div className="ai-msg">
-                <div className="profile">
-                  <AccountCircleIcon />
-                </div>
-                <h3>세번째 피드백</h3>
-              </div>
+              {data.map((item) => (
+                <>
+                  <div className="me-msg">
+                    <h3>{item.checkpoint}</h3>
+                  </div>
+                  <div className="ai-msg">
+                    <div className="profile">
+                      <SmartToyIcon />
+                    </div>
+                    <h3>{item.feedback}</h3>
+                  </div>
+                </>
+              ))}
             </div>
           </div>
-          <div className="text-input">
-            <div className="padding">
-              <StyledTextField
-                id="outlined-basic"
-                variant="outlined"
-                placeholder="새 요구사항 입력창"
-                multiline
-                maxRows={1}
-              />
-              <Button variant="contained">다시 입력</Button>
+          <form onSubmit={newCheckPoint}>
+            <div className="text-input">
+              <div className="padding">
+                <StyledTextField
+                  id="outlined-basic"
+                  variant="outlined"
+                  placeholder="새 요구사항 입력창"
+                  multiline
+                  maxRows={1}
+                />
+                <Button variant="contained" type="submit">
+                  다시 입력
+                </Button>
+              </div>
             </div>
-          </div>
+          </form>
         </ModalWrap>
       </AiFeedbackModalWrap>
     </ThemeProvider>
@@ -111,6 +135,7 @@ const AiFeedbackModalWrap = styled(Dialog)`
 `;
 
 const ModalWrap = styled(Box)`
+  overflow-y: hidden;
   .title {
     display: flex;
     align-items: center;
