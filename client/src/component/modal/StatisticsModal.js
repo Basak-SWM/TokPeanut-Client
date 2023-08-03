@@ -10,8 +10,9 @@ import theme from "../../style/theme";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import CircleIcon from "@mui/icons-material/Circle";
+import { ResponsiveLine } from "@nivo/line";
 
-export default function StatisticsModal() {
+export default function StatisticsModal({ presentaion_id, speech_id }) {
   const theme = createTheme({
     typography: {
       fontFamily: "Pretendard",
@@ -30,6 +31,72 @@ export default function StatisticsModal() {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
+  // 분석이 완료된 경우만 통계 모달을 띄워줌 -> 여기서 분석 결과 받아오기
+  // mock data
+  const data = {
+    pitch: [
+      {
+        id: "pitch",
+        data: [
+          { x: 0, y: 30 },
+          { x: 1, y: 10 },
+          { x: 2, y: 2 },
+          { x: 3, y: 30 },
+          { x: 4, y: 40 },
+          { x: 5, y: 5 },
+          { x: 6, y: 60 },
+          { x: 7, y: 30 },
+          { x: 8, y: 10 },
+          { x: 9, y: 2 },
+          { x: 10, y: 30 },
+          { x: 11, y: 40 },
+          { x: 12, y: 5 },
+          { x: 13, y: 60 },
+          { x: 14, y: 30 },
+          { x: 15, y: 10 },
+          { x: 16, y: 2 },
+          { x: 17, y: 30 },
+          { x: 18, y: 40 },
+          { x: 19, y: 5 },
+          { x: 20, y: 60 },
+        ],
+      },
+    ],
+    hz: 300,
+    // db: [],
+    speed: 300,
+    pause: 22,
+  };
+
+  const PitchLine = () => (
+    <ResponsiveLine
+      data={data.pitch}
+      margin={{ top: 20, right: 20, bottom: 20, left: 25 }}
+      xScale={{ type: "point" }}
+      yScale={{
+        type: "linear",
+        min: 0,
+        stacked: true,
+        reverse: false,
+      }}
+      // axisBottom={{
+      //   tickSize: 3,
+      //   tickPadding: 5,
+      //   tickRotation: 0,
+      // }}
+      // axisLeft={{
+      //   tickSize: 3,
+      //   tickPadding: 5,
+      //   tickRotation: 0,
+      // }}
+      enableGridY={false}
+      enableGridX={false}
+      colors="#FF7134"
+      pointSize={0}
+      lineWidth={1}
+    />
+  );
+
   return (
     <ThemeProvider theme={theme}>
       <FilledBtn text={"통계 보기"} handle={handleOpen} />
@@ -41,7 +108,7 @@ export default function StatisticsModal() {
       >
         <ModalWrap>
           <div className="title">
-            <h2>스피치 2 통계</h2>
+            <h2>스피치 통계</h2>
             <IconButton onClick={handleClose}>
               <CloseIcon />
             </IconButton>
@@ -53,21 +120,22 @@ export default function StatisticsModal() {
                 <h2>억양 변화</h2>
               </div>
               <p>
-                억양의 변화를 만드는 목소리는 더 영향력 있는 스피치를 만듭니다.
-                아래 그래프에서 억양 변화를 확인하세요.
+                억양의 변화가 많은 목소리는 더 영향력 있는 스피치를 만듭니다.
+                <br /> 아래 그래프에서 억양 변화를 확인하세요.
               </p>
-              <div className="img-box">
-                <img src="/img/modal/sample.png" width="100%" />
+              <div className="graph-box">
+                {/* <img src="/img/modal/sample.png" width="100%" /> */}
+                <PitchLine />
               </div>
             </li>
             <li>
               <div className="sub-title">
                 <CircleIcon />
-                <h2>음높이</h2>
+                <h2>음높이 : 평균 {data.hz}hz</h2>
               </div>
               <p>
-                200Hz수준의 음높이를 유지하세요. 130Hz보다 낮거나, 400Hz보다
-                높은 경우 스크립트에 표시됩니다.
+                200Hz수준의 음높이를 유지하세요. <br />
+                130Hz보다 낮거나, 400Hz보다 높은 경우 스크립트에 표시됩니다.
               </p>
             </li>
             <li>
@@ -76,19 +144,16 @@ export default function StatisticsModal() {
                 <h2>소리의 크기 (dB)</h2>
               </div>
               <p>
-                소리가 특별히 커지거나 작어지는 구간을 아래 그래프에서
-                확인하세요.
+                소리가 특별히 커지거나 작아지는 구간이 스크립트에 표시됩니다.
               </p>
-              <div className="img-box">
-                <img src="/img/modal/sample.png" width="100%" />
-              </div>
             </li>
             <li>
               <div className="sub-title">
                 <CircleIcon />
-                <h2>속도</h2>
+                <h2>속도 : 평균 {data.speed} 음절/min</h2>
               </div>
               <p>
+                속도를 350 음절/min 이하로 유지하세요. <br />
                 목소리가 느릴수록 호감도, 매력성, 공신력이 올라가는 효과가
                 있습니다.
               </p>
@@ -96,13 +161,13 @@ export default function StatisticsModal() {
             <li>
               <div className="sub-title">
                 <CircleIcon />
-                <h2>휴지</h2>
+                <h2>휴지 : {data.pause}%</h2>
               </div>
               <p>
                 말하기의 전달력을 높이려면 휴지 비율을 전체 20~25% 사이로
-                유지하는 것이 좋습니다. 또한 느린 속도(300음절/min)의 경우
-                1.5초, 빠른 속도(400음절/min(의 경우 0.4초가 적절한 문장간
-                휴지입니다.
+                유지하는 것이 좋습니다.
+                <br /> 또한 느린 속도(300음절/min)의 경우 1.5초, 빠른
+                속도(400음절/min(의 경우 0.4초가 적절한 문장간 휴지입니다.
               </p>
             </li>
           </ul>
@@ -173,6 +238,11 @@ const ModalWrap = styled(Box)`
         line-height: 150%;
         font-weight: 500;
         margin: 1rem 0;
+      }
+      .graph-box {
+        width: 100%;
+        height: 30rem;
+        margin-top: 2rem;
       }
     }
     li:last-of-type {
