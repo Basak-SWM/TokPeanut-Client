@@ -110,7 +110,7 @@ const Pagination = () => {
             {speechList.map((speech, i) => (
               <li className={speech.id === speech_id * 1 ? "select" : ""}>
                 <Button onClick={() => navigateToSpeech(speech.id, i)}>
-                  {speech.id}
+                  {i + 1}
                 </Button>
                 <Checkbox
                   {...label}
