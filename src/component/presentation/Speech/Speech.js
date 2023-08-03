@@ -590,8 +590,14 @@ const Speech = () => {
                     </li>
                     <li>
                       <FilledBtn text={"X 1"} />
-                      <StatisticsModal />
-                      <AiFeedbackModal />
+                      <StatisticsModal
+                        presentation_id={presentation_id}
+                        speech_id={speech_id}
+                      />
+                      <AiFeedbackModal
+                        presentation_id={presentation_id}
+                        speech_id={speech_id}
+                      />
                     </li>
                   </ul>
                 ) : (
