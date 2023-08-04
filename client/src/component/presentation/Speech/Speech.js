@@ -86,7 +86,6 @@ const Speech = () => {
   const presentation_id = query.presentation_id;
   const speech_id = query.speech_id;
   const navigate = useNavigate();
-  let audioSegments = [];
   const [audio, setAudio] = useState(null);
 
   const getSpeech = async () => {
@@ -96,45 +95,57 @@ const Speech = () => {
         `/presentations/${presentation_id}/speeches/${speech_id}`
       );
       console.log("speech response:", res);
-      const audioSegmentsUrl = res.data.audioSegments;
-      combineAudio(audioSegmentsUrl);
+      // const audioSegmentsUrl = res.data.audioSegments;
+      // combineAudio(audioSegmentsUrl);
+      const audioUrl = res.data.fullAudioS3Url;
+      getAudio(audioUrl);
     } catch (err) {
       console.log("speech error:", err);
     }
   };
 
-  const combineAudio = async (audioSegmentsUrl) => {
+  const getAudio = async (audioUrl) => {
     try {
-      for (const url of audioSegmentsUrl) {
-        const res = await axios.get(url);
-        const blob = convertToBlob(res.data);
-        audioSegments.push(blob);
-      }
-
-      const combinedBlob = new Blob(audioSegments, { type: "audio/webm" });
-      console.log("Combined Blob: ", combinedBlob);
-      setAudio(combinedBlob);
-    } catch (error) {
-      console.error("Error combining audio:", error);
+      const res = await axios.get(audioUrl);
+      console.log("audio response:", res);
+      // setAudio(res.data);
+    } catch (err) {
+      console.log("audio error:", err);
     }
-
-    // for (let i = 0; i < audioSegmentsUrl.length; i++) {
-    //   const audioSegment = await axios.get(audioSegmentsUrl[i]);
-    //   audioSegments.push(convertToBlob(audioSegment.data));
-    //   // console.log("audio segment res: ", audioSegment);
-    // }
-    // console.log(audioSegments);
-    // setAudio(new Blob(audioSegments, { type: "audio/webm" }));
   };
 
-  const convertToBlob = (audioSegmentString) => {
-    const encoder = new TextEncoder();
-    const uint8Array = encoder.encode(audioSegmentString);
+  // const combineAudio = async (audioSegmentsUrl) => {
+  //   try {
+  //     for (const url of audioSegmentsUrl) {
+  //       const res = await axios.get(url);
+  //       const blob = convertToBlob(res.data);
+  //       audioSegments.push(blob);
+  //     }
 
-    const blob = new Blob([uint8Array], { type: "audio/webm" });
-    console.log("blob: ", blob);
-    return blob;
-  };
+  //     const combinedBlob = new Blob(audioSegments, { type: "audio/webm" });
+  //     console.log("Combined Blob: ", combinedBlob);
+  //     setAudio(combinedBlob);
+  //   } catch (error) {
+  //     console.error("Error combining audio:", error);
+  //   }
+
+  //   // for (let i = 0; i < audioSegmentsUrl.length; i++) {
+  //   //   const audioSegment = await axios.get(audioSegmentsUrl[i]);
+  //   //   audioSegments.push(convertToBlob(audioSegment.data));
+  //   //   // console.log("audio segment res: ", audioSegment);
+  //   // }
+  //   // console.log(audioSegments);
+  //   // setAudio(new Blob(audioSegments, { type: "audio/webm" }));
+  // };
+
+  // const convertToBlob = (audioSegmentString) => {
+  //   const encoder = new TextEncoder();
+  //   const uint8Array = encoder.encode(audioSegmentString);
+
+  //   const blob = new Blob([uint8Array], { type: "audio/webm" });
+  //   console.log("blob: ", blob);
+  //   return blob;
+  // };
 
   const getResult = async () => {
     let res = null;
@@ -306,11 +317,6 @@ const Speech = () => {
   useEffect(() => {
     if (audio) {
       console.log("audio:", audio);
-
-      const audioElement = document.querySelector("#audio");
-      let audioUrl = URL.createObjectURL(audio);
-      audioElement.src = audioUrl;
-      // audioElement.play();
 
       let wavesurfer = null;
       const initWaveSurfer = () => {
@@ -555,7 +561,7 @@ const Speech = () => {
               )}
               <s.WaveWrapper ref={wavesurferRef} />
             </div>
-            <audio id="audio" controls />
+
             {isDone ? null : (
               <button
                 onClick={() => {
