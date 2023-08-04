@@ -539,21 +539,21 @@ const Speech = () => {
                     {text.map((word, i) => (
                       <s.Text
                         key={i}
-                        $played={
+                        played={
                           started[i] < count
                             ? count < ended[i]
                               ? "playing"
                               : "played"
                             : "not played"
                         }
-                        $duration={duration[i]}
+                        duration={duration[i]}
                         color={highlighted[i]}
-                        $continued={
+                        continued={
                           highlighted[i] === highlighted[i + 1] ? 1 : 0
                         } // 형광펜이 연달아 적용 되는지
                         onClick={clickWord}
                         id={i}
-                        $edited={edited[i] ? 1 : 0}
+                        edited={edited[i] ? 1 : 0}
                       >
                         {enterSymbol[i] ? (
                           <>
