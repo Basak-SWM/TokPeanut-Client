@@ -482,7 +482,7 @@ const Speech = () => {
                 <ToolBarWrap cursor={cursor}>
                   <ul className="activate">
                     {symbols.map((c, i) => (
-                      <li>
+                      <li key={i}>
                         <Button
                           className="color"
                           id="color1"
@@ -503,7 +503,7 @@ const Speech = () => {
                 <ToolBarWrap>
                   <ul className="disabled">
                     {symbols.map((c, i) => (
-                      <li>
+                      <li key={i}>
                         <Button disabled>
                           <img src={i < 3 ? symbols[3].src : c.src} />
                           <p>{c.name}</p>
@@ -538,20 +538,22 @@ const Speech = () => {
                   <p>
                     {text.map((word, i) => (
                       <s.Text
-                        played={
+                        key={i}
+                        $played={
                           started[i] < count
                             ? count < ended[i]
                               ? "playing"
                               : "played"
                             : "not played"
                         }
-                        duration={duration[i]}
+                        $duration={duration[i]}
                         color={highlighted[i]}
-                        continued={highlighted[i] === highlighted[i + 1]} // 형광펜이 연달아 적용 되는지
+                        $continued={
+                          highlighted[i] === highlighted[i + 1] ? 1 : 0
+                        } // 형광펜이 연달아 적용 되는지
                         onClick={clickWord}
-                        key={i}
                         id={i}
-                        edited={edited[i] ? true : false}
+                        $edited={edited[i] ? 1 : 0}
                       >
                         {enterSymbol[i] ? (
                           <>

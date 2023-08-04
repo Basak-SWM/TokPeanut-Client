@@ -75,7 +75,10 @@ const Pagination = () => {
         <PageBtnWrap>
           <ul>
             {speechList.map((speech, i) => (
-              <li className={speech.id === speech_id * 1 ? "select" : ""}>
+              <li
+                className={speech.id === speech_id * 1 ? "select" : ""}
+                key={speech.id}
+              >
                 <Button onClick={() => navigateToSpeech(speech.id, i)}>
                   <div>Sp {i + 1}</div>
                   <div className="sub">{-speech.createdDate}시간 전</div>
