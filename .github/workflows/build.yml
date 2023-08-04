@@ -17,7 +17,7 @@ jobs: # Job 설정
         run: cd client && npm install
 
       - name: Generate build # React Build
-        run: npm run build
+        run: cd client && npm run build
 
       - name: Deploy # Upload build file to S3
         env:
