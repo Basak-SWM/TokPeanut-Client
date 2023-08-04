@@ -312,33 +312,31 @@ const Summary = () => {
               </Guide>
               <ul className="prsentaition-list">
                 {speechList.map((speech, i) => (
-                  <>
-                    <li key={i}>
-                      <OutlinedBtn
-                        variant="outlined"
-                        onClick={() => navigateToSpeech(speech.id, i)}
-                      >
-                        <Checkbox
-                          {...label}
-                          icon={<StarBorderIcon />}
-                          checkedIcon={<StarIcon />}
-                          // checked
-                          onClick={(e) => e.stopPropagation()}
+                  <li key={i}>
+                    <OutlinedBtn
+                      variant="outlined"
+                      onClick={() => navigateToSpeech(speech.id, i)}
+                    >
+                      <Checkbox
+                        {...label}
+                        icon={<StarBorderIcon />}
+                        checkedIcon={<StarIcon />}
+                        // checked
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <div className="name">
+                        <h3>Speech {i + 1}</h3>
+                        <p>{-speech.createdDate}시간 전</p>
+                      </div>
+                      {editMode && (
+                        <DeleteOutlinedIcon
+                          onClick={(e) => handleDelete(e, speech.id)}
+                          className="delete"
+                          fontSize="small"
                         />
-                        <div className="name">
-                          <h3>Speech {i + 1}</h3>
-                          <p>{-speech.createdDate}시간 전</p>
-                        </div>
-                        {editMode && (
-                          <DeleteOutlinedIcon
-                            onClick={(e) => handleDelete(e, speech.id)}
-                            className="delete"
-                            fontSize="small"
-                          />
-                        )}
-                      </OutlinedBtn>
-                    </li>
-                  </>
+                      )}
+                    </OutlinedBtn>
+                  </li>
                 ))}
               </ul>
             </div>

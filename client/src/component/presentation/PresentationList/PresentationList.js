@@ -106,7 +106,7 @@ const PresentationList = () => {
             </Guide>
             <ul className="list-wrap">
               {presentationList.map((p) => (
-                <li>
+                <li key={p.id}>
                   <ListBox
                     variant="outlined"
                     onClick={() => navigateToPresentation(p.id)}
@@ -208,10 +208,10 @@ const ListWrap = styled(Box)`
   }
   #edit {
     cursor: pointer;
-    font-size: 1.3rem;
+    font-size: 1.5rem;
     color: gray;
     margin-top: 5rem;
-    margin-right: 0.5rem;
+    margin-right: 0.7rem;
     font-weight: 500;
     &:hover {
       color: #ff7134;

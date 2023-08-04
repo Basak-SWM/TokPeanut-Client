@@ -86,8 +86,8 @@ export default function AiFeedbackModal({ presentaion_id, speech_id }) {
           </div>
           <div className="message-wrap">
             <div className="msg">
-              {data.map((item) => (
-                <>
+              {data.map((item, i) => (
+                <div key={i}>
                   <div className="me-msg">
                     <h3>{item.checkpoint}</h3>
                   </div>
@@ -97,7 +97,7 @@ export default function AiFeedbackModal({ presentaion_id, speech_id }) {
                     </div>
                     <h3>{item.feedback}</h3>
                   </div>
-                </>
+                </div>
               ))}
             </div>
           </div>
