@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import WaveSurfer from "wavesurfer.js";
 import mp3 from "../mp3.mp3";
-import stt from "../stt.json";
+// import stt from "../stt.json";
 import * as s from "./SpeechStyle";
 import Pagination from "../Pagination/Pagination";
 import qs from "qs";
@@ -106,9 +106,12 @@ const Speech = () => {
 
   const getAudio = async (audioUrl) => {
     try {
-      const res = await axios.get(audioUrl);
+      const res = await axios.get(audioUrl, {
+        responseType: "blob",
+      });
       console.log("audio response:", res);
-      // setAudio(res.data);
+      const blob = new Blob([res.data]);
+      setAudio(blob);
     } catch (err) {
       console.log("audio error:", err);
     }
@@ -147,6 +150,69 @@ const Speech = () => {
   //   return blob;
   // };
 
+  // const [stt, setSTT] = useState(null);
+
+  const getSTT = async (url) => {
+    try {
+      const res = await axios.get(url);
+      console.log("stt response:", res);
+      const stt = JSON.parse(res.data);
+      // console.log("stt:", stt);
+      // setSTT(stt);
+      initSTT(stt);
+    } catch (err) {
+      console.log("stt error:", err);
+    }
+  };
+  const [text, setText] = useState([]);
+  const [started, setStarted] = useState([]);
+  const [ended, setEnded] = useState([]);
+  const [duration, setDuration] = useState([]);
+  // 각 기호의 렌더링 여부
+  // 하나의 {객체}로 합치기
+  // option으로 <Text "도심은", option={} />
+  // useReduce로 묶어보기
+  // const [enterSymbol, setEnterSymbol] = useState(text.map(() => false));
+  // const [pauseSymbol, setPauseSymbol] = useState(text.map(() => false));
+  // const [mouseSymbol, setMouseSymbol] = useState(text.map(() => false));
+  // const [slashSymbol, setSlashSymbol] = useState(text.map(() => false));
+  // const [highlighted, setHighlighted] = useState(text.map(() => ""));
+  // const [edited, setEdited] = useState(text.map(() => null));
+  const [enterSymbol, setEnterSymbol] = useState([]);
+  const [pauseSymbol, setPauseSymbol] = useState([]);
+  const [mouseSymbol, setMouseSymbol] = useState([]);
+  const [slashSymbol, setSlashSymbol] = useState([]);
+  const [highlighted, setHighlighted] = useState([]);
+  const [edited, setEdited] = useState([]);
+  const wordRef = useRef([]);
+
+  const initSTT = (stt) => {
+    // stt 결과 형식에 맞게 데이터 파싱
+    text.push(...stt.segments.flatMap((seg) => seg.words.map((w) => w[2])));
+    setText(text);
+    started.push(
+      ...stt.segments.flatMap((seg) => seg.words.map((w) => w[0] * 0.01))
+    );
+    setStarted(started);
+    ended.push(
+      ...stt.segments.flatMap((seg) => seg.words.map((w) => w[1] * 0.01))
+    );
+    setEnded(ended);
+    duration.push(
+      ...stt.segments.flatMap((seg) =>
+        seg.words.map((w) => (w[1] - w[0]) * 0.001)
+      )
+    );
+    setDuration(duration);
+
+    setEnterSymbol(text.map(() => false));
+    setPauseSymbol(text.map(() => false));
+    setMouseSymbol(text.map(() => false));
+    setSlashSymbol(text.map(() => false));
+    setHighlighted(text.map(() => ""));
+    setEdited(text.map(() => null));
+  };
+
   const getResult = async () => {
     let res = null;
     try {
@@ -154,6 +220,16 @@ const Speech = () => {
         `/presentations/${presentation_id}/speeches/${speech_id}/analysis-records`
       );
       console.log("분석 결과 url response:", res);
+      // 분석 완료 여부 확인
+      if (res.status === 200) {
+        setIsDone(true);
+        const sttUrl = res.data.STT;
+        getSTT(sttUrl); // 분석 완료 됐으면 stt 결과 가져오기
+        console.log("stt url:", sttUrl);
+        console.log("분석 완료");
+      } else {
+        console.log("분석 중");
+      }
     } catch (err) {
       console.log("분석 결과 url error:", err);
     }
@@ -205,31 +281,6 @@ const Speech = () => {
     // 커서 변경
     selectedSymbol ? setCursor("") : setCursor(symbols[selectedSymbolIdx].src);
   };
-
-  // stt 결과 형식에 맞게 데이터 파싱
-  const text = stt.segments.flatMap((seg) => seg.words.map((w) => w[2]));
-  const started = stt.segments.flatMap((seg) =>
-    seg.words.map((w) => w[0] * 0.01)
-  );
-  const ended = stt.segments.flatMap((seg) =>
-    seg.words.map((w) => w[1] * 0.01)
-  );
-  const duration = stt.segments.flatMap((seg) =>
-    seg.words.map((w) => (w[1] - w[0]) * 0.001)
-  );
-
-  // 각 기호의 렌더링 여부
-  // 하나의 {객체}로 합치기
-  // option으로 <Text "도심은", option={} />
-  // useReduce로 묶어보기
-  const [enterSymbol, setEnterSymbol] = useState(text.map(() => false));
-  const [pauseSymbol, setPauseSymbol] = useState(text.map(() => false));
-  const [mouseSymbol, setMouseSymbol] = useState(text.map(() => false));
-  const [slashSymbol, setSlashSymbol] = useState(text.map(() => false));
-  const [highlighted, setHighlighted] = useState(text.map(() => ""));
-  const [edited, setEdited] = useState(text.map(() => null));
-  const wordRef = useRef([]);
-  // const [edited, setEdited] = useState(text.map(() => false));
 
   const [waveFormLoaded, setWaveFormLoaded] = useState(false);
   const [waveSurferInstance, setWaveSurferInstance] = useState(null);
@@ -341,8 +392,8 @@ const Speech = () => {
           autoScroll: true, // 자동 스크롤
           scrollParent: true,
         });
-        wavesurfer.load(mp3);
-        // wavesurfer.load(audio);
+        // wavesurfer.load(mp3);
+        wavesurfer.loadBlob(audio);
 
         setWaveSurferInstance(wavesurfer);
         // 플레이/퍼즈 때 버튼 텍스트 변경
@@ -562,7 +613,7 @@ const Speech = () => {
               <s.WaveWrapper ref={wavesurferRef} />
             </div>
 
-            {isDone ? null : (
+            {/* {isDone ? null : (
               <button
                 onClick={() => {
                   setIsDone(true);
@@ -570,7 +621,7 @@ const Speech = () => {
               >
                 완료
               </button>
-            )}
+            )} */}
             <PC>
               <ScriptBarWrap>
                 {isDone ? (
@@ -670,7 +721,8 @@ const Container = styled(Box)`
 `;
 
 const Script = styled(Box)`
-  width: 100%;
+  /* width: 100%; */
+  width: 80vw;
   height: 80vh;
   margin: 13rem 10rem 0 5rem;
   background-color: #fff;
@@ -747,7 +799,7 @@ const TextArea = styled(Box)`
   padding: 3rem;
   p {
     /* height: fit-content; */
-    max-height: 420px;
+    height: 420px;
     overflow-y: scroll;
     padding: 3rem;
     background-color: #f5f5f5;
