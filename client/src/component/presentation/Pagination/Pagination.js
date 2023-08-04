@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import qs from "qs";
 import * as s from "./PaginationStyle";
 import axios from "axios";
+import dayjs from "dayjs";
 
 import styled from "@emotion/styled";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
@@ -37,15 +38,10 @@ const Pagination = () => {
     try {
       const res = await axios.get(`/presentations/${presentation_id}/speeches`);
       console.log("speech list response:", res);
+      const nowDate = new Date();
       res.data.forEach((speech) => {
         const date = new Date(speech.createdDate);
-        speech.createdDate = [
-          (date.getMonth() + 1).toString().padStart(2, "0") +
-            "/" +
-            date.getDate().toString().padStart(2, "0"),
-
-          date.getHours() + ":" + date.getMinutes(),
-        ];
+        speech.createdDate = dayjs(speech.createdDate).diff(nowDate, "hour");
       });
       setSpeechList(res.data);
     } catch (err) {
@@ -81,8 +77,8 @@ const Pagination = () => {
             {speechList.map((speech, i) => (
               <li className={speech.id === speech_id * 1 ? "select" : ""}>
                 <Button onClick={() => navigateToSpeech(speech.id, i)}>
-                  <div>{speech.createdDate[0]}</div>
-                  <div className="sub">{speech.createdDate[1]}</div>
+                  <div>Sp {i + 1}</div>
+                  <div className="sub">{-speech.createdDate}시간 전</div>
                 </Button>
                 <Checkbox
                   {...label}
@@ -132,8 +128,8 @@ const PageBtnWrap = styled(Box)`
       button {
         display: flex;
         flex-direction: column;
-        align-items: flex-start;
-        padding-left: 1.5rem;
+        /* align-items: flex-start; */
+        /* padding-left: 1.5rem; */
         width: 100%;
         font-size: 2rem;
         color: #3b3b3b;
