@@ -16,7 +16,6 @@ import StarBorderIcon from "@mui/icons-material/StarBorder";
 import StarIcon from "@mui/icons-material/Star";
 import CircleIcon from "@mui/icons-material/Circle";
 
-import DeleteForeverOutlinedIcon from "@mui/icons-material/DeleteForeverOutlined";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 
 const label = { inputProps: { "aria-label": "Checkbox demo" } };
