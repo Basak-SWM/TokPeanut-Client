@@ -16,6 +16,9 @@ import StarBorderIcon from "@mui/icons-material/StarBorder";
 import StarIcon from "@mui/icons-material/Star";
 import CircleIcon from "@mui/icons-material/Circle";
 
+import DeleteForeverOutlinedIcon from "@mui/icons-material/DeleteForeverOutlined";
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+
 const label = { inputProps: { "aria-label": "Checkbox demo" } };
 
 const Summary = () => {
@@ -244,6 +247,7 @@ const Summary = () => {
   const navigate = useNavigate();
 
   const navigateToSpeech = (speech_id, index) => {
+    if (editMode) return;
     // 녹음이 완료되지 않은 경우 연습 화면으로 이동
     if (!speechList[index].recordDone) {
       navigate(
@@ -253,6 +257,35 @@ const Summary = () => {
       navigate(
         `/presentation/speech?presentation_id=${presentation_id}&speech_id=${speech_id}`
       );
+    }
+  };
+
+  const [editMode, setEditMode] = useState(false);
+  const handleDelete = async (e, speech_id) => {
+    e.stopPropagation();
+    if (
+      window.confirm(
+        "해당 스피치를 삭제하시겠습니까? 연관된 스피치의 스크립트도 삭제됩니다."
+      )
+    ) {
+      try {
+        const res = await axios.delete(
+          `/presentations/${presentation_id}/speeches/${speech_id}`,
+          {
+            params: {
+              "presentation-id": presentation_id,
+              "speech-id": speech_id,
+            },
+          }
+        );
+        console.log("delete speech response:", res);
+        alert("삭제되었습니다.");
+        getSpeechList();
+      } catch (err) {
+        console.log("delete speech error:", err);
+      }
+    } else {
+      alert("삭제가 취소되었습니다.");
     }
   };
 
@@ -268,27 +301,41 @@ const Summary = () => {
           <Content>
             {/* 페이지네이션 */}
             <div className="list-box">
-              <h2>스피치 목록</h2>
+              <Guide>
+                <h2>스피치 목록</h2>
+                <span id="edit" onClick={() => setEditMode(!editMode)}>
+                  {editMode ? "완료" : "편집"}
+                </span>
+              </Guide>
               <ul className="prsentaition-list">
                 {speechList.map((speech, i) => (
-                  <li key={i}>
-                    <OutlinedBtn
-                      variant="outlined"
-                      onClick={() => navigateToSpeech(speech.id, i)}
-                    >
-                      <Checkbox
-                        {...label}
-                        icon={<StarBorderIcon />}
-                        checkedIcon={<StarIcon />}
-                        // checked
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                      <div className="name">
-                        <h3>Speech {i + 1}</h3>
-                        <p>날짜 필요</p>
-                      </div>
-                    </OutlinedBtn>
-                  </li>
+                  <>
+                    <li key={i}>
+                      <OutlinedBtn
+                        variant="outlined"
+                        onClick={() => navigateToSpeech(speech.id, i)}
+                      >
+                        <Checkbox
+                          {...label}
+                          icon={<StarBorderIcon />}
+                          checkedIcon={<StarIcon />}
+                          // checked
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                        <div className="name">
+                          <h3>Speech {i + 1}</h3>
+                          <p>날짜 필요</p>
+                        </div>
+                        {editMode && (
+                          <DeleteOutlinedIcon
+                            onClick={(e) => handleDelete(e, speech.id)}
+                            className="delete"
+                            fontSize="small"
+                          />
+                        )}
+                      </OutlinedBtn>
+                    </li>
+                  </>
                 ))}
               </ul>
             </div>
@@ -398,6 +445,18 @@ const Content = styled(Box)`
       margin-bottom: 2rem;
       font-weight: 500;
     }
+    #edit {
+      cursor: pointer;
+      font-size: 1.3rem;
+      color: gray;
+      line-height: 150%;
+      margin-bottom: 2rem;
+      font-weight: 500;
+      &:hover {
+        color: #ff7134;
+        text-decoration: underline;
+      }
+    }
     .prsentaition-list {
       li {
         margin-bottom: 1rem;
@@ -459,6 +518,7 @@ const Content = styled(Box)`
 `;
 
 const OutlinedBtn = styled(Button)`
+  /* cursor: context-menu; */
   width: 100%;
   display: flex;
   align-items: flex-start;
@@ -491,12 +551,28 @@ const OutlinedBtn = styled(Button)`
   &:hover {
     background-color: #fff;
   }
+  .delete {
+    margin-left: auto;
+    color: rgba(0, 0, 0, 0.6);
+    margin-top: 1.5rem;
+    width: 2rem;
+    height: 2rem;
+    &:hover {
+      color: #ff7134;
+    }
+  }
 `;
 
 const GraphBox = styled(Box)`
   position: relative;
   padding-bottom: 0;
   height: 40rem;
+`;
+
+const Guide = styled(Box)`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 `;
 
 export default Summary;
