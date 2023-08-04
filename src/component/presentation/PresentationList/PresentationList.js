@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 // import * as s from "./PresentationListStyle";
 import axios from "axios";
+import dayjs from "dayjs";
 import styled from "@emotion/styled";
 import { createGlobalStyle } from "styled-components";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
@@ -28,16 +29,22 @@ const PresentationList = () => {
   const uuid = "b646969a-c87d-482f-82c5-6ec89c917412";
   const [presentationList, setPresentationList] = useState([]);
   const getPresentationList = async () => {
-    let res = null;
     try {
-      res = await axios.get("/presentations", {
+      const res = await axios.get("/presentations", {
         params: { "account-uuid": uuid },
       });
+      const nowDate = new Date();
+      res.data.forEach((presentation) => {
+        presentation.createdDate = dayjs(presentation.createdDate).diff(
+          nowDate,
+          "hour"
+        );
+      });
+      setPresentationList(res.data);
       console.log("presentation list response:", res);
     } catch (err) {
       console.log("presentation list error:", err);
     }
-    setPresentationList(res.data);
   };
 
   useEffect(() => {
@@ -109,7 +116,7 @@ const PresentationList = () => {
                       <h2>{p.title}</h2>
                     </div>
                     <span>
-                      날짜
+                      {-p.createdDate}시간 전
                       {editMode && (
                         <DeleteOutlinedIcon
                           onClick={(e) => handleDelete(e, p.id)}

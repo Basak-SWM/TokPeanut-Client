@@ -6,6 +6,7 @@ import { ResponsiveLine } from "@nivo/line";
 import Nav from "../../layout/Nav";
 import axios from "axios";
 import qs from "qs";
+import dayjs from "dayjs";
 
 import styled from "@emotion/styled";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
@@ -229,14 +230,17 @@ const Summary = () => {
 
   const [speechList, setSpeechList] = useState([]);
   const getSpeechList = async () => {
-    let res = null;
     try {
-      res = await axios.get(`/presentations/${presentation_id}/speeches`);
+      const res = await axios.get(`/presentations/${presentation_id}/speeches`);
       console.log("speech list response:", res);
+      const nowDate = new Date();
+      res.data.forEach((speech) => {
+        speech.createdDate = dayjs(speech.createdDate).diff(nowDate, "hour");
+      });
+      setSpeechList(res.data);
     } catch (err) {
       console.log("speech list error:", err);
     }
-    setSpeechList(res.data);
   };
 
   useEffect(() => {
@@ -323,7 +327,7 @@ const Summary = () => {
                         />
                         <div className="name">
                           <h3>Speech {i + 1}</h3>
-                          <p>날짜 필요</p>
+                          <p>{-speech.createdDate}시간 전</p>
                         </div>
                         {editMode && (
                           <DeleteOutlinedIcon
