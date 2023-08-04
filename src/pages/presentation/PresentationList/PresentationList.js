@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 // import * as s from "./PresentationListStyle";
 import axios from "axios";
 import styled from "@emotion/styled";
@@ -11,7 +11,7 @@ import theme from "../../../style/theme";
 import FilledBtn from "../../button/FilledBtn";
 import SolidBtn from "../../button/SolidBtn";
 
-// import PaginationBox from "../../component/pagination/Pagination";
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 
 const PresentationList = () => {
   const theme = createTheme({
@@ -44,12 +44,33 @@ const PresentationList = () => {
     getPresentationList();
   }, []);
 
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
 
-  // const navigateToPresentation = (e) => {
-  //   const id = e.currentTarget.id;
-  //   navigate(`/presentation/summary?presentation_id=${id}`);
-  // };
+  const navigateToPresentation = (presentation_id) => {
+    if (editMode) return;
+    navigate(`/presentation/summary?presentation_id=${presentation_id}`);
+  };
+
+  const [editMode, setEditMode] = useState(false);
+  const handleDelete = async (e, presentation_id) => {
+    e.stopPropagation();
+    if (window.confirm("해당 프레젠테이션을 삭제하시겠습니까?")) {
+      try {
+        const res = await axios.delete(`/presentations/${presentation_id}`, {
+          params: {
+            "presentation-id": presentation_id,
+          },
+        });
+        console.log("delete presentation response:", res);
+        alert("삭제되었습니다.");
+        getPresentationList();
+      } catch (err) {
+        console.log("delete presentation error:", err);
+      }
+    } else {
+      alert("삭제가 취소되었습니다.");
+    }
+  };
 
   return (
     <>
@@ -66,23 +87,38 @@ const PresentationList = () => {
         </Banner>
         <Container>
           <ListWrap>
-            <div className="new-btn">
-              <Link to="/presentation/new">
-                <SolidBtn text={"새 프레젠테이션"}></SolidBtn>
-              </Link>
-            </div>
+            <Guide>
+              <div className="new-btn">
+                <Link to="/presentation/new">
+                  <SolidBtn text={"새 프레젠테이션"}></SolidBtn>
+                </Link>
+              </div>
+              <span id="edit" onClick={() => setEditMode(!editMode)}>
+                {editMode ? "완료" : "편집"}
+              </span>
+            </Guide>
             <ul className="list-wrap">
               {presentationList.map((p) => (
                 <li>
-                  <Link to={`/presentation/summary?presentation_id=${p.id}`}>
-                    <ListBox variant="outlined">
-                      <div className="name">
-                        <h3>{p.outline}</h3>
-                        <h2>{p.title}</h2>
-                      </div>
-                      <span>날짜</span>
-                    </ListBox>
-                  </Link>
+                  <ListBox
+                    variant="outlined"
+                    onClick={() => navigateToPresentation(p.id)}
+                  >
+                    <div className="name">
+                      <h3>{p.outline}</h3>
+                      <h2>{p.title}</h2>
+                    </div>
+                    <span>
+                      날짜
+                      {editMode && (
+                        <DeleteOutlinedIcon
+                          onClick={(e) => handleDelete(e, p.id)}
+                          className="delete"
+                          fontSize="small"
+                        />
+                      )}
+                    </span>
+                  </ListBox>
                 </li>
               ))}
             </ul>
@@ -163,6 +199,18 @@ const ListWrap = styled(Box)`
       margin: 0;
     }
   }
+  #edit {
+    cursor: pointer;
+    font-size: 1.3rem;
+    color: gray;
+    margin-top: 5rem;
+    margin-right: 0.5rem;
+    font-weight: 500;
+    &:hover {
+      color: #ff7134;
+      text-decoration: underline;
+    }
+  }
   @media ${() => theme.device.mobile} {
     padding-bottom: 5rem;
   }
@@ -207,10 +255,18 @@ const ListBox = styled(Button)`
     }
   }
   span {
+    display: flex;
+    align-items: center;
     font-size: 1.6rem;
     color: rgba(0, 0, 0, 0.6);
     line-height: 150%;
     font-weight: 400;
+    .delete {
+      cursor: pointer;
+      height: 2.5rem;
+      width: 2.5rem;
+      margin-left: 2rem;
+    }
   }
   @media ${() => theme.device.mobile} {
     padding: 3rem;
@@ -224,6 +280,12 @@ const ListBox = styled(Button)`
       }
     }
   }
+`;
+
+const Guide = styled(Box)`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 `;
 
 export default PresentationList;
