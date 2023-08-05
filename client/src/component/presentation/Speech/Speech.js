@@ -380,7 +380,7 @@ const Speech = () => {
           barGap: 1,
           cursorColor: "#ddd5e9",
           cursorWidth: 3,
-          fillParent: false, // 부모 요소를 가득 채울지, mixPxPerSec 옵션에 따를지
+          fillParent: true, // 부모 요소를 가득 채울지, mixPxPerSec 옵션에 따를지
           height: 64, // 웨이브 폼 전체의 높이
           hideScrollbar: true, // 가로 스크롤바 표시 여부
           minPxPerSec: 50, // 오디오 파일의 1초당 렌더링 될 픽셀 수의 최솟값. zoom level
