@@ -29,6 +29,7 @@ import StopIcon from "@mui/icons-material/Stop";
 import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
+import api from "../../api";
 
 const Practice = ({ isNew }) => {
   const theme = createTheme({
@@ -181,7 +182,7 @@ const Practice = ({ isNew }) => {
 
       // presigned url 업로드 완료 통지
       try {
-        const res = await axios.post(
+        const res = await api.post(
           `/presentations/${presentation_id}/speeches/${speech_id}/audio-segment/upload-url/done`,
           {
             params: {
@@ -234,7 +235,7 @@ const Practice = ({ isNew }) => {
   // presigned url 받아오기
   const getPresignedUrl = async () => {
     try {
-      const res = await axios.post(
+      const res = await api.post(
         `/presentations/${presentation_id}/speeches/${speech_id}/audio-segments/upload-url`,
         {
           params: {
@@ -304,7 +305,7 @@ const Practice = ({ isNew }) => {
   // 녹음 완료 요청 후 분석 페이지로 이동
   const finishRecording = async () => {
     try {
-      const res = await axios.post(
+      const res = await api.post(
         `/presentations/${presentation_id}/speeches/${speech_id}/record-done`,
         {
           params: {

@@ -13,6 +13,7 @@ import FilledBtn from "../../button/FilledBtn";
 import SolidBtn from "../../button/SolidBtn";
 
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+import api from "../../api";
 
 const PresentationList = () => {
   const theme = createTheme({
@@ -30,7 +31,7 @@ const PresentationList = () => {
   const [presentationList, setPresentationList] = useState([]);
   const getPresentationList = async () => {
     try {
-      const res = await axios.get("/presentations", {
+      const res = await api.get("/presentations", {
         params: { "account-uuid": uuid },
       });
       const nowDate = new Date();
@@ -63,7 +64,7 @@ const PresentationList = () => {
     e.stopPropagation();
     if (window.confirm("해당 프레젠테이션을 삭제하시겠습니까?")) {
       try {
-        const res = await axios.delete(`/presentations/${presentation_id}`, {
+        const res = await api.delete(`/presentations/${presentation_id}`, {
           params: {
             "presentation-id": presentation_id,
           },

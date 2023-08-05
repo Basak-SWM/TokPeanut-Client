@@ -7,6 +7,7 @@ import * as s from "./SpeechStyle";
 import Pagination from "../Pagination/Pagination";
 import qs from "qs";
 import axios from "axios";
+import api from "../../../component/api";
 
 import highlight from "../../../image/icons/highlight.png";
 import faster from "../../../image/icons/faster.png";
@@ -91,7 +92,7 @@ const Speech = () => {
   const getSpeech = async () => {
     let res = null;
     try {
-      res = await axios.get(
+      res = await api.get(
         `/presentations/${presentation_id}/speeches/${speech_id}`
       );
       console.log("speech response:", res);
@@ -216,7 +217,7 @@ const Speech = () => {
   const getResult = async () => {
     let res = null;
     try {
-      res = await axios.get(
+      res = await api.get(
         `/presentations/${presentation_id}/speeches/${speech_id}/analysis-records`
       );
       console.log("분석 결과 url response:", res);
@@ -455,7 +456,7 @@ const Speech = () => {
     // prev_speech 전달 필요
     let res = null;
     try {
-      res = await axios.post(`/presentations/${presentation_id}/speeches`, {
+      res = await api.post(`/presentations/${presentation_id}/speeches`, {
         params: { "presentation-id": presentation_id },
       });
       console.log("new speech response:", res);
@@ -539,21 +540,21 @@ const Speech = () => {
                     {text.map((word, i) => (
                       <s.Text
                         key={i}
-                        played={
+                        $played={
                           started[i] < count
                             ? count < ended[i]
                               ? "playing"
                               : "played"
                             : "not played"
                         }
-                        duration={duration[i]}
+                        $duration={duration[i]}
                         color={highlighted[i]}
-                        continued={
+                        $continued={
                           highlighted[i] === highlighted[i + 1] ? 1 : 0
                         } // 형광펜이 연달아 적용 되는지
                         onClick={clickWord}
                         id={i}
-                        edited={edited[i] ? 1 : 0}
+                        $edited={edited[i] ? 1 : 0}
                       >
                         {enterSymbol[i] ? (
                           <>

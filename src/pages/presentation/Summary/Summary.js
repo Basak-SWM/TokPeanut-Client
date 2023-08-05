@@ -18,6 +18,7 @@ import StarIcon from "@mui/icons-material/Star";
 import CircleIcon from "@mui/icons-material/Circle";
 
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+import api from "../../api";
 
 const label = { inputProps: { "aria-label": "Checkbox demo" } };
 
@@ -231,7 +232,7 @@ const Summary = () => {
   const [speechList, setSpeechList] = useState([]);
   const getSpeechList = async () => {
     try {
-      const res = await axios.get(`/presentations/${presentation_id}/speeches`);
+      const res = await api.get(`/presentations/${presentation_id}/speeches`);
       console.log("speech list response:", res);
       const nowDate = new Date();
       res.data.forEach((speech) => {
@@ -272,7 +273,7 @@ const Summary = () => {
       )
     ) {
       try {
-        const res = await axios.delete(
+        const res = await api.delete(
           `/presentations/${presentation_id}/speeches/${speech_id}`,
           {
             params: {
