@@ -89,6 +89,12 @@ const Speech = () => {
   const navigate = useNavigate();
   const [audio, setAudio] = useState(null);
 
+  // 스크립트를 위한 스피치 정보 조회
+  useEffect(() => {
+    getSpeech();
+    getResult();
+  }, []);
+  // full audio url 가져오기
   const getSpeech = async () => {
     let res = null;
     try {
@@ -96,15 +102,13 @@ const Speech = () => {
         `/presentations/${presentation_id}/speeches/${speech_id}`
       );
       console.log("speech response:", res);
-      // const audioSegmentsUrl = res.data.audioSegments;
-      // combineAudio(audioSegmentsUrl);
       const audioUrl = res.data.fullAudioS3Url;
       getAudio(audioUrl);
     } catch (err) {
       console.log("speech error:", err);
     }
   };
-
+  // audio 가져와서 변환
   const getAudio = async (audioUrl) => {
     try {
       const res = await axios.get(audioUrl, {
@@ -117,79 +121,44 @@ const Speech = () => {
       console.log("audio error:", err);
     }
   };
-
-  // const combineAudio = async (audioSegmentsUrl) => {
-  //   try {
-  //     for (const url of audioSegmentsUrl) {
-  //       const res = await axios.get(url);
-  //       const blob = convertToBlob(res.data);
-  //       audioSegments.push(blob);
-  //     }
-
-  //     const combinedBlob = new Blob(audioSegments, { type: "audio/webm" });
-  //     console.log("Combined Blob: ", combinedBlob);
-  //     setAudio(combinedBlob);
-  //   } catch (error) {
-  //     console.error("Error combining audio:", error);
-  //   }
-
-  //   // for (let i = 0; i < audioSegmentsUrl.length; i++) {
-  //   //   const audioSegment = await axios.get(audioSegmentsUrl[i]);
-  //   //   audioSegments.push(convertToBlob(audioSegment.data));
-  //   //   // console.log("audio segment res: ", audioSegment);
-  //   // }
-  //   // console.log(audioSegments);
-  //   // setAudio(new Blob(audioSegments, { type: "audio/webm" }));
-  // };
-
-  // const convertToBlob = (audioSegmentString) => {
-  //   const encoder = new TextEncoder();
-  //   const uint8Array = encoder.encode(audioSegmentString);
-
-  //   const blob = new Blob([uint8Array], { type: "audio/webm" });
-  //   console.log("blob: ", blob);
-  //   return blob;
-  // };
-
-  // const [stt, setSTT] = useState(null);
-
-  // const getJSONFromPresignedUrl = async (url) => {
-  //   try {
-  //     const res = await axios.get(url);
-  //     const json = JSON.parse(res.data);
-  //     return json;
-  //   } catch (err) {
-  //     console.log("json error:", err);
-  //   }
-  // };
-
+  // 분석 결과 url 가져오기
+  const getResult = async () => {
+    let res = null;
+    try {
+      res = await api.get(
+        `/presentations/${presentation_id}/speeches/${speech_id}/analysis-records`
+      );
+      console.log("분석 결과 url response:", res);
+      // 분석 완료 여부 확인
+      if (res.status === 200) {
+        setIsDone(true);
+        getSTT(res.data.STT);
+        // getCorrection(res.data.SPEECH_CORRECTION);
+      } else {
+        console.log("분석 중");
+      }
+    } catch (err) {
+      console.log("분석 결과 url error:", err);
+    }
+  };
+  // stt 결과 가져오기
   const getSTT = async (url) => {
     try {
       const res = await axios.get(url);
       console.log("stt response:", res);
       const stt = JSON.parse(res.data);
-      // console.log("stt:", stt);
-      // setSTT(stt);
       initSTT(stt);
     } catch (err) {
       console.log("stt error:", err);
     }
   };
-
-  // const [correction, setCorrection] = useState({
-  //   PAUSE_TOO_LONG: [],
-  //   PAUSE_TOO_SHORT: [],
-  //   TOO_FAST: [],
-  //   TOO_SLOW: [],
-  // });
-  // mock data
+  // 이전 스피치의 교정 부호 가져오기 (지금은 mock data)
   const [correction, setCorrection] = useState({
     PAUSE_TOO_LONG: [1],
     PAUSE_TOO_SHORT: [6],
     TOO_FAST: [7, 8, 9],
     TOO_SLOW: [10, 11, 12],
   });
-
   const getCorrection = async (url) => {
     try {
       const res = await axios.get(url);
@@ -210,12 +179,7 @@ const Speech = () => {
   // 하나의 {객체}로 합치기
   // option으로 <Text "도심은", option={} />
   // useReduce로 묶어보기
-  // const [enterSymbol, setEnterSymbol] = useState(text.map(() => false));
-  // const [pauseSymbol, setPauseSymbol] = useState(text.map(() => false));
-  // const [mouseSymbol, setMouseSymbol] = useState(text.map(() => false));
-  // const [slashSymbol, setSlashSymbol] = useState(text.map(() => false));
-  // const [highlighted, setHighlighted] = useState(text.map(() => ""));
-  // const [edited, setEdited] = useState(text.map(() => null));
+
   const [enterSymbol, setEnterSymbol] = useState([]);
   const [pauseSymbol, setPauseSymbol] = useState([]);
   const [mouseSymbol, setMouseSymbol] = useState([]);
@@ -250,34 +214,6 @@ const Speech = () => {
     setHighlighted(text.map(() => ""));
     setEdited(text.map(() => null));
   };
-
-  const getResult = async () => {
-    let res = null;
-    try {
-      res = await api.get(
-        `/presentations/${presentation_id}/speeches/${speech_id}/analysis-records`
-      );
-      console.log("분석 결과 url response:", res);
-      // 분석 완료 여부 확인
-      if (res.status === 200) {
-        setIsDone(true);
-        const sttUrl = res.data.STT;
-        getSTT(sttUrl); // 분석 완료 됐으면 stt 결과 가져오기
-
-        const correctionUrl = res.data.SPEECH_CORRECTION;
-        // getCorrection(correctionUrl);
-        // console.log("분석 완료");
-      } else {
-        console.log("분석 중");
-      }
-    } catch (err) {
-      console.log("분석 결과 url error:", err);
-    }
-  };
-  useEffect(() => {
-    getSpeech();
-    getResult();
-  }, []);
 
   // tool bar
   const [cursor, setCursor] = useState("");
