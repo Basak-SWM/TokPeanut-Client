@@ -38,6 +38,12 @@ export const Text = styled.span`
   background-color: ${(props) => props.color};
   margin-right: ${(props) => (props.continued ? "none" : "5px")};
   padding-right: ${(props) => (props.continued ? "5px" : "none")};
+  text-decoration: ${(props) =>
+    props.$correction === "fast"
+      ? "red dotted overline "
+      : props.$correction === "slow"
+      ? "green dotted overline "
+      : "none"};
 `;
 // 사용자 기호
 export const Tool = styled.span`
