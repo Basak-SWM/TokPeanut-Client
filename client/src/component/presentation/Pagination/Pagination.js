@@ -39,10 +39,10 @@ const Pagination = () => {
     try {
       const res = await api.get(`/presentations/${presentation_id}/speeches`);
       console.log("speech list response:", res);
-      const nowDate = new Date();
       res.data.forEach((speech) => {
-        const date = new Date(speech.createdDate);
-        speech.createdDate = dayjs(speech.createdDate).diff(nowDate, "hour");
+        const date = dayjs(speech.createdDate);
+        // speech.createdDate = dayjs(speech.createdDate).diff(nowDate, "hour");
+        speech.createdDate = dayjs().to(date);
       });
       setSpeechList(res.data);
     } catch (err) {
@@ -82,7 +82,7 @@ const Pagination = () => {
               >
                 <Button onClick={() => navigateToSpeech(speech.id, i)}>
                   <div>Sp {i + 1}</div>
-                  <div className="sub">{-speech.createdDate}시간 전</div>
+                  <div className="sub">{speech.createdDate}</div>
                 </Button>
                 <Checkbox
                   {...label}

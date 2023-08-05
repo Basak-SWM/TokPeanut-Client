@@ -234,9 +234,9 @@ const Summary = () => {
     try {
       const res = await api.get(`/presentations/${presentation_id}/speeches`);
       console.log("speech list response:", res);
-      const nowDate = new Date();
       res.data.forEach((speech) => {
-        speech.createdDate = dayjs(speech.createdDate).diff(nowDate, "hour");
+        const date = dayjs(speech.createdDate);
+        speech.createdDate = dayjs().to(date);
       });
       setSpeechList(res.data);
     } catch (err) {
@@ -327,7 +327,7 @@ const Summary = () => {
                       />
                       <div className="name">
                         <h3>Speech {i + 1}</h3>
-                        <p>{-speech.createdDate}시간 전</p>
+                        <p>{speech.createdDate}</p>
                       </div>
                       {editMode && (
                         <DeleteOutlinedIcon

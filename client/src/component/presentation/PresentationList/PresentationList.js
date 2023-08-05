@@ -36,10 +36,8 @@ const PresentationList = () => {
       });
       const nowDate = new Date();
       res.data.forEach((presentation) => {
-        presentation.createdDate = dayjs(presentation.createdDate).diff(
-          nowDate,
-          "hour"
-        );
+        const date = dayjs(presentation.createdDate);
+        presentation.createdDate = dayjs().to(date);
       });
       setPresentationList(res.data);
       console.log("presentation list response:", res);
@@ -117,7 +115,7 @@ const PresentationList = () => {
                       <h2>{p.title}</h2>
                     </div>
                     <span>
-                      {-p.createdDate}시간 전
+                      {p.createdDate}
                       {editMode && (
                         <DeleteOutlinedIcon
                           onClick={(e) => handleDelete(e, p.id)}
