@@ -497,6 +497,7 @@ const Speech = () => {
     try {
       res = await api.post(`/presentations/${presentation_id}/speeches`, {
         params: { "presentation-id": presentation_id },
+        referenceSpeechId: speech_id,
       });
       console.log("new speech response:", res);
     } catch (err) {
