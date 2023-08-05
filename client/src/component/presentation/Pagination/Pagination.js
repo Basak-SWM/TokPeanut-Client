@@ -4,6 +4,7 @@ import qs from "qs";
 import * as s from "./PaginationStyle";
 import axios from "axios";
 import dayjs from "dayjs";
+import api from "../../../component/api";
 
 import styled from "@emotion/styled";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
@@ -36,7 +37,7 @@ const Pagination = () => {
   const [speechList, setSpeechList] = useState([]);
   const getSpeechList = async () => {
     try {
-      const res = await axios.get(`/presentations/${presentation_id}/speeches`);
+      const res = await api.get(`/presentations/${presentation_id}/speeches`);
       console.log("speech list response:", res);
       const nowDate = new Date();
       res.data.forEach((speech) => {
