@@ -799,6 +799,8 @@ const Screen = styled(Box)`
 `;
 
 const TextArea = styled(Box)`
+  width: 90%;
+  height: 100%;
   padding: 3rem;
   p {
     /* height: fit-content; */
