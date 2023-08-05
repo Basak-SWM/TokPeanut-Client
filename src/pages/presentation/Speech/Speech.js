@@ -153,6 +153,16 @@ const Speech = () => {
 
   // const [stt, setSTT] = useState(null);
 
+  // const getJSONFromPresignedUrl = async (url) => {
+  //   try {
+  //     const res = await axios.get(url);
+  //     const json = JSON.parse(res.data);
+  //     return json;
+  //   } catch (err) {
+  //     console.log("json error:", err);
+  //   }
+  // };
+
   const getSTT = async (url) => {
     try {
       const res = await axios.get(url);
@@ -165,6 +175,33 @@ const Speech = () => {
       console.log("stt error:", err);
     }
   };
+
+  // const [correction, setCorrection] = useState({
+  //   PAUSE_TOO_LONG: [],
+  //   PAUSE_TOO_SHORT: [],
+  //   TOO_FAST: [],
+  //   TOO_SLOW: [],
+  // });
+  // mock data
+  const [correction, setCorrection] = useState({
+    PAUSE_TOO_LONG: [1],
+    PAUSE_TOO_SHORT: [6],
+    TOO_FAST: [7, 8, 9],
+    TOO_SLOW: [10, 11, 12],
+  });
+
+  const getCorrection = async (url) => {
+    try {
+      const res = await axios.get(url);
+      console.log("correction response:", res);
+      const correction = JSON.parse(res.data);
+      console.log("correction:", correction);
+      setCorrection(correction);
+    } catch (err) {
+      console.log("correction error:", err);
+    }
+  };
+
   const [text, setText] = useState([]);
   const [started, setStarted] = useState([]);
   const [ended, setEnded] = useState([]);
@@ -226,8 +263,10 @@ const Speech = () => {
         setIsDone(true);
         const sttUrl = res.data.STT;
         getSTT(sttUrl); // 분석 완료 됐으면 stt 결과 가져오기
-        console.log("stt url:", sttUrl);
-        console.log("분석 완료");
+
+        const correctionUrl = res.data.SPEECH_CORRECTION;
+        // getCorrection(correctionUrl);
+        // console.log("분석 완료");
       } else {
         console.log("분석 중");
       }
@@ -555,16 +594,36 @@ const Speech = () => {
                         onClick={clickWord}
                         id={i}
                         $edited={edited[i] ? 1 : 0}
+                        $correction={
+                          correction.TOO_FAST.includes(i)
+                            ? "fast"
+                            : correction.TOO_SLOW.includes(i)
+                            ? "slow"
+                            : null
+                        }
                       >
-                        {enterSymbol[i] ? (
+                        {enterSymbol[i] && (
                           <>
                             <img src={symbols[4].src} />
                             <br />
                           </>
-                        ) : null}
-                        {pauseSymbol[i] ? <img src={symbols[5].src} /> : null}
-                        {mouseSymbol[i] ? <img src={symbols[6].src} /> : null}
-                        {slashSymbol[i] ? <img src={symbols[7].src} /> : null}
+                        )}
+                        {pauseSymbol[i] && <img src={symbols[5].src} />}
+                        {mouseSymbol[i] && <img src={symbols[6].src} />}
+                        {slashSymbol[i] && <img src={symbols[7].src} />}
+                        {correction.PAUSE_TOO_LONG.includes(i) && (
+                          <Correction> ⏕ </Correction>
+                        )}
+                        {correction.PAUSE_TOO_SHORT.includes(i) && (
+                          <Correction> ⏔ </Correction>
+                        )}
+                        {/* {correction.TOO_FAST.includes(i) && (
+                          <Correction> ↔ </Correction>
+                        )}
+                        {correction.TOO_SLOW.includes(i) && (
+                          <Correction> ↔ </Correction>
+                        )} */}
+
                         <span>
                           <span
                             ref={(el) => (wordRef.current[i] = el)}
@@ -958,6 +1017,10 @@ const ToolBarWrap = styled(Box)`
       }
     }
   }
+`;
+
+const Correction = styled.span`
+  color: #ff7134;
 `;
 
 // 하단 바
