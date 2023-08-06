@@ -91,8 +91,24 @@ const Speech = () => {
 
   // 스크립트를 위한 스피치 정보 조회
   useEffect(() => {
+    // let polling = setInterval(async () => {
+    //   const status = await getResult();
+    //   if (status === 200) {
+    //     clearInterval(polling);
+    //   }
+    // }, 3000);
+
+    const polling = async () => {
+      const status = await getResult();
+      if (status === 200) {
+        clearInterval(repeat);
+      }
+    };
+    polling(); // 최초(즉시)실행
+    const repeat = setInterval(polling, 3000);
+
     getSpeech();
-    getResult();
+    // getResult();
   }, []);
   // full audio url 가져오기
   const getSpeech = async () => {
@@ -128,7 +144,7 @@ const Speech = () => {
       res = await api.get(
         `/presentations/${presentation_id}/speeches/${speech_id}/analysis-records`
       );
-      console.log("분석 결과 url response:", res);
+      console.log("분석 결과 url response:", res, res.status);
       // 분석 완료 여부 확인
       if (res.status === 200) {
         setIsDone(true);
@@ -140,6 +156,7 @@ const Speech = () => {
     } catch (err) {
       console.log("분석 결과 url error:", err);
     }
+    return res.status;
   };
   // stt 결과 가져오기
   const getSTT = async (url) => {
@@ -186,26 +203,35 @@ const Speech = () => {
   const [slashSymbol, setSlashSymbol] = useState([]);
   const [highlighted, setHighlighted] = useState([]);
   const [edited, setEdited] = useState([]);
+
   const wordRef = useRef([]);
 
   const initSTT = (stt) => {
     // stt 결과 형식에 맞게 데이터 파싱
-    text.push(...stt.segments.flatMap((seg) => seg.words.map((w) => w[2])));
-    setText(text);
-    started.push(
-      ...stt.segments.flatMap((seg) => seg.words.map((w) => w[0] * 0.01))
+    // text.push(...stt.segments.flatMap((seg) => seg.words.map((w) => w[2])));
+    // setText(text);
+    setText(stt.segments.flatMap((seg) => seg.words.map((w) => w[2])));
+    // started.push(
+    //   ...stt.segments.flatMap((seg) => seg.words.map((w) => w[0] * 0.01))
+    // );
+    // setStarted(started);
+    setStarted(
+      stt.segments.flatMap((seg) => seg.words.map((w) => w[0] * 0.01))
     );
-    setStarted(started);
-    ended.push(
-      ...stt.segments.flatMap((seg) => seg.words.map((w) => w[1] * 0.01))
+    // ended.push(
+    //   ...stt.segments.flatMap((seg) => seg.words.map((w) => w[1] * 0.01))
+    // );
+    // setEnded(ended);
+    setEnded(stt.segments.flatMap((seg) => seg.words.map((w) => w[1] * 0.01)));
+    // duration.push(
+    //   ...stt.segments.flatMap((seg) =>
+    //     seg.words.map((w) => (w[1] - w[0]) * 0.001)
+    //   )
+    // );
+    // setDuration(duration);
+    setDuration(
+      stt.segments.flatMap((seg) => seg.words.map((w) => (w[1] - w[0]) * 0.001))
     );
-    setEnded(ended);
-    duration.push(
-      ...stt.segments.flatMap((seg) =>
-        seg.words.map((w) => (w[1] - w[0]) * 0.001)
-      )
-    );
-    setDuration(duration);
 
     setEnterSymbol(text.map(() => false));
     setPauseSymbol(text.map(() => false));
@@ -285,12 +311,7 @@ const Speech = () => {
         edited[selectedWordIdx] = edited[selectedWordIdx]
           ? edited[selectedWordIdx]
           : text[selectedWordIdx]; // 원래 단어로 초기화
-        // console.log(e.target, selected.current);
-        // selected.current.focus();
         setEdited([...edited]);
-
-        // console.log(document.querySelectorAll(".edited"));
-
         break;
       case 4:
         enterSymbol[selectedWordIdx] = true;
@@ -428,7 +449,6 @@ const Speech = () => {
   );
 
   const createSpeech = async () => {
-    // prev_speech 전달 필요
     let res = null;
     try {
       res = await api.post(`/presentations/${presentation_id}/speeches`, {
@@ -549,10 +569,10 @@ const Speech = () => {
                         {mouseSymbol[i] && <img src={symbols[6].src} />}
                         {slashSymbol[i] && <img src={symbols[7].src} />}
                         {correction.PAUSE_TOO_LONG.includes(i) && (
-                          <Correction> ⏕ </Correction>
+                          <Correction> 🔸 </Correction>
                         )}
                         {correction.PAUSE_TOO_SHORT.includes(i) && (
-                          <Correction> ⏔ </Correction>
+                          <Correction> 🔹 </Correction>
                         )}
                         {/* {correction.TOO_FAST.includes(i) && (
                           <Correction> ↔ </Correction>
