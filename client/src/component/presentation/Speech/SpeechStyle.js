@@ -125,7 +125,6 @@ export const Text = styled.span`
   &:hover {
     /* text-decoration: orange dashed underline; */
     font-weight: bold;
-    cursor: pointer;
   }
 `;
 export const EditedText = styled.span`
