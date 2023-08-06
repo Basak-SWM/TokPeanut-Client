@@ -118,6 +118,8 @@ const Speech = () => {
         `/presentations/${presentation_id}/speeches/${speech_id}`
       );
       console.log("speech response:", res);
+      // 여기서 사용자 기호 초기화
+      initUserSymbols(res.data.userSymbol);
       const audioUrl = res.data.fullAudioS3Url;
       getAudio(audioUrl);
     } catch (err) {
@@ -203,6 +205,19 @@ const Speech = () => {
   const [slashSymbol, setSlashSymbol] = useState([]);
   const [highlighted, setHighlighted] = useState([]);
   const [edited, setEdited] = useState([]);
+  const initUserSymbols = (userSymbol) => {
+    const symbols = JSON.parse(userSymbol);
+    console.log("user symbols:", symbols);
+
+    if (!symbols) return;
+
+    setEnterSymbol(symbols.enter);
+    setPauseSymbol(symbols.pause);
+    setMouseSymbol(symbols.mouse);
+    setSlashSymbol(symbols.slash);
+    setHighlighted(symbols.highlight);
+    setEdited(symbols.edit);
+  };
 
   const wordRef = useRef([]);
 
@@ -232,30 +247,37 @@ const Speech = () => {
     setDuration(
       stt.segments.flatMap((seg) => seg.words.map((w) => (w[1] - w[0]) * 0.001))
     );
+  };
 
-    setEnterSymbol(text.map(() => false));
-    setPauseSymbol(text.map(() => false));
-    setMouseSymbol(text.map(() => false));
-    setSlashSymbol(text.map(() => false));
-    setHighlighted(text.map(() => ""));
-    setEdited(text.map(() => null));
+  const patchUserSymbol = async () => {
+    try {
+      const symbolObj = {
+        enter: enterSymbol,
+        pause: pauseSymbol,
+        mouse: mouseSymbol,
+        slash: slashSymbol,
+        highlight: highlighted,
+        edit: edited,
+      };
+      const res = await api.patch(
+        `/presentations/${presentation_id}/speeches/${speech_id}`,
+        {
+          params: {
+            "presentation-id": presentation_id,
+            "speech-id": speech_id,
+          },
+          userSymbol: JSON.stringify(symbolObj),
+        }
+      );
+      console.log("patch user symbol response:", res);
+    } catch (err) {
+      console.log("patch user symbol error:", err);
+    }
   };
 
   // tool bar
   const [cursor, setCursor] = useState("");
   const [selectedSymbol, setSelectedSymbol] = useState(NaN); // 커서 관리를 위한 현재 선택된 기호 인덱스
-  // 사용자 기호
-  // const symbols = [
-  //   highlight,
-  //   faster,
-  //   slower,
-  //   edit,
-  //   enter,
-  //   pause,
-  //   mouse,
-  //   slash,
-  //   erase,
-  // ];
 
   const symbols = [
     { name: "강조", src: "/img/script/toolbar/color/pencil1.svg" },
@@ -349,6 +371,9 @@ const Speech = () => {
         waveSurferInstance.setCurrentTime(started[selectedWordIdx] * 0.1);
         setCount(started[selectedWordIdx]);
         break;
+    }
+    if (!isNaN(selectedSymbol)) {
+      patchUserSymbol();
     }
   };
 
