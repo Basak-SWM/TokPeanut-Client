@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 // import * as s from "./PresentationListStyle";
 import axios from "axios";
+import dayjs from "dayjs";
 import styled from "@emotion/styled";
 import { createGlobalStyle } from "styled-components";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
@@ -12,6 +13,7 @@ import FilledBtn from "../../button/FilledBtn";
 import SolidBtn from "../../button/SolidBtn";
 
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+import api from "../../api";
 
 const PresentationList = () => {
   const theme = createTheme({
@@ -28,16 +30,20 @@ const PresentationList = () => {
   const uuid = "b646969a-c87d-482f-82c5-6ec89c917412";
   const [presentationList, setPresentationList] = useState([]);
   const getPresentationList = async () => {
-    let res = null;
     try {
-      res = await axios.get("/presentations", {
+      const res = await api.get("/presentations", {
         params: { "account-uuid": uuid },
       });
+      const nowDate = new Date();
+      res.data.forEach((presentation) => {
+        const date = dayjs(presentation.createdDate);
+        presentation.createdDate = dayjs().to(date);
+      });
+      setPresentationList(res.data);
       console.log("presentation list response:", res);
     } catch (err) {
       console.log("presentation list error:", err);
     }
-    setPresentationList(res.data);
   };
 
   useEffect(() => {
@@ -56,7 +62,7 @@ const PresentationList = () => {
     e.stopPropagation();
     if (window.confirm("해당 프레젠테이션을 삭제하시겠습니까?")) {
       try {
-        const res = await axios.delete(`/presentations/${presentation_id}`, {
+        const res = await api.delete(`/presentations/${presentation_id}`, {
           params: {
             "presentation-id": presentation_id,
           },
@@ -99,7 +105,7 @@ const PresentationList = () => {
             </Guide>
             <ul className="list-wrap">
               {presentationList.map((p) => (
-                <li>
+                <li key={p.id}>
                   <ListBox
                     variant="outlined"
                     onClick={() => navigateToPresentation(p.id)}
@@ -109,7 +115,7 @@ const PresentationList = () => {
                       <h2>{p.title}</h2>
                     </div>
                     <span>
-                      날짜
+                      {p.createdDate}
                       {editMode && (
                         <DeleteOutlinedIcon
                           onClick={(e) => handleDelete(e, p.id)}
@@ -201,10 +207,10 @@ const ListWrap = styled(Box)`
   }
   #edit {
     cursor: pointer;
-    font-size: 1.3rem;
+    font-size: 1.5rem;
     color: gray;
     margin-top: 5rem;
-    margin-right: 0.5rem;
+    margin-right: 0.7rem;
     font-weight: 500;
     &:hover {
       color: #ff7134;
