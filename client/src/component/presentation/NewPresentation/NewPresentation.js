@@ -11,6 +11,7 @@ import Nav from "../../layout/Nav";
 import theme from "../../../style/theme";
 import CircleIcon from "@mui/icons-material/Circle";
 import TextField from "@mui/material/TextField";
+import api from "../../api";
 
 const NewPresentation = () => {
   const theme = createTheme({
@@ -42,7 +43,7 @@ const NewPresentation = () => {
     e.preventDefault();
     let res = null;
     try {
-      res = await axios.post("/presentations", {
+      res = await api.post("/presentations", {
         accountUuid: "b646969a-c87d-482f-82c5-6ec89c917412",
         presentation: {
           title: title,
@@ -61,7 +62,7 @@ const NewPresentation = () => {
   const createSpeech = async (presentation_id) => {
     let res = null;
     try {
-      res = await axios.post(`/presentations/${presentation_id}/speeches`, {
+      res = await api.post(`/presentations/${presentation_id}/speeches`, {
         params: { "presentation-id": presentation_id },
       });
       console.log("new speech response:", res);

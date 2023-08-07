@@ -6,6 +6,7 @@ import { ResponsiveLine } from "@nivo/line";
 import Nav from "../../layout/Nav";
 import axios from "axios";
 import qs from "qs";
+import dayjs from "dayjs";
 
 import styled from "@emotion/styled";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
@@ -17,6 +18,7 @@ import StarIcon from "@mui/icons-material/Star";
 import CircleIcon from "@mui/icons-material/Circle";
 
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+import api from "../../api";
 
 const label = { inputProps: { "aria-label": "Checkbox demo" } };
 
@@ -229,14 +231,17 @@ const Summary = () => {
 
   const [speechList, setSpeechList] = useState([]);
   const getSpeechList = async () => {
-    let res = null;
     try {
-      res = await axios.get(`/presentations/${presentation_id}/speeches`);
+      const res = await api.get(`/presentations/${presentation_id}/speeches`);
       console.log("speech list response:", res);
+      res.data.forEach((speech) => {
+        const date = dayjs(speech.createdDate);
+        speech.createdDate = dayjs().to(date);
+      });
+      setSpeechList(res.data);
     } catch (err) {
       console.log("speech list error:", err);
     }
-    setSpeechList(res.data);
   };
 
   useEffect(() => {
@@ -268,7 +273,7 @@ const Summary = () => {
       )
     ) {
       try {
-        const res = await axios.delete(
+        const res = await api.delete(
           `/presentations/${presentation_id}/speeches/${speech_id}`,
           {
             params: {
@@ -308,33 +313,31 @@ const Summary = () => {
               </Guide>
               <ul className="prsentaition-list">
                 {speechList.map((speech, i) => (
-                  <>
-                    <li key={i}>
-                      <OutlinedBtn
-                        variant="outlined"
-                        onClick={() => navigateToSpeech(speech.id, i)}
-                      >
-                        <Checkbox
-                          {...label}
-                          icon={<StarBorderIcon />}
-                          checkedIcon={<StarIcon />}
-                          // checked
-                          onClick={(e) => e.stopPropagation()}
+                  <li key={i}>
+                    <OutlinedBtn
+                      variant="outlined"
+                      onClick={() => navigateToSpeech(speech.id, i)}
+                    >
+                      <Checkbox
+                        {...label}
+                        icon={<StarBorderIcon />}
+                        checkedIcon={<StarIcon />}
+                        // checked
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <div className="name">
+                        <h3>Speech {i + 1}</h3>
+                        <p>{speech.createdDate}</p>
+                      </div>
+                      {editMode && (
+                        <DeleteOutlinedIcon
+                          onClick={(e) => handleDelete(e, speech.id)}
+                          className="delete"
+                          fontSize="small"
                         />
-                        <div className="name">
-                          <h3>Speech {i + 1}</h3>
-                          <p>날짜 필요</p>
-                        </div>
-                        {editMode && (
-                          <DeleteOutlinedIcon
-                            onClick={(e) => handleDelete(e, speech.id)}
-                            className="delete"
-                            fontSize="small"
-                          />
-                        )}
-                      </OutlinedBtn>
-                    </li>
-                  </>
+                      )}
+                    </OutlinedBtn>
+                  </li>
                 ))}
               </ul>
             </div>
