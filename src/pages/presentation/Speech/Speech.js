@@ -281,7 +281,7 @@ const Speech = () => {
     );
   };
 
-  const patchUserSymbol = async () => {
+  const patchUserSymbol = useCallback(async () => {
     try {
       const symbolObj = {
         enter: enterSymbol,
@@ -301,11 +301,25 @@ const Speech = () => {
           userSymbol: JSON.stringify(symbolObj),
         }
       );
-      console.log("patch user symbol response:", res);
+      console.log(
+        "patch user symbol response:",
+        res,
+        "사용자 기호: ",
+        symbolObj
+      );
     } catch (err) {
       console.log("patch user symbol error:", err);
     }
-  };
+  }, [
+    enterSymbol,
+    pauseSymbol,
+    mouseSymbol,
+    slashSymbol,
+    highlighted,
+    edited,
+    presentation_id,
+    speech_id,
+  ]);
 
   // tool bar
   const [cursor, setCursor] = useState("");
@@ -404,9 +418,10 @@ const Speech = () => {
         setCount(started[selectedWordIdx]);
         break;
     }
-    if (!isNaN(selectedSymbol)) {
-      patchUserSymbol();
-    }
+    // if (!isNaN(selectedSymbol)) {
+    //   patchUserSymbol();
+    //   console.log("클릭: ", edited[selectedWordIdx]);
+    // }
   };
 
   const onReset = () => {
@@ -501,10 +516,13 @@ const Speech = () => {
         updated[i] = e.target.innerText;
       }
       setEdited(updated);
-      patchUserSymbol();
+      // patchUserSymbol();
     },
     [edited, text]
   );
+  useEffect(() => {
+    patchUserSymbol();
+  }, [edited, patchUserSymbol]);
 
   const createSpeech = async () => {
     let res = null;
@@ -604,12 +622,14 @@ const Speech = () => {
                             </>
                           )}
 
-                          {correction.PAUSE_TOO_LONG.has(i - 1) && (
-                            <Correction> 🔸🔸 </Correction>
-                          )}
-                          {correction.PAUSE_TOO_SHORT.has(i - 1) && (
-                            <Correction> 🔹🔹 </Correction>
-                          )}
+                          {correction.PAUSE_TOO_LONG &&
+                            correction.PAUSE_TOO_LONG.has(i - 1) && (
+                              <Correction> 🔸🔸 </Correction>
+                            )}
+                          {correction.PAUSE_TOO_SHORT &&
+                            correction.PAUSE_TOO_SHORT.has(i - 1) && (
+                              <Correction> 🔹🔹 </Correction>
+                            )}
                         </Symbol>
                         <span
                           style={{
@@ -683,6 +703,7 @@ const Speech = () => {
                                 onKeyDown={(e) => {
                                   if (e.key === "Enter") {
                                     e.preventDefault(); // 줄바꿈 방지
+                                    handleBlur(e, i);
                                   }
                                 }}
                                 onBlur={(e) => {
