@@ -179,12 +179,12 @@ const Speech = () => {
   //   TOO_SLOW: [10, 11, 12],
   // });
   const [correction, setCorrection] = useState({
-    PAUSE_TOO_LONG: {},
-    PAUSE_TOO_SHORT: {},
-    TOO_FAST: {},
-    startFast: {},
-    TOO_SLOW: {},
-    startSlow: {},
+    PAUSE_TOO_LONG: new Set(),
+    PAUSE_TOO_SHORT: new Set(),
+    TOO_FAST: new Set(),
+    startFast: new Set(),
+    TOO_SLOW: new Set(),
+    startSlow: new Set(),
   });
   const getCorrection = async (url) => {
     try {
@@ -522,7 +522,7 @@ const Speech = () => {
   );
   useEffect(() => {
     patchUserSymbol();
-  }, [edited, patchUserSymbol]);
+  }, [patchUserSymbol]);
 
   const createSpeech = async () => {
     let res = null;
