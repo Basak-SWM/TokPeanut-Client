@@ -23,7 +23,11 @@ import MyPage from "./component/user/MyPage";
 import MyMatching from "./component/user/MyMatching";
 
 import Notfound from "./component/Notfound";
-
+import dayjs from "dayjs";
+import "dayjs/locale/ko";
+import * as relativeTime from "dayjs/plugin/relativeTime";
+dayjs.locale("ko");
+dayjs.extend(relativeTime);
 function App() {
   return (
     <>
