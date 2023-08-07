@@ -85,7 +85,10 @@ to {
 `;
 // 스크립트의 단어
 export const Text = styled.span`
-  min-width: 50px;
+  /* display: inline-flex;
+  width: fit-content; */
+  flex-direction: column;
+  /* min-width: 50px; */
   position: relative;
   background-clip: ${(props) => (props.$played === "playing" ? "text" : "")};
   -webkit-background-clip: ${(props) =>
@@ -115,12 +118,12 @@ export const Text = styled.span`
   margin-right: ${(props) => (props.$continued ? "none" : "5px")};
   padding-right: ${(props) => (props.$continued ? "5px" : "none")};
   text-decoration: ${(props) => (props.$edited ? "underline" : "none")};
-  text-decoration: ${(props) =>
+  /* text-decoration: ${(props) =>
     props.$correction === "fast"
       ? "red dotted overline "
       : props.$correction === "slow"
       ? "green dotted overline "
-      : "none"};
+      : "none"}; */
 
   &:hover {
     /* text-decoration: orange dashed underline; */
