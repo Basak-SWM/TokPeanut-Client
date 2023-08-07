@@ -151,7 +151,7 @@ const Speech = () => {
       if (res.status === 200) {
         setIsDone(true);
         getSTT(res.data.STT);
-        // getCorrection(res.data.SPEECH_CORRECTION);
+        getCorrection(res.data.SPEECH_CORRECTION);
       } else {
         console.log("분석 중");
       }
@@ -172,17 +172,49 @@ const Speech = () => {
     }
   };
   // 이전 스피치의 교정 부호 가져오기 (지금은 mock data)
+  // const [correction, setCorrection] = useState({
+  //   PAUSE_TOO_LONG: [1],
+  //   PAUSE_TOO_SHORT: [6],
+  //   TOO_FAST: [7, 8, 9],
+  //   TOO_SLOW: [10, 11, 12],
+  // });
   const [correction, setCorrection] = useState({
-    PAUSE_TOO_LONG: [1],
-    PAUSE_TOO_SHORT: [6],
-    TOO_FAST: [7, 8, 9],
-    TOO_SLOW: [10, 11, 12],
+    PAUSE_TOO_LONG: {},
+    PAUSE_TOO_SHORT: {},
+    TOO_FAST: {},
+    startFast: {},
+    TOO_SLOW: {},
+    startSlow: {},
   });
   const getCorrection = async (url) => {
     try {
       const res = await axios.get(url);
       console.log("correction response:", res);
-      const correction = JSON.parse(res.data);
+      let correctionList = JSON.parse(res.data);
+      const correction = {
+        PAUSE_TOO_LONG: new Set(correctionList.PAUSE_TOO_LONG),
+        PAUSE_TOO_SHORT: new Set(correctionList.PAUSE_TOO_SHORT),
+        TOO_FAST: new Set(
+          correctionList.TOO_FAST.map((seg) => {
+            let fastSeg = [];
+            for (let i = seg[0]; i <= seg[1]; i++) {
+              fastSeg.push(i);
+            }
+            return fastSeg;
+          }).flat()
+        ),
+        startFast: new Set(correctionList.TOO_FAST.map((seg) => seg[0])),
+        TOO_SLOW: new Set(
+          correctionList.TOO_SLOW.map((seg) => {
+            let slowSeg = [];
+            for (let i = seg[0]; i <= seg[1]; i++) {
+              slowSeg.push(i);
+            }
+            return slowSeg;
+          }).flat()
+        ),
+        startSlow: new Set(correctionList.TOO_SLOW.map((seg) => seg[0])),
+      };
       console.log("correction:", correction);
       setCorrection(correction);
     } catch (err) {
@@ -288,7 +320,7 @@ const Speech = () => {
     { name: "쉬기", src: "/img/script/toolbar/pause.svg" },
     { name: "클릭", src: "/img/script/toolbar/mouse.svg" },
     { name: "끊어읽기", src: "/img/script/toolbar/slash.svg" },
-    { name: "지우개", src: erase },
+    { name: "지우개", src: "/img/script/toolbar/eraser.svg" },
   ];
 
   // 기호 클릭시 selectedSymbol을 해당 기호 이미지로 변경 -> 커서 변경
@@ -469,6 +501,7 @@ const Speech = () => {
         updated[i] = e.target.innerText;
       }
       setEdited(updated);
+      patchUserSymbol();
     },
     [edited, text]
   );
@@ -527,7 +560,10 @@ const Speech = () => {
                     {symbols.map((c, i) => (
                       <li key={i}>
                         <Button disabled>
-                          <img src={i < 3 ? symbols[3].src : c.src} />
+                          <img
+                            src={i < 3 ? symbols[3].src : c.src}
+                            alt="symbol"
+                          />
                           <p>{c.name}</p>
                         </Button>
                       </li>
@@ -559,79 +595,117 @@ const Speech = () => {
                 <TextArea>
                   <p>
                     {text.map((word, i) => (
-                      <s.Text
-                        key={i}
-                        $played={
-                          started[i] < count
-                            ? count < ended[i]
-                              ? "playing"
-                              : "played"
-                            : "not played"
-                        }
-                        $duration={duration[i]}
-                        color={highlighted[i]}
-                        $continued={
-                          highlighted[i] === highlighted[i + 1] ? 1 : 0
-                        } // 형광펜이 연달아 적용 되는지
-                        onClick={clickWord}
-                        id={i}
-                        $edited={edited[i] ? 1 : 0}
-                        $correction={
-                          correction.TOO_FAST.includes(i)
-                            ? "fast"
-                            : correction.TOO_SLOW.includes(i)
-                            ? "slow"
-                            : null
-                        }
-                      >
-                        {enterSymbol[i] && (
-                          <>
-                            <img src={symbols[4].src} />
-                            <br />
-                          </>
-                        )}
-                        {pauseSymbol[i] && <img src={symbols[5].src} />}
-                        {mouseSymbol[i] && <img src={symbols[6].src} />}
-                        {slashSymbol[i] && <img src={symbols[7].src} />}
-                        {correction.PAUSE_TOO_LONG.includes(i) && (
-                          <Correction> 🔸 </Correction>
-                        )}
-                        {correction.PAUSE_TOO_SHORT.includes(i) && (
-                          <Correction> 🔹 </Correction>
-                        )}
-                        {/* {correction.TOO_FAST.includes(i) && (
+                      <>
+                        <Symbol>
+                          {enterSymbol[i] && (
+                            <>
+                              <img src={symbols[4].src} alt="enter" />
+                              <br />
+                            </>
+                          )}
+
+                          {correction.PAUSE_TOO_LONG.has(i - 1) && (
+                            <Correction> 🔸🔸 </Correction>
+                          )}
+                          {correction.PAUSE_TOO_SHORT.has(i - 1) && (
+                            <Correction> 🔹🔹 </Correction>
+                          )}
+                        </Symbol>
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            flexDirection: "column",
+                          }}
+                        >
+                          <CorrectionLine
+                            $status={
+                              correction.TOO_FAST.has(i)
+                                ? "fast"
+                                : correction.TOO_SLOW.has(i)
+                                ? "slow"
+                                : null
+                            }
+                          >
+                            {/* {correction.TOO_FAST.has(i)
+                              ? "빨라요"
+                              : correction.TOO_SLOW.has(i)
+                              ? "느려요"
+                              : null} */}
+                            {correction.startFast.has(i)
+                              ? "너무 빨라요"
+                              : correction.startSlow.has(i)
+                              ? "너무 느려요"
+                              : "\u00A0"}
+                          </CorrectionLine>
+                          <s.Text
+                            key={i}
+                            $played={
+                              started[i] < count
+                                ? count < ended[i]
+                                  ? "playing"
+                                  : "played"
+                                : "not played"
+                            }
+                            $duration={duration[i]}
+                            color={highlighted[i]}
+                            $continued={
+                              highlighted[i] === highlighted[i + 1] ? 1 : 0
+                            } // 형광펜이 연달아 적용 되는지
+                            onClick={clickWord}
+                            id={i}
+                            $edited={edited[i] ? 1 : 0}
+                            // $correction={
+                            //   correction.TOO_FAST.has(i)
+                            //     ? "fast"
+                            //     : correction.TOO_SLOW.has(i)
+                            //     ? "slow"
+                            //     : null
+                            // }
+                          >
+                            {/* {correction.TOO_FAST.includes(i) && (
                           <Correction> ↔ </Correction>
                         )}
                         {correction.TOO_SLOW.includes(i) && (
                           <Correction> ↔ </Correction>
                         )} */}
-
-                        <span>
-                          <span
-                            ref={(el) => (wordRef.current[i] = el)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                e.preventDefault(); // 줄바꿈 방지
-                              }
-                            }}
-                            onBlur={(e) => {
-                              handleBlur(e, i);
-                            }}
-                            // contentEditable={cursor === edit} // 현재 커서가 수정펜일 때만 수정 모드
-                            contentEditable={selectedSymbol === 3} // 현재 커서가 수정펜일 때만 수정 모드
-                            edited={edited[i]}
-                            spellCheck={false}
-                            suppressContentEditableWarning={true} // warning 무시
-                          >
-                            {edited[i] ? edited[i] : word}
-                          </span>
-                          {edited[i] ? (
-                            <s.OriginalText contentEditable={false}>
-                              수정 전: {word}
-                            </s.OriginalText>
-                          ) : null}
+                            {pauseSymbol[i] && (
+                              <img src={symbols[5].src} alt="pause" />
+                            )}
+                            {mouseSymbol[i] && (
+                              <img src={symbols[6].src} alt="click" />
+                            )}
+                            {slashSymbol[i] && (
+                              <img src={symbols[7].src} alt="slash" />
+                            )}
+                            <span>
+                              <span
+                                ref={(el) => (wordRef.current[i] = el)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    e.preventDefault(); // 줄바꿈 방지
+                                  }
+                                }}
+                                onBlur={(e) => {
+                                  handleBlur(e, i);
+                                }}
+                                // contentEditable={cursor === edit} // 현재 커서가 수정펜일 때만 수정 모드
+                                contentEditable={selectedSymbol === 3} // 현재 커서가 수정펜일 때만 수정 모드
+                                edited={edited[i]}
+                                spellCheck={false}
+                                suppressContentEditableWarning={true} // warning 무시
+                              >
+                                {edited[i] ? edited[i] : word}
+                              </span>
+                              {/* 수정 전 단어 툴팁 */}
+                              {edited[i] ? (
+                                <s.OriginalText contentEditable={false}>
+                                  수정 전: {word}
+                                </s.OriginalText>
+                              ) : null}
+                            </span>
+                          </s.Text>
                         </span>
-                      </s.Text>
+                      </>
                     ))}
                   </p>
                 </TextArea>
@@ -845,6 +919,9 @@ const TextArea = styled(Box)`
   padding: 3rem;
   p {
     /* height: fit-content; */
+    /* display: flex; */
+    /* align-items: center; */
+    flex-direction: row;
     height: 420px;
     overflow-y: scroll;
     padding: 3rem;
@@ -876,6 +953,46 @@ const TextArea = styled(Box)`
       font-size: 1.8rem;
     }
   }
+`;
+
+const CorrectionLine = styled.span`
+  /* height: 2px; */
+  line-height: 100%;
+  /* border-bottom: ${(props) =>
+    props.$status === "fast"
+      ? "solid red .3rem"
+      : props.$status === "slow"
+      ? "solid green .3rem"
+      : "transparent"}; */
+  background-color: ${(props) =>
+    props.$status === "fast"
+      ? "red"
+      : props.$status === "slow"
+      ? "green"
+      : "transparent"};
+  opacity: 0.7;
+  font-size: 1rem;
+  font-weight: bold;
+  color: white;
+  /* color: ${(props) =>
+    props.$status === "fast"
+      ? "red"
+      : props.$status === "slow"
+      ? "green"
+      : "transparent"}; */
+  /* background-color: red; */
+`;
+const Symbol = styled.span`
+  /* margin: auto; */
+  height: 3rem;
+  vertical-align: bottom;
+  padding-bottom: 1rem;
+  /* img {
+    margin-top: 2rem;
+  } */
+`;
+const Correction = styled.span`
+  color: #ff7134;
 `;
 
 const Disabled = styled(Box)`
@@ -999,10 +1116,6 @@ const ToolBarWrap = styled(Box)`
       }
     }
   }
-`;
-
-const Correction = styled.span`
-  color: #ff7134;
 `;
 
 // 하단 바
