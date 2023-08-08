@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import * as s from "./SummaryStyle";
 import Pagination from "../Pagination/Pagination";
@@ -229,8 +229,29 @@ const Summary = () => {
   });
   const presentation_id = query.presentation_id;
 
+  const patchBookmark = async (e, selectedSpeechId) => {
+    e.stopPropagation();
+    const isBookmarked = e.target.checked;
+    try {
+      const res = await api.patch(
+        `/presentations/${presentation_id}/speeches/${selectedSpeechId}`,
+        {
+          params: {
+            "presentation-id": presentation_id,
+            "speech-id": selectedSpeechId,
+          },
+          bookmarked: isBookmarked,
+        }
+      );
+      console.log("patch bookmark response:", res);
+      getSpeechList();
+    } catch (err) {
+      console.log("patch bookmark error:", err);
+    }
+  };
+
   const [speechList, setSpeechList] = useState([]);
-  const getSpeechList = async () => {
+  const getSpeechList = useCallback(async () => {
     try {
       const res = await api.get(`/presentations/${presentation_id}/speeches`);
       console.log("speech list response:", res);
@@ -242,7 +263,7 @@ const Summary = () => {
     } catch (err) {
       console.log("speech list error:", err);
     }
-  };
+  }, []);
 
   useEffect(() => {
     getSpeechList();
@@ -322,8 +343,8 @@ const Summary = () => {
                         {...label}
                         icon={<StarBorderIcon />}
                         checkedIcon={<StarIcon />}
-                        // checked
-                        onClick={(e) => e.stopPropagation()}
+                        checked={speech.bookmarked}
+                        onClick={(e) => patchBookmark(e, speech.id)}
                       />
                       <div className="name">
                         <h3>Speech {i + 1}</h3>
