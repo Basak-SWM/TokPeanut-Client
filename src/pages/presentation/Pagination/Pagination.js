@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import qs from "qs";
 import * as s from "./PaginationStyle";
@@ -34,8 +34,29 @@ const Pagination = () => {
   const presentation_id = query.presentation_id;
   const speech_id = query.speech_id;
 
+  const patchBookmark = async (e, selectedSpeechId) => {
+    e.stopPropagation();
+    const isBookmarked = e.target.checked;
+    try {
+      const res = await api.patch(
+        `/presentations/${presentation_id}/speeches/${selectedSpeechId}`,
+        {
+          params: {
+            "presentation-id": presentation_id,
+            "speech-id": selectedSpeechId,
+          },
+          bookmarked: isBookmarked,
+        }
+      );
+      console.log("patch bookmark response:", res);
+      getSpeechList();
+    } catch (err) {
+      console.log("patch bookmark error:", err);
+    }
+  };
+
   const [speechList, setSpeechList] = useState([]);
-  const getSpeechList = async () => {
+  const getSpeechList = useCallback(async () => {
     try {
       const res = await api.get(`/presentations/${presentation_id}/speeches`);
       console.log("speech list response:", res);
@@ -48,7 +69,7 @@ const Pagination = () => {
     } catch (err) {
       console.log("speech list error:", err);
     }
-  };
+  }, []);
 
   useEffect(() => {
     getSpeechList();
@@ -88,8 +109,8 @@ const Pagination = () => {
                   {...label}
                   icon={<StarBorderIcon />}
                   checkedIcon={<StarIcon />}
-                  // checked={speech.stared}
-                  onClick={(e) => e.stopPropagation()}
+                  checked={speech.bookmarked}
+                  onClick={(e) => patchBookmark(e, speech.id)}
                 />
               </li>
             ))}
