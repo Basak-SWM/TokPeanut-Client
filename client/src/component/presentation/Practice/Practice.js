@@ -6,11 +6,6 @@ import * as s from "./PracticeStyle";
 import axios from "axios";
 import qs from "qs";
 
-import enter from "../../../image/icons/enter.png";
-import pause from "../../../image/icons/pause.png";
-import mouse from "../../../image/icons/mouse.png";
-import slash from "../../../image/icons/slash.png";
-
 import styled from "@emotion/styled";
 import { createGlobalStyle } from "styled-components";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
@@ -51,12 +46,6 @@ const Practice = ({ isNew }) => {
   const speech_id = query.speech_id;
   const navigate = useNavigate();
 
-  // 스크립트 mock data
-  // const text
-  //   "저희는 음성 데이터 분석을 통해 스피치에 있어 중요한 요소들을 평가하고, 연습에 유용한 도구를 제공하여 반복을 통한 스피치 실력 향상을 도우며, 스피치 전문가와의 부담 없는 코칭 환경을 제공하는 솔루션인 톡피넛을 개발하려고 합니다. 기존에도 발표 연습 도우미와 같은 서비스들은 존재합니다. 그러나 이런 서비스들은 스피치 교정이라기 보다는 연습 보조에 치우쳐 있습니다. 스피치 학원같이 전문가의 코칭을 받는 방법도 있지만 설문조사 결과 사용자들은 이런 코칭에 부담감을 느끼는 것으로 나타났습니다. 또한 많은 사용자들이 스피치를 혼자 녹음한 후 다시 들어보며 연습한다고 응답했기 때문에, 저희는 그 과정에 필요한 도구를 제공하고 보완점을 교정해주며, 나아가 전문가의 도움을 부담 없이 받도록 해주는 솔루션을 제공하고자 합니다. 저희가 생각한 기능은 크게 스피치 녹음 및 피드백, 교정 표시와 사용자 기호, 스피치 전문가 매칭으로 나뉩니다. 이에 대해서는 뒤에서 자세히 설명드리겠습니다. 프로젝트 중에는 최대한 사용자들의 의견을 많이 반영하려고 합니다. 다양한 스피치 분야 중 특히 발표에 특화된 솔루션을 먼저 제작해 8월과 10월에 총 두 번 베타테스트를 진행할 예정입니다. 사용자의 피드백을 받아 기능을 개선한 후 다른 분야의 스피치도 지원하도록 수평적으로 확장할 계획입니다. 결과물은 웹 서비스와 하이브리드 앱으로 생각하고 있고, 솔루션에 대해 특허 출원을 할 것입니다. 저희 솔루션을 통해 스피치 교정에 대한 진입 장벽이 완화되어 잠재 고객이 스피치 교정 시장의 고객으로 전환될 수 있을 것입니다. 기획에 앞서 설문조사를 진행해 보았습니다. 총 91.2%의 사용자가 말하기 실력 향상을 위해 따로 시간을 들여 노력해 본 경험이 있다고 답했으며, 62.1%의 사용자가 전문가에게 스피치 코칭을 받아 볼 의향은 있으나 경험은 없다고 답했습니다. 스피치 코칭을 주저하는 이유로는 비용의 부담, 시공간적 제약, 심리적 부담감을 꼽았습니다. 가장 많은 응답을 받은 비용의 부담에 관해 조사해 보니 실제 스피치 학원의 수업료는 1회 20만원으로 금전적 부담이 컸습니다. 또한 대부분 대면 수업으로 진행되므로 시공간적 제약도 항상 존재했습니다. 스피치 학원 대신, 사용자들은 주로 혼자 발표 내용을 녹음해 들어보며 연습하는 것으로 나타났습니다. 그 과정에서 예상되는 어려움과 그를 해결하기 위한 기능에 대해 사용자가 얼마나 긍정적인 반응을 보일 지 조사해 보았습니다. 보다시피 대부분의 사용자가 저희가 제공하고자 하는 기능에 긍정적인 반응을 보였습니다. 지금까지 설명드린 설문조사 결과에서, 저희는 효과적이고 효율적인 스피치 연습을 가능하게 하고, 스피치 교정에 대한 사용자의 부담을 덜 수 있는 솔루션의 필요성을 확인했습니다.".split(
-  //     " "
-  //   );
-
   // 이전 스피치 정보 가져오기
   useEffect(() => {
     getSpeech();
@@ -68,10 +57,43 @@ const Practice = ({ isNew }) => {
         `/presentations/${presentation_id}/speeches/${speech_id}`
       );
       console.log("이전 speech response:", res);
-      getResult(res.data.refSpeechId);
+      getResult(res.data.refSpeechId); // 분석 결과 가져오기
+      getUserSymbols(res.data.refSpeechId); // 사용자 기호 가져오기
     } catch (err) {
       console.log("이전 speech error:", err);
     }
+  };
+  const getUserSymbols = async (prev_speech) => {
+    try {
+      const res = await api.get(
+        `/presentations/${presentation_id}/speeches/${prev_speech}`
+      );
+      console.log("이전 speech의 사용자 기호 response:", res);
+      initUserSymbols(res.data.userSymbol);
+    } catch (err) {
+      console.log("이전 speech의 사용자 기호 error:", err);
+    }
+  };
+  // 사용자 기호 불러오기
+  const [enterSymbol, setEnterSymbol] = useState([]);
+  const [pauseSymbol, setPauseSymbol] = useState([]);
+  const [mouseSymbol, setMouseSymbol] = useState([]);
+  const [slashSymbol, setSlashSymbol] = useState([]);
+  const [highlighted, setHighlighted] = useState([]);
+  const [edited, setEdited] = useState([]);
+
+  const initUserSymbols = (userSymbol) => {
+    const symbols = JSON.parse(userSymbol);
+    console.log("user symbols:", symbols);
+
+    if (!symbols) return;
+
+    setEnterSymbol(symbols.enter);
+    setPauseSymbol(symbols.pause);
+    setMouseSymbol(symbols.mouse);
+    setSlashSymbol(symbols.slash);
+    setHighlighted(symbols.highlight);
+    setEdited(symbols.edit);
   };
   // 가져온 이전 스피치 id로 분석 결과 presigned url 가져오기
   const getResult = async (prev_speech) => {
@@ -81,7 +103,7 @@ const Practice = ({ isNew }) => {
       );
       console.log("이전 스피치 분석 결과 response:", res);
       getSTT(res.data.STT);
-      // getCorrection(res.data.SPEECH_CORRECTION);
+      getCorrection(res.data.SPEECH_CORRECTION);
     } catch (err) {
       console.log("이전 스피치 분석 결과 error:", err);
     }
@@ -99,16 +121,42 @@ const Practice = ({ isNew }) => {
   };
   // 이전 스피치의 교정 부호 가져오기 (지금은 mock data)
   const [correction, setCorrection] = useState({
-    PAUSE_TOO_LONG: [1],
-    PAUSE_TOO_SHORT: [6],
-    TOO_FAST: [7, 8, 9],
-    TOO_SLOW: [10, 11, 12],
+    PAUSE_TOO_LONG: new Set(),
+    PAUSE_TOO_SHORT: new Set(),
+    TOO_FAST: new Set(),
+    startFast: new Set(),
+    TOO_SLOW: new Set(),
+    startSlow: new Set(),
   });
   const getCorrection = async (url) => {
     try {
       const res = await axios.get(url);
       console.log("correction response:", res);
-      const correction = JSON.parse(res.data);
+      const correctionList = JSON.parse(res.data);
+      const correction = {
+        PAUSE_TOO_LONG: new Set(correctionList.PAUSE_TOO_LONG),
+        PAUSE_TOO_SHORT: new Set(correctionList.PAUSE_TOO_SHORT),
+        TOO_FAST: new Set(
+          correctionList.TOO_FAST.map((seg) => {
+            let fastSeg = [];
+            for (let i = seg[0]; i <= seg[1]; i++) {
+              fastSeg.push(i);
+            }
+            return fastSeg;
+          }).flat()
+        ),
+        startFast: new Set(correctionList.TOO_FAST.map((seg) => seg[0])),
+        TOO_SLOW: new Set(
+          correctionList.TOO_SLOW.map((seg) => {
+            let slowSeg = [];
+            for (let i = seg[0]; i <= seg[1]; i++) {
+              slowSeg.push(i);
+            }
+            return slowSeg;
+          }).flat()
+        ),
+        startSlow: new Set(correctionList.TOO_SLOW.map((seg) => seg[0])),
+      };
       console.log("correction:", correction);
       setCorrection(correction);
     } catch (err) {
@@ -116,37 +164,22 @@ const Practice = ({ isNew }) => {
     }
   };
 
-  // 각 기호의 렌더링 여부
-  // Practice 컴포넌트에서는 사용자 기호를 수정할 일이 없으므로 상수로 선언
-  // const enterSymbol = text.map((s, i) => (i === 38 ? true : false));
-  // const pauseSymbol = text.map((s, i) => (i === 100 ? true : false));
-  // const mouseSymbol = text.map((s, i) => (i === 40 ? true : false));
-  // const slashSymbol = text.map((s, i) => (i % 7 === 2 ? true : false));
-  // const highlighted = text.map((s, i) =>
-  //   i === 10 ? "pink" : i === 35 ? "yellow" : ""
-  // );
-
   const [text, setText] = useState([]);
 
-  const [enterSymbol, setEnterSymbol] = useState([]);
-  const [pauseSymbol, setPauseSymbol] = useState([]);
-  const [mouseSymbol, setMouseSymbol] = useState([]);
-  const [slashSymbol, setSlashSymbol] = useState([]);
-  const [highlighted, setHighlighted] = useState([]);
-  const [edited, setEdited] = useState([]);
+  const symbols = [
+    { name: "강조", src: "/img/script/toolbar/color/pencil1.svg" },
+    { name: "빠르게", src: "/img/script/toolbar/color/pencil2.svg" },
+    { name: "느리게", src: "/img/script/toolbar/color/pencil3.svg" },
+    { name: "수정", src: "/img/script/toolbar/pencil.svg" },
+    { name: "엔터", src: "/img/script/toolbar/down-left.svg" },
+    { name: "쉬기", src: "/img/script/toolbar/pause.svg" },
+    { name: "클릭", src: "/img/script/toolbar/mouse.svg" },
+    { name: "끊어읽기", src: "/img/script/toolbar/slash.svg" },
+    { name: "지우개", src: "/img/script/toolbar/eraser.svg" },
+  ];
 
   const initSTT = (stt) => {
-    // stt 결과 형식에 맞게 데이터 파싱
-    text.push(...stt.segments.flatMap((seg) => seg.words.map((w) => w[2])));
-    setText(text);
-
-    // 사용자 기호에 맞게 바꿔서 파싱할 것!
-    setEnterSymbol(text.map(() => false));
-    setPauseSymbol(text.map(() => false));
-    setMouseSymbol(text.map(() => false));
-    setSlashSymbol(text.map(() => false));
-    setHighlighted(text.map(() => ""));
-    setEdited(text.map(() => null));
+    setText(stt.segments.flatMap((seg) => seg.words.map((w) => w[2])));
   };
 
   // 실시간 파형
@@ -450,39 +483,72 @@ const Practice = ({ isNew }) => {
                   <div className="text-wrap">
                     <p>
                       {text.map((word, i) => (
-                        <s.Text
-                          color={highlighted[i]}
-                          $continued={
-                            highlighted[i] === highlighted[i + 1] ? 1 : 0
-                          }
-                          key={i}
-                          id={i}
-                          $edited={edited[i] ? 1 : 0}
-                          $correction={
-                            correction.TOO_FAST.includes(i)
-                              ? "fast"
-                              : correction.TOO_SLOW.includes(i)
-                              ? "slow"
-                              : null
-                          }
-                        >
-                          {enterSymbol[i] && (
-                            <>
-                              <s.Tool src={enter} />
-                              <br />
-                            </>
-                          )}
-                          {pauseSymbol[i] && <s.Tool src={pause} />}
-                          {mouseSymbol[i] && <s.Tool src={mouse} />}
-                          {slashSymbol[i] && <s.Tool src={slash} />}
-                          {correction.PAUSE_TOO_LONG.includes(i) && (
-                            <Correction> ⏕ </Correction>
-                          )}
-                          {correction.PAUSE_TOO_SHORT.includes(i) && (
-                            <Correction> ⏔ </Correction>
-                          )}
-                          {word}
-                        </s.Text>
+                        <>
+                          <Symbol>
+                            {enterSymbol[i] && (
+                              <>
+                                <img src={symbols[4].src} alt="enter" />
+                                <br />
+                              </>
+                            )}
+
+                            {correction.PAUSE_TOO_LONG &&
+                              correction.PAUSE_TOO_LONG.has(i - 1) && (
+                                <Correction> 🔸🔸 </Correction>
+                              )}
+                            {correction.PAUSE_TOO_SHORT &&
+                              correction.PAUSE_TOO_SHORT.has(i - 1) && (
+                                <Correction> 🔹🔹 </Correction>
+                              )}
+                          </Symbol>
+                          <span
+                            style={{
+                              display: "inline-flex",
+                              flexDirection: "column",
+                            }}
+                          >
+                            <CorrectionLine
+                              $status={
+                                correction.TOO_FAST.has(i)
+                                  ? "fast"
+                                  : correction.TOO_SLOW.has(i)
+                                  ? "slow"
+                                  : null
+                              }
+                            >
+                              {/* {correction.TOO_FAST.has(i)
+                              ? "빨라요"
+                              : correction.TOO_SLOW.has(i)
+                              ? "느려요"
+                              : null} */}
+                              {correction.startFast.has(i)
+                                ? "너무 빨라요"
+                                : correction.startSlow.has(i)
+                                ? "너무 느려요"
+                                : "\u00A0"}
+                            </CorrectionLine>
+                            <s.Text
+                              color={highlighted[i]}
+                              $continued={
+                                highlighted[i] === highlighted[i + 1] ? 1 : 0
+                              }
+                              key={i}
+                              id={i}
+                              $edited={edited[i] ? 1 : 0}
+                            >
+                              {pauseSymbol[i] && (
+                                <img src={symbols[5].src} alt="pause" />
+                              )}
+                              {mouseSymbol[i] && (
+                                <img src={symbols[6].src} alt="click" />
+                              )}
+                              {slashSymbol[i] && (
+                                <img src={symbols[7].src} alt="slash" />
+                              )}
+                              {word}
+                            </s.Text>
+                          </span>
+                        </>
                       ))}
                     </p>
                     {/* <StyledTextField
@@ -715,6 +781,13 @@ const TextArea = styled(Box)`
     line-height: 200%;
     color: #3b3b3b;
     margin-bottom: 2rem;
+    img {
+      width: 1.5rem;
+      height: 1.5rem;
+      margin: 0 0.5rem 0 0.5rem;
+      filter: invert(43%) sepia(98%) saturate(401%) hue-rotate(346deg)
+        brightness(101%) contrast(88%);
+    }
   }
 
   .stt-text {
@@ -866,4 +939,26 @@ const Correction = styled.span`
   color: #ff7134;
 `;
 
+const Symbol = styled.span`
+  /* margin: auto; */
+  height: 3rem;
+  vertical-align: bottom;
+  padding-bottom: 1rem;
+  /* img {
+    margin-top: 2rem;
+  } */
+`;
+const CorrectionLine = styled.span`
+  line-height: 100%;
+  background-color: ${(props) =>
+    props.$status === "fast"
+      ? "red"
+      : props.$status === "slow"
+      ? "green"
+      : "transparent"};
+  opacity: 0.7;
+  font-size: 1rem;
+  font-weight: bold;
+  color: white;
+`;
 export default Practice;
