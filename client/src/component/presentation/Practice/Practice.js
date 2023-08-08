@@ -46,23 +46,40 @@ const Practice = ({ isNew }) => {
   const speech_id = query.speech_id;
   const navigate = useNavigate();
 
-  // 이전 스피치 정보 가져오기
+  // 임시저장된 오디오 세그먼트 가져와서 저장
+  const getAudioSegments = async (audioSegmentsUrl) => {
+    try {
+      for (const url of audioSegmentsUrl) {
+        const res = await axios.get(url, { responseType: "blob" });
+        // console.log("audio segment: ", res.data);
+        segmentRef.current.push(res.data);
+      }
+    } catch (error) {
+      console.error("Error combining audio:", error);
+    }
+  };
+
   useEffect(() => {
     getSpeech();
   }, []);
-  // 우선 이전 스피치의 id 받아오기
+  // 우선 현재 스피치 조회
+  // 이전 스피치의 id 받아오기
+  // 현재 스피치의 오디오 세그먼트 가져오기
   const getSpeech = async () => {
     try {
       const res = await api.get(
         `/presentations/${presentation_id}/speeches/${speech_id}`
       );
-      console.log("이전 speech response:", res);
+      console.log("speech response:", res);
       getResult(res.data.refSpeechId); // 분석 결과 가져오기
       getUserSymbols(res.data.refSpeechId); // 사용자 기호 가져오기
+      getAudioSegments(res.data.audioSegments); // 오디오 세그먼트 가져오기
     } catch (err) {
-      console.log("이전 speech error:", err);
+      console.log("speech error:", err);
     }
   };
+
+  // 사용자 기호 불러오기
   const getUserSymbols = async (prev_speech) => {
     try {
       const res = await api.get(
@@ -74,17 +91,15 @@ const Practice = ({ isNew }) => {
       console.log("이전 speech의 사용자 기호 error:", err);
     }
   };
-  // 사용자 기호 불러오기
   const [enterSymbol, setEnterSymbol] = useState([]);
   const [pauseSymbol, setPauseSymbol] = useState([]);
   const [mouseSymbol, setMouseSymbol] = useState([]);
   const [slashSymbol, setSlashSymbol] = useState([]);
   const [highlighted, setHighlighted] = useState([]);
   const [edited, setEdited] = useState([]);
-
   const initUserSymbols = (userSymbol) => {
     const symbols = JSON.parse(userSymbol);
-    console.log("user symbols:", symbols);
+    // console.log("user symbols:", symbols);
 
     if (!symbols) return;
 
@@ -95,7 +110,8 @@ const Practice = ({ isNew }) => {
     setHighlighted(symbols.highlight);
     setEdited(symbols.edit);
   };
-  // 가져온 이전 스피치 id로 분석 결과 presigned url 가져오기
+
+  // 분석 결과 presigned url 가져오기
   const getResult = async (prev_speech) => {
     try {
       const res = await api.get(
@@ -119,7 +135,7 @@ const Practice = ({ isNew }) => {
       console.log("stt error:", err);
     }
   };
-  // 이전 스피치의 교정 부호 가져오기 (지금은 mock data)
+  // 이전 스피치의 교정 부호 가져오기
   const [correction, setCorrection] = useState({
     PAUSE_TOO_LONG: new Set(),
     PAUSE_TOO_SHORT: new Set(),
@@ -131,7 +147,7 @@ const Practice = ({ isNew }) => {
   const getCorrection = async (url) => {
     try {
       const res = await axios.get(url);
-      console.log("correction response:", res);
+      // console.log("correction response:", res);
       const correctionList = JSON.parse(res.data);
       const correction = {
         PAUSE_TOO_LONG: new Set(correctionList.PAUSE_TOO_LONG),
@@ -157,7 +173,7 @@ const Practice = ({ isNew }) => {
         ),
         startSlow: new Set(correctionList.TOO_SLOW.map((seg) => seg[0])),
       };
-      console.log("correction:", correction);
+      // console.log("correction:", correction);
       setCorrection(correction);
     } catch (err) {
       console.log("correction error:", err);
@@ -165,6 +181,9 @@ const Practice = ({ isNew }) => {
   };
 
   const [text, setText] = useState([]);
+  const initSTT = (stt) => {
+    setText(stt.segments.flatMap((seg) => seg.words.map((w) => w[2])));
+  };
 
   const symbols = [
     { name: "강조", src: "/img/script/toolbar/color/pencil1.svg" },
@@ -177,10 +196,6 @@ const Practice = ({ isNew }) => {
     { name: "끊어읽기", src: "/img/script/toolbar/slash.svg" },
     { name: "지우개", src: "/img/script/toolbar/eraser.svg" },
   ];
-
-  const initSTT = (stt) => {
-    setText(stt.segments.flatMap((seg) => seg.words.map((w) => w[2])));
-  };
 
   // 실시간 파형
   const waveformRef = useRef(null);
@@ -364,7 +379,7 @@ const Practice = ({ isNew }) => {
   const play = () => {
     const segments = segmentRef.current;
     const audioElement = document.querySelector("#audio");
-
+    // console.log("segments: ", segments);
     const combinedBlob = new Blob(segments, { type: "audio/webm" }); // 지금까지의 음성 데이터
     let audioUrl = URL.createObjectURL(combinedBlob);
     audioElement.src = audioUrl;
@@ -381,7 +396,6 @@ const Practice = ({ isNew }) => {
     const audioElement = document.querySelector("#audio");
     audioElement.pause();
     setPlaying(false);
-    console.log("pause playing");
   };
 
   // STT
@@ -423,39 +437,6 @@ const Practice = ({ isNew }) => {
       console.log("record done error: ", err);
     }
   };
-
-  // const combineAudio = async (audioSegmentsUrl) => {
-  //   try {
-  //     for (const url of audioSegmentsUrl) {
-  //       const res = await axios.get(url);
-  //       const blob = convertToBlob(res.data);
-  //       audioSegments.push(blob);
-  //     }
-
-  //     const combinedBlob = new Blob(audioSegments, { type: "audio/webm" });
-  //     console.log("Combined Blob: ", combinedBlob);
-  //     setAudio(combinedBlob);
-  //   } catch (error) {
-  //     console.error("Error combining audio:", error);
-  //   }
-
-  //   // for (let i = 0; i < audioSegmentsUrl.length; i++) {
-  //   //   const audioSegment = await axios.get(audioSegmentsUrl[i]);
-  //   //   audioSegments.push(convertToBlob(audioSegment.data));
-  //   //   // console.log("audio segment res: ", audioSegment);
-  //   // }
-  //   // console.log(audioSegments);
-  //   // setAudio(new Blob(audioSegments, { type: "audio/webm" }));
-  // };
-
-  // const convertToBlob = (audioSegmentString) => {
-  //   const encoder = new TextEncoder();
-  //   const uint8Array = encoder.encode(audioSegmentString);
-
-  //   const blob = new Blob([uint8Array], { type: "audio/webm" });
-  //   console.log("blob: ", blob);
-  //   return blob;
-  // };
 
   return (
     <>
