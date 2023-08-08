@@ -88,96 +88,7 @@ const Speech = () => {
   const speech_id = query.speech_id;
   const navigate = useNavigate();
   const [audio, setAudio] = useState(null);
-
-  // 스크립트를 위한 스피치 정보 조회
-  useEffect(() => {
-    // let polling = setInterval(async () => {
-    //   const status = await getResult();
-    //   if (status === 200) {
-    //     clearInterval(polling);
-    //   }
-    // }, 3000);
-
-    const polling = async () => {
-      const status = await getResult();
-      if (status === 200) {
-        clearInterval(repeat);
-      }
-    };
-    polling(); // 최초(즉시)실행
-    const repeat = setInterval(polling, 3000);
-
-    getSpeech();
-    // getResult();
-  }, []);
-  // full audio url 가져오기
-  const getSpeech = async () => {
-    let res = null;
-    try {
-      res = await api.get(
-        `/presentations/${presentation_id}/speeches/${speech_id}`
-      );
-      console.log("speech response:", res);
-      // 여기서 사용자 기호 초기화
-      initUserSymbols(res.data.userSymbol);
-      const audioUrl = res.data.fullAudioS3Url;
-      getAudio(audioUrl);
-    } catch (err) {
-      console.log("speech error:", err);
-    }
-  };
-  // audio 가져와서 변환
-  const getAudio = async (audioUrl) => {
-    try {
-      const res = await axios.get(audioUrl, {
-        responseType: "blob",
-      });
-      console.log("audio response:", res);
-      const blob = new Blob([res.data]);
-      setAudio(blob);
-    } catch (err) {
-      console.log("audio error:", err);
-    }
-  };
-  // 분석 결과 url 가져오기
-  const getResult = async () => {
-    let res = null;
-    try {
-      res = await api.get(
-        `/presentations/${presentation_id}/speeches/${speech_id}/analysis-records`
-      );
-      console.log("분석 결과 url response:", res, res.status);
-      // 분석 완료 여부 확인
-      if (res.status === 200) {
-        setIsDone(true);
-        getSTT(res.data.STT);
-        getCorrection(res.data.SPEECH_CORRECTION);
-      } else {
-        console.log("분석 중");
-      }
-    } catch (err) {
-      console.log("분석 결과 url error:", err);
-    }
-    return res.status;
-  };
-  // stt 결과 가져오기
-  const getSTT = async (url) => {
-    try {
-      const res = await axios.get(url);
-      console.log("stt response:", res);
-      const stt = JSON.parse(res.data);
-      initSTT(stt);
-    } catch (err) {
-      console.log("stt error:", err);
-    }
-  };
-  // 이전 스피치의 교정 부호 가져오기 (지금은 mock data)
-  // const [correction, setCorrection] = useState({
-  //   PAUSE_TOO_LONG: [1],
-  //   PAUSE_TOO_SHORT: [6],
-  //   TOO_FAST: [7, 8, 9],
-  //   TOO_SLOW: [10, 11, 12],
-  // });
+  // 이전 스피치의 교정 부호 가져오기
   const [correction, setCorrection] = useState({
     PAUSE_TOO_LONG: new Set(),
     PAUSE_TOO_SHORT: new Set(),
@@ -186,7 +97,7 @@ const Speech = () => {
     TOO_SLOW: new Set(),
     startSlow: new Set(),
   });
-  const getCorrection = async (url) => {
+  const getCorrection = useCallback(async (url) => {
     try {
       const res = await axios.get(url);
       console.log("correction response:", res);
@@ -219,6 +130,92 @@ const Speech = () => {
       setCorrection(correction);
     } catch (err) {
       console.log("correction error:", err);
+    }
+  }, []);
+
+  // stt 결과 가져오기
+  const getSTT = useCallback(async (url) => {
+    try {
+      const res = await axios.get(url);
+      console.log("stt response:", res);
+      const stt = JSON.parse(res.data);
+      initSTT(stt);
+    } catch (err) {
+      console.log("stt error:", err);
+    }
+  }, []);
+
+  // 분석 결과 url 가져오기
+  const getResult = useCallback(async () => {
+    let res = null;
+    try {
+      res = await api.get(
+        `/presentations/${presentation_id}/speeches/${speech_id}/analysis-records`
+      );
+      console.log("분석 결과 url response:", res, res.status);
+      // 분석 완료 여부 확인
+      if (res.status === 200) {
+        setIsDone(true);
+        getSTT(res.data.STT);
+        getCorrection(res.data.SPEECH_CORRECTION);
+      } else {
+        console.log("분석 중");
+      }
+    } catch (err) {
+      console.log("분석 결과 url error:", err);
+    }
+    return res.status;
+  }, [presentation_id, speech_id, getSTT, getCorrection]);
+
+  // 스크립트를 위한 스피치 정보 조회
+  useEffect(() => {
+    // let polling = setInterval(async () => {
+    //   const status = await getResult();
+    //   if (status === 200) {
+    //     clearInterval(polling);
+    //   }
+    // }, 3000);
+
+    // full audio url 가져오기
+    const getSpeech = async () => {
+      let res = null;
+      try {
+        res = await api.get(
+          `/presentations/${presentation_id}/speeches/${speech_id}`
+        );
+        console.log("speech response:", res);
+        // 여기서 사용자 기호 초기화
+        initUserSymbols(res.data.userSymbol);
+        const audioUrl = res.data.fullAudioS3Url;
+        getAudio(audioUrl);
+      } catch (err) {
+        console.log("speech error:", err);
+      }
+    };
+
+    const polling = async () => {
+      const status = await getResult();
+      if (status === 200) {
+        clearInterval(repeat);
+      }
+    };
+    polling(); // 최초(즉시)실행
+    const repeat = setInterval(polling, 3000);
+
+    getSpeech();
+  }, [presentation_id, speech_id, getResult]);
+
+  // audio 가져와서 변환
+  const getAudio = async (audioUrl) => {
+    try {
+      const res = await axios.get(audioUrl, {
+        responseType: "blob",
+      });
+      console.log("audio response:", res);
+      const blob = new Blob([res.data]);
+      setAudio(blob);
+    } catch (err) {
+      console.log("audio error:", err);
     }
   };
 
@@ -264,45 +261,48 @@ const Speech = () => {
     );
   };
 
-  const patchUserSymbol = useCallback(async () => {
-    try {
-      const symbolObj = {
-        enter: enterSymbol,
-        pause: pauseSymbol,
-        mouse: mouseSymbol,
-        slash: slashSymbol,
-        highlight: highlighted,
-        edit: edited,
-      };
-      const res = await api.patch(
-        `/presentations/${presentation_id}/speeches/${speech_id}`,
-        {
-          params: {
-            "presentation-id": presentation_id,
-            "speech-id": speech_id,
-          },
-          userSymbol: JSON.stringify(symbolObj),
-        }
-      );
-      console.log(
-        "patch user symbol response:",
-        res,
-        "사용자 기호: ",
-        symbolObj
-      );
-    } catch (err) {
-      console.log("patch user symbol error:", err);
-    }
-  }, [
-    enterSymbol,
-    pauseSymbol,
-    mouseSymbol,
-    slashSymbol,
-    highlighted,
-    edited,
-    presentation_id,
-    speech_id,
-  ]);
+  const patchUserSymbol = useCallback(
+    async (
+      enterSymbol,
+      pauseSymbol,
+      mouseSymbol,
+      slashSymbol,
+      highlighted,
+      edited
+    ) => {
+      if (!isDone) return;
+      console.log("patch");
+      try {
+        const symbolObj = {
+          enter: enterSymbol,
+          pause: pauseSymbol,
+          mouse: mouseSymbol,
+          slash: slashSymbol,
+          highlight: highlighted,
+          edit: edited,
+        };
+        const res = await api.patch(
+          `/presentations/${presentation_id}/speeches/${speech_id}`,
+          {
+            params: {
+              "presentation-id": presentation_id,
+              "speech-id": speech_id,
+            },
+            userSymbol: JSON.stringify(symbolObj),
+          }
+        );
+        console.log(
+          "patch user symbol response:",
+          res,
+          "사용자 기호: ",
+          symbolObj
+        );
+      } catch (err) {
+        console.log("patch user symbol error:", err);
+      }
+    },
+    [isDone, presentation_id, speech_id]
+  );
 
   // tool bar
   const [cursor, setCursor] = useState("");
@@ -504,8 +504,23 @@ const Speech = () => {
     [edited, text]
   );
   useEffect(() => {
-    patchUserSymbol();
-  }, [patchUserSymbol]);
+    patchUserSymbol(
+      enterSymbol,
+      pauseSymbol,
+      mouseSymbol,
+      slashSymbol,
+      highlighted,
+      edited
+    );
+  }, [
+    enterSymbol,
+    pauseSymbol,
+    mouseSymbol,
+    slashSymbol,
+    highlighted,
+    edited,
+    patchUserSymbol,
+  ]);
 
   const createSpeech = async () => {
     let res = null;
@@ -596,7 +611,7 @@ const Speech = () => {
                 <TextArea>
                   <p>
                     {text.map((word, i) => (
-                      <>
+                      <span key={i}>
                         <Symbol>
                           {enterSymbol[i] && (
                             <>
@@ -709,7 +724,7 @@ const Speech = () => {
                             </span>
                           </s.Text>
                         </span>
-                      </>
+                      </span>
                     ))}
                   </p>
                 </TextArea>
