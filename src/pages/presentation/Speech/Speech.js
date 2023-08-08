@@ -254,28 +254,11 @@ const Speech = () => {
   const wordRef = useRef([]);
 
   const initSTT = (stt) => {
-    // stt 결과 형식에 맞게 데이터 파싱
-    // text.push(...stt.segments.flatMap((seg) => seg.words.map((w) => w[2])));
-    // setText(text);
     setText(stt.segments.flatMap((seg) => seg.words.map((w) => w[2])));
-    // started.push(
-    //   ...stt.segments.flatMap((seg) => seg.words.map((w) => w[0] * 0.01))
-    // );
-    // setStarted(started);
     setStarted(
       stt.segments.flatMap((seg) => seg.words.map((w) => w[0] * 0.01))
     );
-    // ended.push(
-    //   ...stt.segments.flatMap((seg) => seg.words.map((w) => w[1] * 0.01))
-    // );
-    // setEnded(ended);
     setEnded(stt.segments.flatMap((seg) => seg.words.map((w) => w[1] * 0.01)));
-    // duration.push(
-    //   ...stt.segments.flatMap((seg) =>
-    //     seg.words.map((w) => (w[1] - w[0]) * 0.001)
-    //   )
-    // );
-    // setDuration(duration);
     setDuration(
       stt.segments.flatMap((seg) => seg.words.map((w) => (w[1] - w[0]) * 0.001))
     );
