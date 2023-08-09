@@ -69,7 +69,7 @@ export default function AiFeedbackModal({ presentaion_id, speech_id }) {
 
   return (
     <ThemeProvider theme={theme}>
-      <FilledBtn text={"AI 피드백"} handle={handleOpen} />
+      <FilledBtn text={"AI 피드백"} onClick={handleOpen} />
       <AiFeedbackModalWrap
         //    sx={style}
         fullScreen={fullScreen}

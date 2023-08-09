@@ -96,7 +96,7 @@ export default function StatisticsModal({
 
   return (
     <ThemeProvider theme={theme}>
-      <FilledBtn text={"통계 보기"} handle={handleOpen} />
+      <FilledBtn text={"통계 보기"} onClick={handleOpen} />
       <StatisticsModalWrap
         fullScreen={fullScreen}
         open={open}
