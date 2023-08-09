@@ -46,6 +46,8 @@ const Practice = ({ isNew }) => {
   const speech_id = query.speech_id;
   const navigate = useNavigate();
 
+  const [refSpeechId, setRefSpeechId] = useState(null); // 이전 스피치의 id
+
   // 임시저장된 오디오 세그먼트 가져와서 저장
   const getAudioSegments = async (audioSegmentsUrl) => {
     try {
@@ -70,12 +72,13 @@ const Practice = ({ isNew }) => {
       const res = await api.get(
         `/presentations/${presentation_id}/speeches/${speech_id}`
       );
-      console.log("speech response:", res);
+      // console.log("speech response:", res);
+      setRefSpeechId(res.data.refSpeechId); // 이전 스피치의 id 저장
       getResult(res.data.refSpeechId); // 분석 결과 가져오기
       getUserSymbols(res.data.refSpeechId); // 사용자 기호 가져오기
       getAudioSegments(res.data.audioSegments); // 오디오 세그먼트 가져오기
     } catch (err) {
-      console.log("speech error:", err);
+      console.log("🩸get speech error:", err);
     }
   };
 
@@ -85,10 +88,10 @@ const Practice = ({ isNew }) => {
       const res = await api.get(
         `/presentations/${presentation_id}/speeches/${prev_speech}`
       );
-      console.log("이전 speech의 사용자 기호 response:", res);
+      // console.log("이전 speech의 사용자 기호 response:", res);
       initUserSymbols(res.data.userSymbol);
     } catch (err) {
-      console.log("이전 speech의 사용자 기호 error:", err);
+      console.log("🩸이전 speech의 사용자 기호 error:", err);
     }
   };
   const [enterSymbol, setEnterSymbol] = useState([]);
@@ -117,22 +120,22 @@ const Practice = ({ isNew }) => {
       const res = await api.get(
         `/presentations/${presentation_id}/speeches/${prev_speech}/analysis-records`
       );
-      console.log("이전 스피치 분석 결과 response:", res);
+      // console.log("이전 스피치 분석 결과 response:", res);
       getSTT(res.data.STT);
       getCorrection(res.data.SPEECH_CORRECTION);
     } catch (err) {
-      console.log("이전 스피치 분석 결과 error:", err);
+      console.log("🩸이전 스피치 분석 결과 error:", err);
     }
   };
   // 이전 스피치의 스크립트 가져오기
   const getSTT = async (url) => {
     try {
       const res = await axios.get(url);
-      console.log("stt response:", res);
+      // console.log("stt response:", res);
       const stt = JSON.parse(res.data);
       initSTT(stt);
     } catch (err) {
-      console.log("stt error:", err);
+      console.log("🩸stt error:", err);
     }
   };
   // 이전 스피치의 교정 부호 가져오기
@@ -176,7 +179,7 @@ const Practice = ({ isNew }) => {
       // console.log("correction:", correction);
       setCorrection(correction);
     } catch (err) {
-      console.log("correction error:", err);
+      console.log("🩸correction error:", err);
     }
   };
 
@@ -240,6 +243,15 @@ const Practice = ({ isNew }) => {
         wavesurfer.destroy();
       }
       document.removeEventListener("click", handleUserGesture);
+
+      if (recording) {
+        setRecording(false);
+        mediaRecorderRef.current.stop();
+
+        // STT 중단
+        SpeechRecognition.stopListening();
+      }
+      console.log("❗️뒤로 가기 클릭");
     };
   }, []);
 
@@ -285,16 +297,14 @@ const Practice = ({ isNew }) => {
 
       // presigned url 업로드
       try {
-        console.log("전송 중인 presigned url: ", presignedUrl);
         const res = await axios.put(presignedUrl, data, {
           withCredentials: true,
           headers: { "Content-Type": "audio/webm" },
         });
-        console.log("S3 응답:", res);
-        console.log("전송 data: ", data);
+        console.log("🩸presigned url 업로드 중... ", res);
+        // console.log("S3 응답:", res);
       } catch (err) {
-        console.log("S3 에러: ", err);
-        console.log("전송 data: ", data);
+        console.log("🩸presigned url upload error: ", err);
       }
 
       // presigned url 업로드 완료 통지
@@ -309,9 +319,9 @@ const Practice = ({ isNew }) => {
             url: presignedUrl,
           }
         );
-        console.log("업로드 완료 통지 응답: ", res);
+        // console.log("업로드 완료 통지 응답: ", res);
       } catch (err) {
-        console.log("업로드 완료 통지 에러: ", err);
+        console.log("🩸업로드 완료 통지 에러: ", err);
         // console.log(presentation_id, speech_id);
       }
     };
@@ -334,7 +344,7 @@ const Practice = ({ isNew }) => {
   const stopRecording = () => {
     const mediaRecorder = mediaRecorderRef.current;
     mediaRecorder.onstop = () => {
-      console.log("segments: ", segmentRef.current);
+      // console.log("segments: ", segmentRef.current);
     };
     if (recording) {
       setRecording(false);
@@ -362,10 +372,10 @@ const Practice = ({ isNew }) => {
           extension: "webm",
         }
       );
-      console.log("presigned url 응답: ", res.data.url);
+      // console.log("presigned url 응답: ", res.data.url);
       return res.data.url;
     } catch (err) {
-      console.log("presigned url 응답 에러: ", err);
+      console.log("🩸presigned url 응답 에러: ", err);
     }
   };
   // 전달된 blob을 webm 파일로 변환
@@ -419,6 +429,9 @@ const Practice = ({ isNew }) => {
 
   // 녹음 완료 요청 후 분석 페이지로 이동
   const finishRecording = async () => {
+    stopRecording();
+    // 녹음 완료 확인
+    if (!window.confirm("녹음을 완료하시겠습니까?")) return;
     try {
       const res = await api.post(
         `/presentations/${presentation_id}/speeches/${speech_id}/record-done`,
@@ -429,12 +442,36 @@ const Practice = ({ isNew }) => {
           },
         }
       );
-      console.log("record done response: ", res);
+      // console.log("record done response: ", res);
       navigate(
         `/presentation/speech?presentation_id=${presentation_id}&speech_id=${speech_id}`
       );
     } catch (err) {
-      console.log("record done error: ", err);
+      console.log("🩸record done error: ", err);
+    }
+  };
+
+  // 녹음 취소 (만들어진 스피치 삭제)
+  const cancelRecording = async () => {
+    startRecording();
+    // 녹음 취소 확인
+    if (!window.confirm("녹음을 취소하시겠습니까?")) return;
+    try {
+      const res = await api.delete(
+        `/presentations/${presentation_id}/speeches/${speech_id}`,
+        {
+          params: {
+            "presentation-id": presentation_id,
+            "speech-id": speech_id,
+          },
+        }
+      );
+      // console.log("cancel recording response: ", res);
+      navigate(
+        `/presentation/speech?presentation_id=${presentation_id}&&speech_id=${refSpeechId}`
+      );
+    } catch (err) {
+      console.log("🩸cancel recording error: ", err);
     }
   };
 
@@ -576,7 +613,11 @@ const Practice = ({ isNew }) => {
               <ScriptBarWrap>
                 <ul className="btn-wrap">
                   <li>
-                    <FilledBtn text={"취소하기"} />
+                    <SolideBtn
+                      text={"취소하기"}
+                      color={"white"}
+                      onClick={cancelRecording}
+                    />
                   </li>
                   <li>
                     {/* <span onClick={play}>
@@ -618,11 +659,7 @@ const Practice = ({ isNew }) => {
                     </PlayBtn> */}
                   </li>
                   <li>
-                    <SolideBtn
-                      text={"완료하기"}
-                      color={"white"}
-                      onClick={finishRecording}
-                    />
+                    <FilledBtn text={"완료하기"} onClick={finishRecording} />
                   </li>
                 </ul>
                 <audio id="audio" />
@@ -660,8 +697,12 @@ const Practice = ({ isNew }) => {
                     )}
                   </li>
                   <li>
-                    <FilledBtn text={"취소하기"} />
-                    <SolideBtn text={"완료하기"} color={"white"} />
+                    <SolideBtn
+                      text={"취소하기"}
+                      color={"white"}
+                      onClick={cancelRecording}
+                    />
+                    <FilledBtn text={"완료하기"} onClick={finishRecording} />
                   </li>
                 </ul>
               </ScriptBarWrap>
@@ -797,6 +838,7 @@ const STTField = styled.div`
   line-height: 150%;
   /* width: 100%; */
   height: 6rem;
+  overflow-y: scroll;
 `;
 
 // const StyledTextField = styled(TextField)`
