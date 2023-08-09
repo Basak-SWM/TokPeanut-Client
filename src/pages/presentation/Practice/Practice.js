@@ -337,7 +337,7 @@ const Practice = ({ isNew }) => {
   const stopRecording = () => {
     const mediaRecorder = mediaRecorderRef.current;
     mediaRecorder.onstop = () => {
-      console.log("segments: ", segmentRef.current);
+      // console.log("segments: ", segmentRef.current);
     };
     if (recording) {
       setRecording(false);
@@ -422,6 +422,9 @@ const Practice = ({ isNew }) => {
 
   // 녹음 완료 요청 후 분석 페이지로 이동
   const finishRecording = async () => {
+    stopRecording();
+    // 녹음 완료 확인
+    if (!window.confirm("녹음을 완료하시겠습니까?")) return;
     try {
       const res = await api.post(
         `/presentations/${presentation_id}/speeches/${speech_id}/record-done`,
@@ -443,6 +446,7 @@ const Practice = ({ isNew }) => {
 
   // 녹음 취소 (만들어진 스피치 삭제)
   const cancelRecording = async () => {
+    startRecording();
     // 녹음 취소 확인
     if (!window.confirm("녹음을 취소하시겠습니까?")) return;
     try {
@@ -686,8 +690,12 @@ const Practice = ({ isNew }) => {
                     )}
                   </li>
                   <li>
-                    <SolideBtn text={"취소하기"} color={"white"} />
-                    <FilledBtn text={"완료하기"} />
+                    <SolideBtn
+                      text={"취소하기"}
+                      color={"white"}
+                      onClick={cancelRecording}
+                    />
+                    <FilledBtn text={"완료하기"} onClick={finishRecording} />
                   </li>
                 </ul>
               </ScriptBarWrap>
