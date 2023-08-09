@@ -243,12 +243,15 @@ const Practice = ({ isNew }) => {
         wavesurfer.destroy();
       }
       document.removeEventListener("click", handleUserGesture);
-      console.log("❗️뒤로 가기 클릭");
-      setRecording(false);
-      mediaRecorderRef.current.stop();
 
-      // STT 중단
-      SpeechRecognition.stopListening();
+      if (recording) {
+        setRecording(false);
+        mediaRecorderRef.current.stop();
+
+        // STT 중단
+        SpeechRecognition.stopListening();
+      }
+      console.log("❗️뒤로 가기 클릭");
     };
   }, []);
 
