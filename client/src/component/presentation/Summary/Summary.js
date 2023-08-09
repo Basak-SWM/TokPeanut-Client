@@ -225,7 +225,6 @@ const Summary = () => {
   //   },
   // ];
 
-  // 현재 프레젠테이션의 스피치 리스트 받아오기
   const location = useLocation();
   const query = qs.parse(location.search, {
     ignoreQueryPrefix: true,
@@ -276,6 +275,7 @@ const Summary = () => {
     setHz([{ id: "hz", data: hzData }]);
   }, []);
 
+  // 현재 프레젠테이션의 스피치 리스트 받아오기
   const getSpeechList = useCallback(async () => {
     try {
       const res = await api.get(`/presentations/${presentation_id}/speeches`);
@@ -376,6 +376,10 @@ const Summary = () => {
                         <h3>Speech {i + 1}</h3>
                         <p>{speech.createdDate}</p>
                       </div>
+                      {!speech.recordDone && (
+                        <div className="tem">임시저장됨</div>
+                      )}
+
                       {editMode && (
                         <DeleteOutlinedIcon
                           onClick={(e) => handleDelete(e, speech.id)}
@@ -511,6 +515,10 @@ const Content = styled(Box)`
         margin-bottom: 1rem;
         .Mui-checked {
           color: #fce87e;
+        }
+        .tem {
+          margin: auto 0 auto auto;
+          font-size: 1.3rem;
         }
       }
       li:last-of-type {
