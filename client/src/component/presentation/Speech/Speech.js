@@ -28,6 +28,7 @@ import theme from "../../../style/theme";
 import AiFeedbackModal from "../../modal/AiFeedbackModal";
 import StatisticsModal from "../../modal/StatisticsModal";
 
+// import peanut_run from "../../../image/peanut_run.png";
 import peanut_run from "../../../image/peanut_run.png";
 
 // custom hook (timer)
@@ -613,7 +614,6 @@ const Speech = () => {
           }
 
           <Script>
-            {/* <s.ScriptContainer> */}
             <Screen>
               {isDone ? (
                 <TextArea>
@@ -652,11 +652,6 @@ const Speech = () => {
                                 : null
                             }
                           >
-                            {/* {correction.TOO_FAST.has(i)
-                              ? "빨라요"
-                              : correction.TOO_SLOW.has(i)
-                              ? "느려요"
-                              : null} */}
                             {correction.startFast.has(i)
                               ? "너무 빨라요"
                               : correction.startSlow.has(i)
@@ -680,20 +675,7 @@ const Speech = () => {
                             onClick={clickWord}
                             id={i}
                             $edited={edited[i] ? 1 : 0}
-                            // $correction={
-                            //   correction.TOO_FAST.has(i)
-                            //     ? "fast"
-                            //     : correction.TOO_SLOW.has(i)
-                            //     ? "slow"
-                            //     : null
-                            // }
                           >
-                            {/* {correction.TOO_FAST.includes(i) && (
-                          <Correction> ↔ </Correction>
-                        )}
-                        {correction.TOO_SLOW.includes(i) && (
-                          <Correction> ↔ </Correction>
-                        )} */}
                             {pauseSymbol[i] && (
                               <img src={symbols[5].src} alt="pause" />
                             )}
@@ -723,12 +705,14 @@ const Speech = () => {
                               >
                                 {edited[i] ? edited[i] : word}
                               </span>
-                              {/* 수정 전 단어 툴팁 */}
-                              {edited[i] ? (
-                                <s.OriginalText contentEditable={false}>
-                                  수정 전: {word}
-                                </s.OriginalText>
-                              ) : null}
+                              {
+                                // 수정 전 단어 툴팁
+                                edited[i] ? (
+                                  <s.OriginalText contentEditable={false}>
+                                    수정 전: {word}
+                                  </s.OriginalText>
+                                ) : null
+                              }
                             </span>
                           </s.Text>
                         </span>
@@ -739,13 +723,11 @@ const Speech = () => {
               ) : (
                 <>
                   <div className="logo-box">
-                    <img src={peanut_run} />
+                    {/* <img src={peanut_run} alt="peanut run" /> */}
                   </div>
-                  <h1>열심히 분석 중...</h1>
+                  <h1>열심히 분석 중입니다.</h1>
                 </>
               )}
-
-              {/* </s.ScriptContainer> */}
             </Screen>
             {/* <div className="sound-wave"> */}
             <WaveContainer>
@@ -923,15 +905,30 @@ const Screen = styled(Box)`
   position: relative;
 
   .logo-box {
+    @keyframes run {
+      0% {
+        background-position-x: 0px;
+      }
+      100% {
+        background-position-x: -210vh;
+      }
+    }
+    animation: run 0.6s infinite steps(7);
+    background-image: url(${peanut_run});
+    background-size: 210vh 30vh;
+    height: 30vh;
+    width: 30vh;
+    will-change: transform;
     img {
-      width: 45rem;
-      opacity: 0.8;
+      /* width: 45rem;
+      opacity: 0.8; */
     }
   }
+
   h1 {
     font-size: 3rem;
     color: #ff7134;
-    /* font-weight: bold; */
+    font-weight: bold;
     margin-top: 2rem;
     text-align: center;
   }
