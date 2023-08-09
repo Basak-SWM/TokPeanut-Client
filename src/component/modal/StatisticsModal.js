@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useCallback } from "react";
 import Box from "@mui/material/Box";
 import { createTheme, Dialog, ThemeProvider } from "@mui/material";
 import Modal from "@mui/material/Modal";
@@ -72,33 +72,26 @@ export default function StatisticsModal({
     pause: statistics.pause,
   };
 
-  const PitchLine = () => (
-    <ResponsiveLine
-      data={data.pitch}
-      margin={{ top: 20, right: 20, bottom: 20, left: 25 }}
-      xScale={{ type: "point" }}
-      yScale={{
-        type: "linear",
-        min: 0,
-        stacked: true,
-        reverse: false,
-      }}
-      // axisBottom={{
-      //   tickSize: 3,
-      //   tickPadding: 5,
-      //   tickRotation: 0,
-      // }}
-      // axisLeft={{
-      //   tickSize: 3,
-      //   tickPadding: 5,
-      //   tickRotation: 0,
-      // }}
-      enableGridY={false}
-      enableGridX={false}
-      colors="#FF7134"
-      pointSize={0}
-      lineWidth={1}
-    />
+  const PitchLine = useCallback(
+    () => (
+      <ResponsiveLine
+        data={data.pitch}
+        margin={{ top: 20, right: 20, bottom: 20, left: 25 }}
+        xScale={{ type: "point" }}
+        yScale={{
+          type: "linear",
+          min: 0,
+          stacked: true,
+          reverse: false,
+        }}
+        enableGridY={false}
+        enableGridX={false}
+        colors="#FF7134"
+        pointSize={0}
+        lineWidth={1}
+      />
+    ),
+    []
   );
 
   return (
