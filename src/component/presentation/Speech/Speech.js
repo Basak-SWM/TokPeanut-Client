@@ -793,9 +793,12 @@ const Speech = () => {
                       {/* <Link
                         to={`/presentation/practice?presentation_id=${presentation_id}`}
                       > */}
-                      <span onClick={createSpeech}>
-                        <FilledBtn text={"연습 시작하기"} />
-                      </span>
+
+                      <FilledBtn
+                        text={"연습 시작하기"}
+                        onClick={createSpeech}
+                      />
+
                       {/* </Link> */}
                     </li>
                     <li>
