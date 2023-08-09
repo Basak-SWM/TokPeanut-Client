@@ -69,11 +69,11 @@ const Pagination = () => {
     } catch (err) {
       console.log("speech list error:", err);
     }
-  }, []);
+  }, [presentation_id]);
 
   useEffect(() => {
     getSpeechList();
-  }, []);
+  }, [getSpeechList]);
 
   const navigate = useNavigate();
 
@@ -129,7 +129,7 @@ const PageBtnWrap = styled(Box)`
   right: 3%;
   ul {
     max-height: 80vh;
-    /* overflow-y: scroll; */
+    overflow-y: scroll;
     background-color: #fff;
     border: 1px solid rgba(0, 0, 0, 0.1);
     margin-top: 13rem;
