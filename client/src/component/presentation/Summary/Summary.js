@@ -34,193 +34,196 @@ const Summary = () => {
     },
   });
 
-  const MyResponsiveLine = ({ data, recommended, unit }) => (
-    <ResponsiveLine
-      data={data}
-      margin={{ top: 50, right: 50, bottom: 50, left: 50 }}
-      xScale={{ type: "point" }}
-      xFormat=" >-"
-      yScale={{
-        type: "linear",
-        min: 0,
-        max: recommended ? recommended[1] * 1.5 : "auto",
-        stacked: true,
-        reverse: false,
-      }}
-      yFormat=" >-.2~f"
-      axisBottom={{
-        tickSize: 0,
-        tickPadding: 5,
-        tickRotation: 0,
-      }}
-      axisLeft={{
-        tickSize: 0,
-        tickPadding: 15,
-        tickRotation: 0,
-      }}
-      enableGridY={false}
-      enableGridX={false}
-      isInteractive={true}
-      // colors={{ scheme: "nivo" }}
-      colors="#FF7134"
-      lineWidth={1}
-      pointSize={10}
-      pointColor="#FF7134"
-      pointBorderWidth={0}
-      pointBorderColor={{ from: "serieColor" }}
-      enablePointLabel={true}
-      pointLabelYOffset={-16}
-      // enableArea={recommended ? true : false}
-      // areaBaselineValue={recommended}
-      useMesh={true}
-      crosshairType="x"
-      legends={[]}
-      markers={
-        recommended
-          ? [
-              {
-                axis: "y",
-                value: recommended[1],
-                lineStyle: { stroke: "grey", strokeWidth: 0 },
-                legend: `권장 범위 (${recommended[0]} ~ ${recommended[1]}${unit})`,
-                textStyle: {
-                  fill: "grey",
-                  fontSize: 12,
+  const MyResponsiveLine = useCallback(
+    ({ data, recommended, unit }) => (
+      <ResponsiveLine
+        data={data}
+        margin={{ top: 50, right: 50, bottom: 50, left: 50 }}
+        xScale={{ type: "point" }}
+        xFormat=" >-"
+        yScale={{
+          type: "linear",
+          min: 0,
+          max: recommended ? recommended[1] * 1.5 : "auto",
+          stacked: true,
+          reverse: false,
+        }}
+        yFormat=" >-.2~f"
+        axisBottom={{
+          tickSize: 0,
+          tickPadding: 5,
+          tickRotation: 0,
+        }}
+        axisLeft={{
+          tickSize: 0,
+          tickPadding: 15,
+          tickRotation: 0,
+        }}
+        enableGridY={false}
+        enableGridX={false}
+        isInteractive={true}
+        // colors={{ scheme: "nivo" }}
+        colors="#FF7134"
+        lineWidth={1}
+        pointSize={10}
+        pointColor="#FF7134"
+        pointBorderWidth={0}
+        pointBorderColor={{ from: "serieColor" }}
+        enablePointLabel={true}
+        pointLabelYOffset={-16}
+        // enableArea={recommended ? true : false}
+        // areaBaselineValue={recommended}
+        useMesh={true}
+        crosshairType="x"
+        legends={[]}
+        markers={
+          recommended
+            ? [
+                {
+                  axis: "y",
+                  value: recommended[1],
+                  lineStyle: { stroke: "grey", strokeWidth: 0 },
+                  legend: `권장 범위 (${recommended[0]} ~ ${recommended[1]}${unit})`,
+                  textStyle: {
+                    fill: "grey",
+                    fontSize: 12,
+                  },
                 },
-              },
-            ]
-          : []
-      }
-      tooltip={({ point }) => {
-        const { id, value, index, data } = point;
-        return (
-          <div
-            style={{
-              background: "white",
-              padding: "8px",
-              border: "1px solid #ccc",
-              fontSize: "12px",
-            }}
-          >
-            <div>
-              {data.x} : {data.y} {unit}
+              ]
+            : []
+        }
+        tooltip={({ point }) => {
+          const { id, value, index, data } = point;
+          return (
+            <div
+              style={{
+                background: "white",
+                padding: "8px",
+                border: "1px solid #ccc",
+                fontSize: "12px",
+              }}
+            >
+              <div>
+                {data.x} : {data.y} {unit}
+              </div>
             </div>
-          </div>
-        );
-      }}
-      layers={[
-        // 권장 범위 위에도 호버할 수 있도록 맨 앞에 배치
-        ({ xScale, yScale }) => {
-          if (recommended && recommended.length === 2) {
-            const [min, max] = recommended;
-            const minY = yScale(min);
-            const maxY = yScale(max);
+          );
+        }}
+        layers={[
+          // 권장 범위 위에도 호버할 수 있도록 맨 앞에 배치
+          ({ xScale, yScale }) => {
+            if (recommended && recommended.length === 2) {
+              const [min, max] = recommended;
+              const minY = yScale(min);
+              const maxY = yScale(max);
 
-            return (
-              <rect
-                x={0}
-                y={maxY}
-                width={xScale.range()[1] - xScale.range()[0]}
-                height={minY - maxY}
-                fill="#FF7134"
-                fillOpacity={0.1}
-              />
-            );
-          } else {
-            return null;
-          }
-        },
-        "grid",
-        "axes",
-        // "areas",
-        "crosshair",
-        "lines",
-        "points",
-        "slices",
-        "mesh",
-        "legends",
-        "markers",
-      ]}
-    />
+              return (
+                <rect
+                  x={0}
+                  y={maxY}
+                  width={xScale.range()[1] - xScale.range()[0]}
+                  height={minY - maxY}
+                  fill="#FF7134"
+                  fillOpacity={0.1}
+                />
+              );
+            } else {
+              return null;
+            }
+          },
+          "grid",
+          "axes",
+          // "areas",
+          "crosshair",
+          "lines",
+          "points",
+          "slices",
+          "mesh",
+          "legends",
+          "markers",
+        ]}
+      />
+    ),
+    []
   );
 
   // mock data
-  const feedback = [
-    {
-      id: "feedback",
-      data: [
-        {
-          x: "speech 1",
-          y: 27,
-        },
-        {
-          x: "speech 2",
-          y: 11,
-        },
-        {
-          x: "speech 3",
-          y: 15,
-        },
-      ],
-    },
-  ];
-  const speed = [
-    {
-      id: "speed",
-      data: [
-        {
-          x: "speech 1",
-          y: 420,
-        },
-        {
-          x: "speech 2",
-          y: 234,
-        },
-        {
-          x: "speech 3",
-          y: 302,
-        },
-      ],
-    },
-  ];
-  const pause = [
-    {
-      id: "pause",
-      data: [
-        {
-          x: "speech 1",
-          y: 27,
-        },
-        {
-          x: "speech 2",
-          y: 20,
-        },
-        {
-          x: "speech 3",
-          y: 15,
-        },
-      ],
-    },
-  ];
-  const hz = [
-    {
-      id: "hz",
-      data: [
-        {
-          x: "speech 1",
-          y: 440,
-        },
-        {
-          x: "speech 2",
-          y: 390,
-        },
-        {
-          x: "speech 3",
-          y: 300,
-        },
-      ],
-    },
-  ];
+  // const feedback = [
+  //   {
+  //     id: "feedback",
+  //     data: [
+  //       {
+  //         x: "speech 1",
+  //         y: 27,
+  //       },
+  //       {
+  //         x: "speech 2",
+  //         y: 11,
+  //       },
+  //       {
+  //         x: "speech 3",
+  //         y: 15,
+  //       },
+  //     ],
+  //   },
+  // ];
+  // const speed = [
+  //   {
+  //     id: "speed",
+  //     data: [
+  //       {
+  //         x: "speech 1",
+  //         y: 420,
+  //       },
+  //       {
+  //         x: "speech 2",
+  //         y: 234,
+  //       },
+  //       {
+  //         x: "speech 3",
+  //         y: 302,
+  //       },
+  //     ],
+  //   },
+  // ];
+  // const pause = [
+  //   {
+  //     id: "pause",
+  //     data: [
+  //       {
+  //         x: "speech 1",
+  //         y: 27,
+  //       },
+  //       {
+  //         x: "speech 2",
+  //         y: 20,
+  //       },
+  //       {
+  //         x: "speech 3",
+  //         y: 15,
+  //       },
+  //     ],
+  //   },
+  // ];
+  // const hz = [
+  //   {
+  //     id: "hz",
+  //     data: [
+  //       {
+  //         x: "speech 1",
+  //         y: 440,
+  //       },
+  //       {
+  //         x: "speech 2",
+  //         y: 390,
+  //       },
+  //       {
+  //         x: "speech 3",
+  //         y: 300,
+  //       },
+  //     ],
+  //   },
+  // ];
 
   // 현재 프레젠테이션의 스피치 리스트 받아오기
   const location = useLocation();
@@ -251,6 +254,28 @@ const Summary = () => {
   };
 
   const [speechList, setSpeechList] = useState([]);
+  const [feedback, setFeedback] = useState([]);
+  const [speed, setSpeed] = useState([]);
+  const [pause, setPause] = useState([]);
+  const [hz, setHz] = useState([]);
+
+  const setData = useCallback((data) => {
+    let feedbackData = [];
+    let speedData = [];
+    let pauseData = [];
+    let hzData = [];
+    for (let i = 0; i < data.length; i++) {
+      feedbackData.push({ x: `speech ${i + 1}`, y: data[i].feedbackCount });
+      speedData.push({ x: `speech ${i + 1}`, y: data[i].avgLPM });
+      pauseData.push({ x: `speech ${i + 1}`, y: data[i].pauseRadio });
+      hzData.push({ x: `speech ${i + 1}`, y: data[i].avgF0 });
+    }
+    setFeedback([{ id: "feedback", data: feedbackData }]);
+    setSpeed([{ id: "speed", data: speedData }]);
+    setPause([{ id: "pause", data: pauseData }]);
+    setHz([{ id: "hz", data: hzData }]);
+  }, []);
+
   const getSpeechList = useCallback(async () => {
     try {
       const res = await api.get(`/presentations/${presentation_id}/speeches`);
@@ -259,6 +284,7 @@ const Summary = () => {
         const date = dayjs(speech.createdDate);
         speech.createdDate = dayjs().to(date);
       });
+      setData(res.data);
       setSpeechList(res.data);
     } catch (err) {
       console.log("speech list error:", err);
