@@ -46,6 +46,8 @@ const Practice = ({ isNew }) => {
   const speech_id = query.speech_id;
   const navigate = useNavigate();
 
+  const [refSpeechId, setRefSpeechId] = useState(null); // 이전 스피치의 id
+
   // 임시저장된 오디오 세그먼트 가져와서 저장
   const getAudioSegments = async (audioSegmentsUrl) => {
     try {
@@ -70,7 +72,8 @@ const Practice = ({ isNew }) => {
       const res = await api.get(
         `/presentations/${presentation_id}/speeches/${speech_id}`
       );
-      console.log("speech response:", res);
+      // console.log("speech response:", res);
+      setRefSpeechId(res.data.refSpeechId); // 이전 스피치의 id 저장
       getResult(res.data.refSpeechId); // 분석 결과 가져오기
       getUserSymbols(res.data.refSpeechId); // 사용자 기호 가져오기
       getAudioSegments(res.data.audioSegments); // 오디오 세그먼트 가져오기
@@ -438,6 +441,29 @@ const Practice = ({ isNew }) => {
     }
   };
 
+  // 녹음 취소 (만들어진 스피치 삭제)
+  const cancelRecording = async () => {
+    // 녹음 취소 확인
+    if (!window.confirm("녹음을 취소하시겠습니까?")) return;
+    try {
+      const res = await api.delete(
+        `/presentations/${presentation_id}/speeches/${speech_id}`,
+        {
+          params: {
+            "presentation-id": presentation_id,
+            "speech-id": speech_id,
+          },
+        }
+      );
+      // console.log("cancel recording response: ", res);
+      navigate(
+        `/presentation/speech?presentation_id=${presentation_id}&&speech_id=${refSpeechId}`
+      );
+    } catch (err) {
+      console.log("🩸cancel recording error: ", err);
+    }
+  };
+
   return (
     <>
       <ThemeProvider theme={theme}>
@@ -576,7 +602,11 @@ const Practice = ({ isNew }) => {
               <ScriptBarWrap>
                 <ul className="btn-wrap">
                   <li>
-                    <FilledBtn text={"취소하기"} />
+                    <SolideBtn
+                      text={"취소하기"}
+                      color={"white"}
+                      onClick={cancelRecording}
+                    />
                   </li>
                   <li>
                     {/* <span onClick={play}>
@@ -618,11 +648,7 @@ const Practice = ({ isNew }) => {
                     </PlayBtn> */}
                   </li>
                   <li>
-                    <SolideBtn
-                      text={"완료하기"}
-                      color={"white"}
-                      onClick={finishRecording}
-                    />
+                    <FilledBtn text={"완료하기"} onClick={finishRecording} />
                   </li>
                 </ul>
                 <audio id="audio" />
@@ -660,8 +686,8 @@ const Practice = ({ isNew }) => {
                     )}
                   </li>
                   <li>
-                    <FilledBtn text={"취소하기"} />
-                    <SolideBtn text={"완료하기"} color={"white"} />
+                    <SolideBtn text={"취소하기"} color={"white"} />
+                    <FilledBtn text={"완료하기"} />
                   </li>
                 </ul>
               </ScriptBarWrap>
