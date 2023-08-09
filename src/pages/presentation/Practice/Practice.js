@@ -78,7 +78,7 @@ const Practice = ({ isNew }) => {
       getUserSymbols(res.data.refSpeechId); // 사용자 기호 가져오기
       getAudioSegments(res.data.audioSegments); // 오디오 세그먼트 가져오기
     } catch (err) {
-      console.log("speech error:", err);
+      console.log("🩸get speech error:", err);
     }
   };
 
@@ -88,10 +88,10 @@ const Practice = ({ isNew }) => {
       const res = await api.get(
         `/presentations/${presentation_id}/speeches/${prev_speech}`
       );
-      console.log("이전 speech의 사용자 기호 response:", res);
+      // console.log("이전 speech의 사용자 기호 response:", res);
       initUserSymbols(res.data.userSymbol);
     } catch (err) {
-      console.log("이전 speech의 사용자 기호 error:", err);
+      console.log("🩸이전 speech의 사용자 기호 error:", err);
     }
   };
   const [enterSymbol, setEnterSymbol] = useState([]);
@@ -120,22 +120,22 @@ const Practice = ({ isNew }) => {
       const res = await api.get(
         `/presentations/${presentation_id}/speeches/${prev_speech}/analysis-records`
       );
-      console.log("이전 스피치 분석 결과 response:", res);
+      // console.log("이전 스피치 분석 결과 response:", res);
       getSTT(res.data.STT);
       getCorrection(res.data.SPEECH_CORRECTION);
     } catch (err) {
-      console.log("이전 스피치 분석 결과 error:", err);
+      console.log("🩸이전 스피치 분석 결과 error:", err);
     }
   };
   // 이전 스피치의 스크립트 가져오기
   const getSTT = async (url) => {
     try {
       const res = await axios.get(url);
-      console.log("stt response:", res);
+      // console.log("stt response:", res);
       const stt = JSON.parse(res.data);
       initSTT(stt);
     } catch (err) {
-      console.log("stt error:", err);
+      console.log("🩸stt error:", err);
     }
   };
   // 이전 스피치의 교정 부호 가져오기
@@ -179,7 +179,7 @@ const Practice = ({ isNew }) => {
       // console.log("correction:", correction);
       setCorrection(correction);
     } catch (err) {
-      console.log("correction error:", err);
+      console.log("🩸correction error:", err);
     }
   };
 
@@ -243,6 +243,12 @@ const Practice = ({ isNew }) => {
         wavesurfer.destroy();
       }
       document.removeEventListener("click", handleUserGesture);
+      console.log("❗️뒤로 가기 클릭");
+      setRecording(false);
+      mediaRecorderRef.current.stop();
+
+      // STT 중단
+      SpeechRecognition.stopListening();
     };
   }, []);
 
@@ -288,16 +294,14 @@ const Practice = ({ isNew }) => {
 
       // presigned url 업로드
       try {
-        console.log("전송 중인 presigned url: ", presignedUrl);
         const res = await axios.put(presignedUrl, data, {
           withCredentials: true,
           headers: { "Content-Type": "audio/webm" },
         });
-        console.log("S3 응답:", res);
-        console.log("전송 data: ", data);
+        console.log("🩸presigned url 업로드 중... ", res);
+        // console.log("S3 응답:", res);
       } catch (err) {
-        console.log("S3 에러: ", err);
-        console.log("전송 data: ", data);
+        console.log("🩸presigned url upload error: ", err);
       }
 
       // presigned url 업로드 완료 통지
@@ -312,9 +316,9 @@ const Practice = ({ isNew }) => {
             url: presignedUrl,
           }
         );
-        console.log("업로드 완료 통지 응답: ", res);
+        // console.log("업로드 완료 통지 응답: ", res);
       } catch (err) {
-        console.log("업로드 완료 통지 에러: ", err);
+        console.log("🩸업로드 완료 통지 에러: ", err);
         // console.log(presentation_id, speech_id);
       }
     };
@@ -365,10 +369,10 @@ const Practice = ({ isNew }) => {
           extension: "webm",
         }
       );
-      console.log("presigned url 응답: ", res.data.url);
+      // console.log("presigned url 응답: ", res.data.url);
       return res.data.url;
     } catch (err) {
-      console.log("presigned url 응답 에러: ", err);
+      console.log("🩸presigned url 응답 에러: ", err);
     }
   };
   // 전달된 blob을 webm 파일로 변환
@@ -435,12 +439,12 @@ const Practice = ({ isNew }) => {
           },
         }
       );
-      console.log("record done response: ", res);
+      // console.log("record done response: ", res);
       navigate(
         `/presentation/speech?presentation_id=${presentation_id}&speech_id=${speech_id}`
       );
     } catch (err) {
-      console.log("record done error: ", err);
+      console.log("🩸record done error: ", err);
     }
   };
 
