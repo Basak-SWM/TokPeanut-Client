@@ -88,7 +88,7 @@ const Speech = () => {
   const speech_id = query.speech_id;
   const navigate = useNavigate();
   const [audio, setAudio] = useState(null);
-  // 이전 스피치의 교정 부호 가져오기
+
   const [correction, setCorrection] = useState({
     PAUSE_TOO_LONG: new Set(),
     PAUSE_TOO_SHORT: new Set(),
@@ -180,6 +180,7 @@ const Speech = () => {
       // 분석 완료 여부 확인
       if (res.status === 200) {
         setIsDone(true);
+        getSpeech();
         getSTT(res.data.STT);
         getCorrection(res.data.SPEECH_CORRECTION);
         // 음높이(HERTZ_AVG), 속도(LPM_AVG), 휴지(PAUSE_RATIO) 가져오기
@@ -197,6 +198,23 @@ const Speech = () => {
     return res.status;
   }, [presentation_id, speech_id, getSTT, getCorrection, getStatistics]);
 
+  // full audio url 가져오기
+  const getSpeech = async () => {
+    let res = null;
+    try {
+      res = await api.get(
+        `/presentations/${presentation_id}/speeches/${speech_id}`
+      );
+      // console.log("speech response:", res);
+      // 여기서 사용자 기호 초기화
+      initUserSymbols(res.data.userSymbol);
+      const audioUrl = res.data.fullAudioS3Url;
+      getAudio(audioUrl);
+    } catch (err) {
+      console.log("🩸speech error:", err);
+    }
+  };
+
   // 스크립트를 위한 스피치 정보 조회
   useEffect(() => {
     // let polling = setInterval(async () => {
@@ -205,23 +223,6 @@ const Speech = () => {
     //     clearInterval(polling);
     //   }
     // }, 3000);
-
-    // full audio url 가져오기
-    const getSpeech = async () => {
-      let res = null;
-      try {
-        res = await api.get(
-          `/presentations/${presentation_id}/speeches/${speech_id}`
-        );
-        // console.log("speech response:", res);
-        // 여기서 사용자 기호 초기화
-        initUserSymbols(res.data.userSymbol);
-        const audioUrl = res.data.fullAudioS3Url;
-        getAudio(audioUrl);
-      } catch (err) {
-        console.log("🩸speech error:", err);
-      }
-    };
 
     const polling = async () => {
       const status = await getResult();
@@ -232,7 +233,7 @@ const Speech = () => {
     polling(); // 최초(즉시)실행
     const repeat = setInterval(polling, 3000);
 
-    getSpeech();
+    // getSpeech();
   }, [presentation_id, speech_id, getResult]);
 
   // audio 가져와서 변환

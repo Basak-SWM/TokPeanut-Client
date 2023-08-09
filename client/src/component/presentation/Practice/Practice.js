@@ -464,7 +464,7 @@ const Practice = ({ isNew }) => {
                   <div className="text-wrap">
                     <p>
                       {text.map((word, i) => (
-                        <>
+                        <span key={i}>
                           <Symbol>
                             {enterSymbol[i] && (
                               <>
@@ -529,7 +529,7 @@ const Practice = ({ isNew }) => {
                               {word}
                             </s.Text>
                           </span>
-                        </>
+                        </span>
                       ))}
                     </p>
                     {/* <StyledTextField
