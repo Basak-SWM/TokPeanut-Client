@@ -250,8 +250,8 @@ const Practice = ({ isNew }) => {
 
         // STT 중단
         SpeechRecognition.stopListening();
+        console.log("❗️오디오 스트림 강제 중단");
       }
-      console.log("❗️뒤로 가기 클릭");
     };
   }, []);
 
@@ -453,9 +453,12 @@ const Practice = ({ isNew }) => {
 
   // 녹음 취소 (만들어진 스피치 삭제)
   const cancelRecording = async () => {
-    startRecording();
+    if (mediaRecorderRef.current && recording) {
+      stopRecording();
+    }
     // 녹음 취소 확인
     if (!window.confirm("녹음을 취소하시겠습니까?")) return;
+
     try {
       const res = await api.delete(
         `/presentations/${presentation_id}/speeches/${speech_id}`,
