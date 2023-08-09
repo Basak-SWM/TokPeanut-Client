@@ -9,16 +9,6 @@ import qs from "qs";
 import axios from "axios";
 import api from "../../../component/api";
 
-import highlight from "../../../image/icons/highlight.png";
-import faster from "../../../image/icons/faster.png";
-import slower from "../../../image/icons/slower.png";
-import edit from "../../../image/icons/edit.png";
-import enter from "../../../image/icons/enter.png";
-import pause from "../../../image/icons/pause.png";
-import mouse from "../../../image/icons/mouse.png";
-import slash from "../../../image/icons/slash.png";
-import erase from "../../../image/icons/erase.png";
-
 import styled from "@emotion/styled";
 import { createGlobalStyle } from "styled-components";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
@@ -169,6 +159,36 @@ const Speech = () => {
     },
     [statistics]
   );
+  // audio 가져와서 변환
+  const getAudio = useCallback(async (audioUrl) => {
+    try {
+      const res = await axios.get(audioUrl, {
+        responseType: "blob",
+      });
+      // console.log("audio response:", res);
+      const blob = new Blob([res.data]);
+      setAudio(blob);
+    } catch (err) {
+      console.log("🩸audio error:", err);
+    }
+  }, []);
+  // full audio url 가져오기
+  const getSpeech = useCallback(async () => {
+    let res = null;
+    try {
+      res = await api.get(
+        `/presentations/${presentation_id}/speeches/${speech_id}`
+      );
+      // console.log("speech response:", res);
+      // 여기서 사용자 기호 초기화
+      initUserSymbols(res.data.userSymbol);
+      const audioUrl = res.data.fullAudioS3Url;
+      getAudio(audioUrl);
+    } catch (err) {
+      console.log("🩸speech error:", err);
+    }
+  }, [presentation_id, speech_id, getAudio]);
+
   // 분석 결과 url 가져오기
   const getResult = useCallback(async () => {
     let res = null;
@@ -196,24 +216,14 @@ const Speech = () => {
       console.log("🩸분석 결과 url error:", err);
     }
     return res.status;
-  }, [presentation_id, speech_id, getSTT, getCorrection, getStatistics]);
-
-  // full audio url 가져오기
-  const getSpeech = async () => {
-    let res = null;
-    try {
-      res = await api.get(
-        `/presentations/${presentation_id}/speeches/${speech_id}`
-      );
-      // console.log("speech response:", res);
-      // 여기서 사용자 기호 초기화
-      initUserSymbols(res.data.userSymbol);
-      const audioUrl = res.data.fullAudioS3Url;
-      getAudio(audioUrl);
-    } catch (err) {
-      console.log("🩸speech error:", err);
-    }
-  };
+  }, [
+    presentation_id,
+    speech_id,
+    getSTT,
+    getCorrection,
+    getStatistics,
+    getSpeech,
+  ]);
 
   // 스크립트를 위한 스피치 정보 조회
   useEffect(() => {
@@ -235,20 +245,6 @@ const Speech = () => {
 
     // getSpeech();
   }, [presentation_id, speech_id, getResult]);
-
-  // audio 가져와서 변환
-  const getAudio = async (audioUrl) => {
-    try {
-      const res = await axios.get(audioUrl, {
-        responseType: "blob",
-      });
-      // console.log("audio response:", res);
-      const blob = new Blob([res.data]);
-      setAudio(blob);
-    } catch (err) {
-      console.log("🩸audio error:", err);
-    }
-  };
 
   const [text, setText] = useState([]);
   const [started, setStarted] = useState([]);
@@ -366,6 +362,7 @@ const Speech = () => {
   const { count, start, stop, reset, setCount } = useCounter(0, 100); //0.1초 단위 타이머
 
   const clickWord = (e) => {
+    if (!waveFormLoaded) return;
     const selectedWordIdx = e.currentTarget.id; // 클릭된 단어 인덱스
     wordRef.current[selectedWordIdx].focus();
 
@@ -542,7 +539,7 @@ const Speech = () => {
     slashSymbol,
     highlighted,
     edited,
-    patchUserSymbol,
+    // patchUserSymbol,
   ]);
 
   const createSpeech = async () => {
@@ -614,20 +611,6 @@ const Speech = () => {
               </Disabled>
             )
           }
-
-          {/* <s.Tools>
-            {symbols.map((c, i) => (
-              <s.ToolKit
-                className="word"
-                key={i}
-                id={i}
-                src={c}
-                cursor={cursor}
-                onClick={clickTool}
-              />
-            ))}
-            {isDone ? null : <s.DisableBox />}
-          </s.Tools> */}
 
           <Script>
             {/* <s.ScriptContainer> */}
@@ -764,16 +747,21 @@ const Speech = () => {
 
               {/* </s.ScriptContainer> */}
             </Screen>
-            <div className="sound-wave">
+            {/* <div className="sound-wave"> */}
+            <WaveContainer>
               {isDone ? (
                 waveFormLoaded ? null : (
-                  <s.LoadingBox>loading...</s.LoadingBox>
+                  <div className="text">클릭하여 편집을 시작하세요</div>
                 )
               ) : (
-                <s.LoadingBox>analyzing...</s.LoadingBox>
+                <div className="text">analyzing...</div>
               )}
-              <s.WaveWrapper ref={wavesurferRef} />
-            </div>
+              <s.WaveWrapper
+                ref={wavesurferRef}
+                $ready={isDone && waveFormLoaded ? 1 : 0}
+              />
+            </WaveContainer>
+            {/* </div> */}
 
             {/* {isDone ? null : (
               <button
@@ -904,6 +892,26 @@ const Script = styled(Box)`
   }
 `;
 
+const WaveContainer = styled.div`
+  height: 64px;
+  margin-bottom: 3rem;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .text {
+    width: 90%;
+    height: 120%;
+    /* background-color: #f5f5f5; */
+    background-color: rgb(255, 112, 51, 0.2);
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+  }
+`;
+
 const Screen = styled(Box)`
   width: 100%;
   height: 100%;
@@ -914,16 +922,6 @@ const Screen = styled(Box)`
   flex-direction: column;
   position: relative;
 
-  .sound-wave {
-    margin-bottom: 3rem;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    img {
-      width: 40%;
-    }
-  }
   .logo-box {
     img {
       width: 45rem;
@@ -970,7 +968,8 @@ const TextArea = styled(Box)`
     /* display: flex; */
     /* align-items: center; */
     flex-direction: row;
-    height: 420px;
+    /* height: 420px; */
+    height: 50vh;
     overflow-y: scroll;
     padding: 3rem;
     background-color: #f5f5f5;
