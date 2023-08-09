@@ -69,11 +69,11 @@ const Pagination = () => {
     } catch (err) {
       console.log("speech list error:", err);
     }
-  }, []);
+  }, [presentation_id]);
 
   useEffect(() => {
     getSpeechList();
-  }, []);
+  }, [getSpeechList]);
 
   const navigate = useNavigate();
 
