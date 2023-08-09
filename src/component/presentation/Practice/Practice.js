@@ -838,6 +838,7 @@ const STTField = styled.div`
   line-height: 150%;
   /* width: 100%; */
   height: 6rem;
+  overflow-y: scroll;
 `;
 
 // const StyledTextField = styled(TextField)`
