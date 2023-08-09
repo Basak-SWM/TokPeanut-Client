@@ -48,8 +48,11 @@ export const Script = styled.div`
 `;
 // 파형 ref
 export const WaveWrapper = styled.div`
-  width: 748px;
-  height: 64px;
+  display: ${(props) => (props.$ready ? "block" : "none")};
+  /* width: 748px; */
+  width: 90%;
+  /* height: 64px; */
+  height: 100%;
   /* width: 100%;
   height: 100%; */
   margin-bottom: 3rem;
@@ -60,6 +63,7 @@ export const LoadingBox = styled.div`
   position: absolute;
   font-size: large;
   background-color: antiquewhite;
+  z-index: 100;
   /* display: flex;
   justify-content: center;
   align-items: center; */
