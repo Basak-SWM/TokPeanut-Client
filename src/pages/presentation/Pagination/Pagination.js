@@ -129,10 +129,13 @@ const PageBtnWrap = styled(Box)`
   right: 3%;
   ul {
     max-height: 80vh;
-    overflow-y: scroll;
+    overflow: hidden auto;
     background-color: #fff;
     border: 1px solid rgba(0, 0, 0, 0.1);
     margin-top: 13rem;
+    &::-webkit-scrollbar {
+      display: none;
+    }
     .select {
       button {
         background-color: #ffeee0;
@@ -185,7 +188,8 @@ const PageBtnWrap = styled(Box)`
     ul {
       display: flex;
       align-items: center;
-      overflow-y: scroll;
+      overflow-y: auto;
+      overflow-x: hidden;
       margin-top: 10rem;
       -ms-overflow-style: none; /* IE and Edge */
       scrollbar-width: none; /* Firefox */
