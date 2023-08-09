@@ -539,7 +539,7 @@ const Speech = () => {
     slashSymbol,
     highlighted,
     edited,
-    patchUserSymbol,
+    // patchUserSymbol,
   ]);
 
   const createSpeech = async () => {
@@ -751,7 +751,7 @@ const Speech = () => {
             <WaveContainer>
               {isDone ? (
                 waveFormLoaded ? null : (
-                  <div className="text">loading...</div>
+                  <div className="text">클릭하여 편집을 시작하세요</div>
                 )
               ) : (
                 <div className="text">analyzing...</div>
