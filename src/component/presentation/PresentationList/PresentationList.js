@@ -323,6 +323,12 @@ const Guide = styled(Box)`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  position: sticky;
+  top: 5rem;
+  background-color: #fff;
+  z-index: 100;
+  padding: 2rem 0;
+  border-bottom: #ff7134 1px solid;
 `;
 
 export default PresentationList;
