@@ -84,6 +84,7 @@ const Practice = ({ isNew }) => {
 
   // 사용자 기호 불러오기
   const getUserSymbols = async (prev_speech) => {
+    if (!prev_speech) return;
     try {
       const res = await api.get(
         `/presentations/${presentation_id}/speeches/${prev_speech}`
@@ -116,6 +117,7 @@ const Practice = ({ isNew }) => {
 
   // 분석 결과 presigned url 가져오기
   const getResult = async (prev_speech) => {
+    if (!prev_speech) return;
     try {
       const res = await api.get(
         `/presentations/${presentation_id}/speeches/${prev_speech}/analysis-records`
