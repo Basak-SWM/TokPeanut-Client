@@ -124,7 +124,7 @@ const PresentationList = () => {
                     <ListBox
                       variant="outlined"
                       onClick={() => navigateToPresentation(p.id)}
-                      $editMode={editMode}
+                      editmode={editMode ? 1 : 0}
                     >
                       <div className="name">
                         <h3>{p.outline}</h3>
@@ -257,17 +257,17 @@ const ListBox = styled(Button)`
   justify-content: space-between;
   padding: 4rem;
   &:hover {
-    background-color: ${(props) => !props.$editMode && "#ff7134"};
+    background-color: ${(props) => !props.editmode && "#ff7134"};
     .name {
       h3 {
-        color: ${(props) => (props.$editMode ? "rgba(0, 0, 0, 0.2)" : "#fff")};
+        color: ${(props) => (props.editmode ? "rgba(0, 0, 0, 0.2)" : "#fff")};
       }
       h2 {
-        color: ${(props) => (props.$editMode ? "rgba(0, 0, 0, 0.2)" : "#fff")};
+        color: ${(props) => (props.editmode ? "rgba(0, 0, 0, 0.2)" : "#fff")};
       }
     }
     span {
-      color: ${(props) => (props.$editMode ? "rgba(0, 0, 0, 0.2)" : "#fff")};
+      color: ${(props) => (props.editmode ? "rgba(0, 0, 0, 0.2)" : "#fff")};
     }
   }
 
