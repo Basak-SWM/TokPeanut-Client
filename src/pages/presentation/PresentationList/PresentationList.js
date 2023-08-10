@@ -6,7 +6,14 @@ import dayjs from "dayjs";
 import styled from "@emotion/styled";
 import { createGlobalStyle } from "styled-components";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
-import { Box, IconButton, Button } from "@mui/material";
+import {
+  Box,
+  IconButton,
+  Button,
+  FormControlLabel,
+  Switch,
+  Slide,
+} from "@mui/material";
 import Nav from "../../layout/Nav";
 import theme from "../../../style/theme";
 import FilledBtn from "../../button/FilledBtn";
@@ -99,34 +106,61 @@ const PresentationList = () => {
                   <SolidBtn text={"새 프레젠테이션"}></SolidBtn>
                 </Link>
               </div>
-              <span id="edit" onClick={() => setEditMode(!editMode)}>
+              {/* <span id="edit" onClick={() => setEditMode(!editMode)}>
                 {editMode ? "완료" : "편집"}
-              </span>
+              </span> */}
+              <FormControlLabel
+                label="편집 모드"
+                control={
+                  <Switch
+                    checked={editMode}
+                    onChange={() => setEditMode(!editMode)}
+                  />
+                }
+              />
             </Guide>
             <ul className="list-wrap">
-              {presentationList.map((p) => (
-                <li key={p.id}>
-                  <ListBox
-                    variant="outlined"
-                    onClick={() => navigateToPresentation(p.id)}
-                  >
-                    <div className="name">
-                      <h3>{p.outline}</h3>
-                      <h2>{p.title}</h2>
-                    </div>
-                    <span>
-                      {p.createdDate}
-                      {editMode && (
+              {presentationList
+                .map((p) => (
+                  <li key={p.id}>
+                    <ListBox
+                      variant="outlined"
+                      onClick={() => navigateToPresentation(p.id)}
+                    >
+                      <div className="name">
+                        <h3>{p.outline}</h3>
+                        <h2>{p.title}</h2>
+                      </div>
+                      <span>
+                        {p.createdDate}
+                        {/* {editMode && (
                         <DeleteOutlinedIcon
                           onClick={(e) => handleDelete(e, p.id)}
                           className="delete"
                           fontSize="small"
                         />
-                      )}
-                    </span>
-                  </ListBox>
-                </li>
-              ))}
+                      )} */}
+                        <Slide
+                          direction="left"
+                          in={editMode}
+                          mountOnEnter
+                          unmountOnExit
+                        >
+                          {
+                            <div className="delete_container">
+                              <DeleteOutlinedIcon
+                                onClick={(e) => handleDelete(e, p.id)}
+                                className="delete"
+                                fontSize="small"
+                              />
+                            </div>
+                          }
+                        </Slide>
+                      </span>
+                    </ListBox>
+                  </li>
+                ))
+                .reverse()}
             </ul>
           </ListWrap>
         </Container>
