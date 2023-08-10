@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Box from "@mui/material/Box";
 import { createTheme, Dialog, ThemeProvider } from "@mui/material";
 import Modal from "@mui/material/Modal";
@@ -11,6 +11,7 @@ import SmartToyIcon from "@mui/icons-material/SmartToy";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import theme from "../../style/theme";
+import api from "../api";
 
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
@@ -55,6 +56,26 @@ export default function AiFeedbackModal({ presentaion_id, speech_id }) {
       feedback: "네번째 피드백",
     },
   ]);
+
+  const getLogs = async () => {
+    try {
+      const res = await api.get(
+        `/presentations/${presentaion_id}/speeches/${speech_id}/ai-chat-logs`,
+        {
+          params: {
+            "presentaion-id": presentaion_id,
+            "speech-id": speech_id,
+          },
+        }
+      );
+      console.log("ai 피드백 목록 조회 응답: ", res);
+    } catch (err) {
+      console.log("ai 피드백 목록 조회 에러: ", err);
+    }
+  };
+  useEffect(() => {
+    getLogs();
+  }, []);
 
   const newCheckPoint = (e) => {
     e.preventDefault();
