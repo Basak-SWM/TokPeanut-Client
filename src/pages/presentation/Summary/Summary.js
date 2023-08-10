@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import * as s from "./SummaryStyle";
-import Pagination from "../Pagination/Pagination";
 import { ResponsiveLine } from "@nivo/line";
 import Nav from "../../layout/Nav";
 import axios from "axios";
@@ -10,7 +9,14 @@ import dayjs from "dayjs";
 
 import styled from "@emotion/styled";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
-import { Box, IconButton, Button } from "@mui/material";
+import {
+  Box,
+  IconButton,
+  Button,
+  FormControlLabel,
+  Switch,
+  Grow,
+} from "@mui/material";
 import theme from "../../../style/theme";
 import Checkbox from "@mui/material/Checkbox";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
@@ -343,7 +349,6 @@ const Summary = () => {
   return (
     <>
       <ThemeProvider theme={theme}>
-        {/* <Pagination /> */}
         <Nav />
         <Container>
           <div className="title">
@@ -354,9 +359,17 @@ const Summary = () => {
             <div className="list-box">
               <Guide>
                 <h2>스피치 목록</h2>
-                <span id="edit" onClick={() => setEditMode(!editMode)}>
-                  {editMode ? "완료" : "편집"}
-                </span>
+                <div id="edit">
+                  <div id="edit_text"> 편집 모드 </div>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={editMode}
+                        onChange={() => setEditMode(!editMode)}
+                      />
+                    }
+                  />
+                </div>
               </Guide>
               <ul className="prsentaition-list">
                 {speechList.map((speech, i) => (
@@ -379,14 +392,18 @@ const Summary = () => {
                       {!speech.recordDone && (
                         <div className="tem">임시저장됨</div>
                       )}
-
-                      {editMode && (
-                        <DeleteOutlinedIcon
-                          onClick={(e) => handleDelete(e, speech.id)}
-                          className="delete"
-                          fontSize="small"
-                        />
-                      )}
+                      <Grow
+                        in={editMode}
+                        {...(editMode ? { timeout: 700 } : {})}
+                        className="delete"
+                      >
+                        {
+                          <DeleteOutlinedIcon
+                            onClick={(e) => handleDelete(e, speech.id)}
+                            className="delete"
+                          />
+                        }
+                      </Grow>
                     </OutlinedBtn>
                   </li>
                 ))}
@@ -413,7 +430,7 @@ const Summary = () => {
                 <li>
                   <div className="sub-title">
                     <CircleIcon />
-                    <h3>평균속도</h3>
+                    <h3>평균 속도</h3>
                   </div>
                   <div className="graph">
                     <GraphBox>
@@ -428,7 +445,7 @@ const Summary = () => {
                 <li>
                   <div className="sub-title">
                     <CircleIcon />
-                    <h3>평균 휴지</h3>
+                    <h3>평균 휴지 비율</h3>
                   </div>
                   <div className="graph">
                     <GraphBox>
@@ -499,15 +516,19 @@ const Content = styled(Box)`
       font-weight: 500;
     }
     #edit {
+      display: flex;
+      align-items: center;
       cursor: pointer;
-      font-size: 1.3rem;
+      font-size: 1rem;
       color: gray;
       line-height: 150%;
       margin-bottom: 2rem;
       font-weight: 500;
       &:hover {
         color: #ff7134;
-        text-decoration: underline;
+      }
+      #edit_text {
+        margin-right: 1rem;
       }
     }
     .prsentaition-list {
