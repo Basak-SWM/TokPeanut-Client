@@ -483,8 +483,18 @@ const Summary = () => {
 
 const Container = styled(Box)`
   width: 118rem;
-  margin: 13rem auto 10rem auto;
+  /* margin: 13rem auto 10rem auto; */
+  margin: 0 auto;
   .title {
+    position: sticky;
+    top: 0;
+    padding-top: 3rem;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    height: 13rem;
+    background-color: #fff;
+    z-index: 100;
     padding-bottom: 1rem;
     border-bottom: 2px solid #ff7134;
     h1 {
@@ -507,6 +517,13 @@ const Content = styled(Box)`
   justify-content: space-between;
   margin-top: 3rem;
   .list-box {
+    &::-webkit-scrollbar {
+      display: none;
+    }
+    position: sticky;
+    top: 20rem;
+    height: 85rem;
+    overflow-y: auto;
     width: 24%;
     h2 {
       font-size: 1.8rem;
@@ -548,6 +565,7 @@ const Content = styled(Box)`
     }
   }
   .graph-box {
+    margin-top: 0.9rem;
     width: 74%;
     .graph-wrap {
       li {
@@ -648,6 +666,10 @@ const GraphBox = styled(Box)`
 `;
 
 const Guide = styled(Box)`
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: #fff;
   display: flex;
   align-items: center;
   justify-content: space-between;
