@@ -16,7 +16,7 @@ import api from "../api";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 
-export default function AiFeedbackModal({ presentaion_id, speech_id }) {
+export default function AiFeedbackModal({ presentation_id, speech_id }) {
   const theme = createTheme({
     typography: {
       fontFamily: "Pretendard",
@@ -60,10 +60,10 @@ export default function AiFeedbackModal({ presentaion_id, speech_id }) {
   const getLogs = async () => {
     try {
       const res = await api.get(
-        `/presentations/${presentaion_id}/speeches/${speech_id}/ai-chat-logs`,
+        `/presentations/${presentation_id}/speeches/${speech_id}/ai-chat-logs`,
         {
           params: {
-            "presentaion-id": presentaion_id,
+            "presentation-id": presentation_id,
             "speech-id": speech_id,
           },
         }
