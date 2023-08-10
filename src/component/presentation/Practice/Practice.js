@@ -103,7 +103,7 @@ const Practice = ({ isNew }) => {
   const [edited, setEdited] = useState([]);
   const initUserSymbols = (userSymbol) => {
     const symbols = JSON.parse(userSymbol);
-    // console.log("user symbols:", symbols);
+    console.log("user symbols:", symbols);
 
     if (!symbols) return;
 
@@ -568,7 +568,7 @@ const Practice = ({ isNew }) => {
                               {slashSymbol[i] && (
                                 <img src={symbols[7].src} alt="slash" />
                               )}
-                              {word}
+                              {edited[i] ? edited[i] : word}
                             </s.Text>
                           </span>
                         </span>
