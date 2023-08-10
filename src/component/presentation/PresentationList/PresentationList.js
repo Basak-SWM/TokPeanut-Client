@@ -41,15 +41,14 @@ const PresentationList = () => {
       const res = await api.get("/presentations", {
         params: { "account-uuid": uuid },
       });
-      const nowDate = new Date();
       res.data.forEach((presentation) => {
         const date = dayjs(presentation.createdDate);
         presentation.createdDate = dayjs().to(date);
       });
       setPresentationList(res.data);
-      console.log("presentation list response:", res);
+      // console.log("presentation list response:", res);
     } catch (err) {
-      console.log("presentation list error:", err);
+      console.log("🩸presentation list error:", err);
     }
   };
 
@@ -74,11 +73,11 @@ const PresentationList = () => {
             "presentation-id": presentation_id,
           },
         });
-        console.log("delete presentation response:", res);
+        // console.log("delete presentation response:", res);
         alert("삭제되었습니다.");
         getPresentationList();
       } catch (err) {
-        console.log("delete presentation error:", err);
+        console.log("🩸delete presentation error:", err);
       }
     } else {
       alert("삭제가 취소되었습니다.");
@@ -106,9 +105,6 @@ const PresentationList = () => {
                   <SolidBtn text={"새 프레젠테이션"}></SolidBtn>
                 </Link>
               </div>
-              {/* <span id="edit" onClick={() => setEditMode(!editMode)}>
-                {editMode ? "완료" : "편집"}
-              </span> */}
               <div id="edit">
                 <div id="edit_text"> 편집 모드 </div>
                 <FormControlLabel
@@ -136,13 +132,6 @@ const PresentationList = () => {
                       </div>
                       <span>
                         {p.createdDate}
-                        {/* {editMode && (
-                        <DeleteOutlinedIcon
-                          onClick={(e) => handleDelete(e, p.id)}
-                          className="delete"
-                          fontSize="small"
-                        />
-                      )} */}
                         <Grow
                           in={editMode}
                           {...(editMode ? { timeout: 700 } : {})}
