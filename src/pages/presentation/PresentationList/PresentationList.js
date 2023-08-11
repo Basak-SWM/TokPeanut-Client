@@ -12,14 +12,14 @@ import {
   Button,
   FormControlLabel,
   Switch,
-  Slide,
+  Grow,
 } from "@mui/material";
 import Nav from "../../layout/Nav";
 import theme from "../../../style/theme";
 import FilledBtn from "../../button/FilledBtn";
 import SolidBtn from "../../button/SolidBtn";
 
-import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+import FolderDeleteIcon from "@mui/icons-material/FolderDelete";
 import api from "../../api";
 
 const PresentationList = () => {
@@ -41,15 +41,14 @@ const PresentationList = () => {
       const res = await api.get("/presentations", {
         params: { "account-uuid": uuid },
       });
-      const nowDate = new Date();
       res.data.forEach((presentation) => {
         const date = dayjs(presentation.createdDate);
         presentation.createdDate = dayjs().to(date);
       });
       setPresentationList(res.data);
-      console.log("presentation list response:", res);
+      // console.log("presentation list response:", res);
     } catch (err) {
-      console.log("presentation list error:", err);
+      console.log("🩸presentation list error:", err);
     }
   };
 
@@ -74,11 +73,11 @@ const PresentationList = () => {
             "presentation-id": presentation_id,
           },
         });
-        console.log("delete presentation response:", res);
+        // console.log("delete presentation response:", res);
         alert("삭제되었습니다.");
         getPresentationList();
       } catch (err) {
-        console.log("delete presentation error:", err);
+        console.log("🩸delete presentation error:", err);
       }
     } else {
       alert("삭제가 취소되었습니다.");
@@ -106,18 +105,17 @@ const PresentationList = () => {
                   <SolidBtn text={"새 프레젠테이션"}></SolidBtn>
                 </Link>
               </div>
-              {/* <span id="edit" onClick={() => setEditMode(!editMode)}>
-                {editMode ? "완료" : "편집"}
-              </span> */}
-              <FormControlLabel
-                label="편집 모드"
-                control={
-                  <Switch
-                    checked={editMode}
-                    onChange={() => setEditMode(!editMode)}
-                  />
-                }
-              />
+              <div id="edit">
+                <div id="edit_text"> 편집 모드 </div>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={editMode}
+                      onChange={() => setEditMode(!editMode)}
+                    />
+                  }
+                />
+              </div>
             </Guide>
             <ul className="list-wrap">
               {presentationList
@@ -126,6 +124,7 @@ const PresentationList = () => {
                     <ListBox
                       variant="outlined"
                       onClick={() => navigateToPresentation(p.id)}
+                      editmode={editMode ? 1 : 0}
                     >
                       <div className="name">
                         <h3>{p.outline}</h3>
@@ -133,29 +132,18 @@ const PresentationList = () => {
                       </div>
                       <span>
                         {p.createdDate}
-                        {/* {editMode && (
-                        <DeleteOutlinedIcon
-                          onClick={(e) => handleDelete(e, p.id)}
-                          className="delete"
-                          fontSize="small"
-                        />
-                      )} */}
-                        <Slide
-                          direction="left"
+                        <Grow
                           in={editMode}
-                          mountOnEnter
-                          unmountOnExit
+                          {...(editMode ? { timeout: 700 } : {})}
+                          className="delete"
                         >
                           {
-                            <div className="delete_container">
-                              <DeleteOutlinedIcon
-                                onClick={(e) => handleDelete(e, p.id)}
-                                className="delete"
-                                fontSize="small"
-                              />
-                            </div>
+                            <FolderDeleteIcon
+                              onClick={(e) => handleDelete(e, p.id)}
+                              className="delete"
+                            />
                           }
-                        </Slide>
+                        </Grow>
                       </span>
                     </ListBox>
                   </li>
@@ -240,15 +228,20 @@ const ListWrap = styled(Box)`
     }
   }
   #edit {
+    display: flex;
+    align-items: center;
+    /* justify-content: space-between; */
     cursor: pointer;
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     color: gray;
     margin-top: 5rem;
     margin-right: 0.7rem;
     font-weight: 500;
     &:hover {
       color: #ff7134;
-      text-decoration: underline;
+    }
+    #edit_text {
+      margin-right: 1rem;
     }
   }
   @media ${() => theme.device.mobile} {
@@ -264,19 +257,20 @@ const ListBox = styled(Button)`
   justify-content: space-between;
   padding: 4rem;
   &:hover {
-    background-color: #ff7134;
+    background-color: ${(props) => !props.editmode && "#ff7134"};
     .name {
       h3 {
-        color: #fff;
+        color: ${(props) => (props.editmode ? "rgba(0, 0, 0, 0.2)" : "#fff")};
       }
       h2 {
-        color: #fff;
+        color: ${(props) => (props.editmode ? "rgba(0, 0, 0, 0.2)" : "#fff")};
       }
     }
     span {
-      color: #fff;
+      color: ${(props) => (props.editmode ? "rgba(0, 0, 0, 0.2)" : "#fff")};
     }
   }
+
   .name {
     display: flex;
     flex-direction: column;
@@ -303,9 +297,12 @@ const ListBox = styled(Button)`
     font-weight: 400;
     .delete {
       cursor: pointer;
-      height: 2.5rem;
-      width: 2.5rem;
+      height: 3rem;
+      width: 3rem;
       margin-left: 2rem;
+      &:hover {
+        color: #ff7134;
+      }
     }
   }
   @media ${() => theme.device.mobile} {
@@ -326,6 +323,12 @@ const Guide = styled(Box)`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  position: sticky;
+  top: 5rem;
+  background-color: #fff;
+  z-index: 100;
+  padding: 2rem 0;
+  border-bottom: rgba(0, 0, 0, 0.1) 1px solid;
 `;
 
 export default PresentationList;
