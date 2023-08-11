@@ -39,12 +39,6 @@ export const Text = styled.span`
   margin-right: ${(props) => (props.$continued ? "none" : "5px")};
   padding-right: ${(props) => (props.$continued ? "5px" : "none")};
   text-decoration: ${(props) => (props.$edited ? "underline" : "none")};
-  text-decoration: ${(props) =>
-    props.$correction === "fast"
-      ? "red dotted overline "
-      : props.$correction === "slow"
-      ? "green dotted overline "
-      : "none"};
   &:hover {
     /* text-decoration: orange dashed underline; */
     font-weight: bold;
