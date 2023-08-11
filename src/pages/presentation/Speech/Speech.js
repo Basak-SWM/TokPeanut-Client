@@ -344,6 +344,11 @@ const Speech = () => {
     { name: "지우개", src: "/img/script/toolbar/eraser.svg" },
   ];
 
+  const correctionIcons = [
+    { name: "휴지 긺", src: "/img/script/space_long.svg" },
+    { name: "휴지 짧음", src: "/img/script/space_short.svg" },
+  ];
+
   // 기호 클릭시 selectedSymbol을 해당 기호 이미지로 변경 -> 커서 변경
   // 한 번 더 클릭시 기본 커서로 변경
   const clickTool = (i) => {
@@ -635,11 +640,19 @@ const Speech = () => {
 
                           {correction.PAUSE_TOO_LONG &&
                             correction.PAUSE_TOO_LONG.has(i - 1) && (
-                              <Correction> 🔸🔸 </Correction>
+                              <img
+                                src={correctionIcons[0].src}
+                                alt="pause too long"
+                                className="correction pause_too_long"
+                              />
                             )}
                           {correction.PAUSE_TOO_SHORT &&
                             correction.PAUSE_TOO_SHORT.has(i - 1) && (
-                              <Correction> 🔹🔹 </Correction>
+                              <img
+                                src={correctionIcons[1].src}
+                                alt="pause too short"
+                                className="correction pause_too_short"
+                              />
                             )}
                         </Symbol>
                         <span
@@ -976,43 +989,35 @@ const TextArea = styled(Box)`
 `;
 
 const CorrectionLine = styled.span`
-  /* height: 2px; */
   line-height: 100%;
-  /* border-bottom: ${(props) =>
-    props.$status === "fast"
-      ? "solid red .3rem"
-      : props.$status === "slow"
-      ? "solid green .3rem"
-      : "transparent"}; */
   background-color: ${(props) =>
     props.$status === "fast"
-      ? "red"
+      ? "#D71313"
       : props.$status === "slow"
-      ? "green"
+      ? "#0D1282"
       : "transparent"};
   opacity: 0.7;
   font-size: 1rem;
   font-weight: bold;
   color: white;
-  /* color: ${(props) =>
-    props.$status === "fast"
-      ? "red"
-      : props.$status === "slow"
-      ? "green"
-      : "transparent"}; */
-  /* background-color: red; */
 `;
 const Symbol = styled.span`
   /* margin: auto; */
   height: 3rem;
   vertical-align: bottom;
   padding-bottom: 1rem;
-  /* img {
-    margin-top: 2rem;
-  } */
-`;
-const Correction = styled.span`
-  color: #ff7134;
+  .correction {
+    width: 2.5rem;
+    /* margin-left: -5px; */
+  }
+  .pause_too_long {
+    filter: invert(5%) sepia(86%) saturate(7388%) hue-rotate(247deg)
+      brightness(103%) contrast(107%);
+  }
+  .pause_too_short {
+    filter: invert(12%) sepia(97%) saturate(5608%) hue-rotate(9deg)
+      brightness(90%) contrast(102%);
+  }
 `;
 
 const Disabled = styled(Box)`
