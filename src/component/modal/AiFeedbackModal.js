@@ -1,10 +1,10 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useRef } from "react";
 import Box from "@mui/material/Box";
 import { createTheme, Dialog, ThemeProvider } from "@mui/material";
 import Modal from "@mui/material/Modal";
 import styled from "@emotion/styled";
 import FilledBtn from "../button/FilledBtn";
-import { IconButton } from "@mui/material";
+import { IconButton, CircularProgress } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
@@ -31,9 +31,17 @@ export default function AiFeedbackModal({ presentation_id, speech_id }) {
   const theme2 = useTheme();
   const fullScreen = useMediaQuery(theme2.breakpoints.down("md"));
 
-  const [open, setOpen] = React.useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => {
+    setOpen(true);
+    setTimeout(() => {
+      // scrollDown();
+      messageRef.current.scrollIntoView(); // 스크롤 효과 없이 바로 맨 아래로
+    }, 1);
+  };
+  const handleClose = () => {
+    setOpen(false);
+  };
 
   // mock data
   // const [data, setData] = useState([
@@ -66,7 +74,7 @@ export default function AiFeedbackModal({ presentation_id, speech_id }) {
     }));
     const uncompletedLogs = logs.uncompletedChatLogs.map((log) => ({
       prompt: log.prompt,
-      result: "답변 준비중입니다...",
+      result: "waiting",
     }));
     setData([...completedLogs, ...uncompletedLogs]);
   };
@@ -83,9 +91,9 @@ export default function AiFeedbackModal({ presentation_id, speech_id }) {
         }
       );
       if (res.status === 200) setLogs(res.data);
-      console.log("ai 피드백 목록 조회 응답: ", res);
+      // console.log("ai 피드백 목록 조회 응답: ", res);
     } catch (err) {
-      console.log("ai 피드백 목록 조회 에러: ", err);
+      console.log("🩸ai 피드백 목록 조회 에러: ", err);
     }
     return res.status;
   }, [presentation_id, speech_id]);
@@ -94,7 +102,9 @@ export default function AiFeedbackModal({ presentation_id, speech_id }) {
     // ai 챗 리스트 폴링
     const polling = async () => {
       const status = await getLogs();
-      if (status === 200) clearInterval(repeat);
+      if (status === 200) {
+        clearInterval(repeat);
+      }
     };
     polling();
     const repeat = setInterval(polling, 3000);
@@ -124,17 +134,19 @@ export default function AiFeedbackModal({ presentation_id, speech_id }) {
       if (res.status === 202) {
         setTimeout(() => getAdditionalLogs(id), 3000);
       }
-      console.log("ai 피드백 추가 조회 응답: ", res);
+      // console.log("ai 피드백 추가 조회 응답: ", res);
     } catch (err) {
-      console.log("ai 피드백 추가 조회 에러: ", err);
+      console.log("🩸ai 피드백 추가 조회 에러: ", err);
     }
   };
 
   const newCheckPoint = async (e) => {
     e.preventDefault();
+    const newPrompt = e.target[0].value;
+    e.target[0].value = "";
     const tem = {
-      prompt: e.target[0].value,
-      result: "답변 준비중입니다...",
+      prompt: newPrompt,
+      result: "waiting",
     };
     setData([...data, tem]);
     try {
@@ -145,18 +157,29 @@ export default function AiFeedbackModal({ presentation_id, speech_id }) {
             "presentation-id": presentation_id,
             "speech-id": speech_id,
           },
-          prompt: e.target[0].value,
+          prompt: newPrompt,
         }
       );
       if (res.status === 202) {
-        e.target[0].value = "";
         getAdditionalLogs(res.data.id);
       }
-      console.log("ai 피드백 추가 응답: ", res);
+      // console.log("ai 피드백 추가 응답: ", res);
     } catch (err) {
       console.log("🩸ai 피드백 추가 에러: ", err);
     }
   };
+
+  const messageRef = useRef(null);
+  // 채팅창 스크롤 맨 아래로
+  const scrollDown = useCallback(() => {
+    if (messageRef.current) {
+      messageRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messageRef]);
+
+  useEffect(() => {
+    scrollDown();
+  }, [data, scrollDown]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -186,12 +209,20 @@ export default function AiFeedbackModal({ presentation_id, speech_id }) {
                     <div className="profile">
                       <SmartToyIcon />
                     </div>
-                    <h3>{item.result}</h3>
+                    <h3>
+                      {item.result === "waiting" ? (
+                        <CircularProgress color="inherit" size={30} />
+                      ) : (
+                        item.result
+                      )}
+                    </h3>
                   </div>
                 </div>
               ))}
             </div>
+            <div ref={messageRef}></div>
           </div>
+
           <form onSubmit={newCheckPoint}>
             <div className="text-input">
               <div className="padding">
