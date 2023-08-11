@@ -149,18 +149,19 @@ export const Tool = styled.span`
 // 수정 전 단어 + 툴팁
 export const OriginalText = styled.span`
   visibility: hidden;
-  width: 120px;
+  width: 120%;
   bottom: 100%;
   left: 50%;
-  margin-left: -60px;
-  font-size: 14px;
-  background-color: grey;
+  margin-left: calc(-60% - 0.5rem);
+  font-size: 1.5rem;
+  background-color: rgba(0, 0, 0, 0.3);
   color: #fff;
   text-align: center;
-  padding: 5px 0;
+  padding: 0.5rem 0.2rem;
   border-radius: 5px;
   position: absolute;
   z-index: 1;
+  transition: all 0.1s ease-in-out;
 
   ${Text}:hover & {
     visibility: visible;
@@ -175,7 +176,7 @@ export const OriginalText = styled.span`
     margin-left: -5px;
     border-width: 5px;
     border-style: solid;
-    border-color: grey transparent transparent transparent;
+    border-color: rgba(0, 0, 0, 0.3) transparent transparent transparent;
   }
 `;
 
