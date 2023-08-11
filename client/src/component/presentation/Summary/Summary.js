@@ -521,7 +521,7 @@ const Content = styled(Box)`
       display: none;
     }
     position: sticky;
-    top: 20rem;
+    top: 21rem;
     height: 85rem;
     overflow-y: auto;
     width: 24%;
@@ -565,7 +565,7 @@ const Content = styled(Box)`
     }
   }
   .graph-box {
-    margin-top: 0.9rem;
+    margin-top: 1.8rem;
     width: 74%;
     .graph-wrap {
       li {
