@@ -3,7 +3,7 @@ import styled from "@emotion/styled";
 import { createTheme, ThemeProvider } from "@mui/material";
 import { Box, IconButton, Button } from "@mui/material";
 
-export default function FilledBtn({ text, state, onClick }) {
+export default function FilledBtn({ text, state, onClick, disabled }) {
   const theme = createTheme({
     typography: {
       fontFamily: "Pretendard",
@@ -22,7 +22,11 @@ export default function FilledBtn({ text, state, onClick }) {
             {text}
           </FilledButton>
         ) : (
-          <FilledButton variant="contained" onClick={onClick}>
+          <FilledButton
+            variant="contained"
+            onClick={onClick}
+            disabled={disabled}
+          >
             {text}
           </FilledButton>
         )}
