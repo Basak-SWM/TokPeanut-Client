@@ -377,15 +377,15 @@ const Speech = () => {
     switch (selectedSymbol) {
       // 기호 표시
       case 0:
-        highlighted[selectedWordIdx] = "yellow";
+        highlighted[selectedWordIdx] = "rgba(255,255,204)";
         setHighlighted([...highlighted]);
         break;
       case 1:
-        highlighted[selectedWordIdx] = "pink";
+        highlighted[selectedWordIdx] = "rgb(255, 204, 255)";
         setHighlighted([...highlighted]);
         break;
       case 2:
-        highlighted[selectedWordIdx] = "yellowgreen";
+        highlighted[selectedWordIdx] = "rgb(204, 255, 204)";
         setHighlighted([...highlighted]);
         break;
       case 3:
@@ -456,18 +456,18 @@ const Speech = () => {
           container: wavesurferRef.current,
           audioRate: 1, // 재생 속도 (default 1)
           barHeight: 1, // 막대 높이 (default 1)
-          barWidth: 3, // 막대 넓이
-          barGap: 1,
-          cursorColor: "#ddd5e9",
-          cursorWidth: 3,
+          barWidth: 2, // 막대 넓이
+          barGap: 5,
+          cursorColor: "#ff4e00",
+          cursorWidth: 2,
           fillParent: true, // 부모 요소를 가득 채울지, mixPxPerSec 옵션에 따를지
           height: 64, // 웨이브 폼 전체의 높이
           hideScrollbar: true, // 가로 스크롤바 표시 여부
           minPxPerSec: 50, // 오디오 파일의 1초당 렌더링 될 픽셀 수의 최솟값. zoom level
           normalize: true, // true면 가장 큰 막대의 길이에 비례하여 막대 높이 설정
-          progressColor: "#dd5e98", // 커서 왼쪽의 파형 색상
+          progressColor: "#F86F03", // 커서 왼쪽의 파형 색상
           responsive: false, // 웨이브 폼이 부모 요소보다 길어서 넘치는 경우 스크롤바 or 줄여서 렌더링
-          waveColor: "#ff4e00", // 커서 오른쪽의 파형 색상
+          waveColor: "#3b3b3b", // 커서 오른쪽의 파형 색상
           interact: false, // 파형 클릭 불가능
           splitChannels: false, // 두 줄로 출력
           autoScroll: true, // 자동 스크롤
@@ -866,15 +866,17 @@ const Script = styled(Box)`
 const WaveContainer = styled.div`
   height: 64px;
   margin-bottom: 3rem;
-  width: 100%;
+  width: 90%;
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: #fff6f4;
+
   .text {
-    width: 90%;
-    height: 120%;
+    width: 100%;
+    height: 64px;
     /* background-color: #f5f5f5; */
-    background-color: rgb(255, 112, 51, 0.2);
+    /* background-color: rgb(255, 112, 51, 0.2); */
     font-size: 1.5rem;
     display: flex;
     align-items: center;
