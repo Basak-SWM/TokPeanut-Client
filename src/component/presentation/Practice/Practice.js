@@ -622,16 +622,10 @@ const Practice = ({ isNew }) => {
                       text={"취소하기"}
                       color={"white"}
                       onClick={cancelRecording}
+                      disabled={recording}
                     />
                   </li>
                   <li>
-                    {/* <span onClick={play}>
-                      <SolideBtn
-                        text={"녹음본 들어보기"}
-                        color={"white"}
-                        // onClick={play}
-                      />
-                    </span> */}
                     {playing ? (
                       <PlayBtn variant="contained" onClick={pausePlaying}>
                         <StopIcon />
@@ -659,12 +653,13 @@ const Practice = ({ isNew }) => {
                         <KeyboardVoiceIcon />
                       </PlayBtn>
                     )}
-                    {/* <PlayBtn variant="contained" onClick={resetTranscript}>
-                      R
-                    </PlayBtn> */}
                   </li>
                   <li>
-                    <FilledBtn text={"완료하기"} onClick={finishRecording} />
+                    <FilledBtn
+                      text={"완료하기"}
+                      onClick={finishRecording}
+                      disabled={recording}
+                    />
                   </li>
                 </ul>
                 <audio id="audio" />
