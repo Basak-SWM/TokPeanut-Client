@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Box from "@mui/material/Box";
 import { createTheme, Dialog, ThemeProvider } from "@mui/material";
 import Modal from "@mui/material/Modal";
@@ -36,30 +36,44 @@ export default function AiFeedbackModal({ presentation_id, speech_id }) {
   const handleClose = () => setOpen(false);
 
   // mock data
-  const [data, setData] = useState([
-    {
-      checkpoint: "초기 요구사항(프레젠테이션 생성 시 입력)",
-      feedback: "첫번째 피드백",
-    },
-    {
-      checkpoint: "두 번쩨 요구사항~ 전 이거이거를 잘 하고 싶어요~",
-      feedback: "두 번째 피드백: 어쩌고저쩌고 이런걸 신경 써보세요",
-    },
-    {
-      checkpoint:
-        "세 번째 요구사항: 텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트",
-      feedback:
-        "세번째 피드백: 피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백",
-    },
-    {
-      checkpoint: "네 번째 요구사항",
-      feedback: "네번째 피드백",
-    },
-  ]);
+  // const [data, setData] = useState([
+  //   {
+  //     checkpoint: "초기 요구사항(프레젠테이션 생성 시 입력)",
+  //     feedback: "첫번째 피드백",
+  //   },
+  //   {
+  //     checkpoint: "두 번쩨 요구사항~ 전 이거이거를 잘 하고 싶어요~",
+  //     feedback: "두 번째 피드백: 어쩌고저쩌고 이런걸 신경 써보세요",
+  //   },
+  //   {
+  //     checkpoint:
+  //       "세 번째 요구사항: 텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트",
+  //     feedback:
+  //       "세번째 피드백: 피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백",
+  //   },
+  //   {
+  //     checkpoint: "네 번째 요구사항",
+  //     feedback: "네번째 피드백",
+  //   },
+  // ]);
 
-  const getLogs = async () => {
+  const [data, setData] = useState([]);
+
+  const setLogs = (logs) => {
+    const completedLogs = logs.completedChatLogs.map((log) => ({
+      prompt: log.prompt,
+      result: log.result,
+    }));
+    const uncompletedLogs = logs.uncompletedChatLogs.map((log) => ({
+      prompt: log.prompt,
+      result: "답변 준비중입니다...",
+    }));
+    setData([...completedLogs, ...uncompletedLogs]);
+  };
+  const getLogs = useCallback(async () => {
+    let res = null;
     try {
-      const res = await api.get(
+      res = await api.get(
         `/presentations/${presentation_id}/speeches/${speech_id}/ai-chat-logs`,
         {
           params: {
@@ -68,24 +82,80 @@ export default function AiFeedbackModal({ presentation_id, speech_id }) {
           },
         }
       );
+      if (res.status === 200) setLogs(res.data);
       console.log("ai 피드백 목록 조회 응답: ", res);
     } catch (err) {
       console.log("ai 피드백 목록 조회 에러: ", err);
     }
-  };
-  useEffect(() => {
-    getLogs();
-  }, []);
+    return res.status;
+  }, [presentation_id, speech_id]);
 
-  const newCheckPoint = (e) => {
-    e.preventDefault();
-    const newCheckPoint = {
-      checkpoint: e.target[0].value,
-      feedback: "새로운 피드백 입력 중...",
+  useEffect(() => {
+    // ai 챗 리스트 폴링
+    const polling = async () => {
+      const status = await getLogs();
+      if (status === 200) clearInterval(repeat);
     };
-    // console.log(e.target[0].value);
-    data.push(newCheckPoint);
-    setData([...data]);
+    polling();
+    const repeat = setInterval(polling, 3000);
+  }, [getLogs]);
+
+  const getAdditionalLogs = async (id) => {
+    try {
+      const res = await api.get(
+        `/presentations/${presentation_id}/speeches/${speech_id}/ai-chat-logs/${id}`,
+        {
+          params: {
+            "presentation-id": presentation_id,
+            "speech-id": speech_id,
+            "log-id": id,
+          },
+        }
+      );
+      // 답변 완료
+      if (res.status === 200) {
+        const newLog = {
+          prompt: res.data.prompt,
+          result: res.data.result,
+        };
+        setData([...data, newLog]);
+      }
+      // 답변 폴링
+      if (res.status === 202) {
+        setTimeout(() => getAdditionalLogs(id), 3000);
+      }
+      console.log("ai 피드백 추가 조회 응답: ", res);
+    } catch (err) {
+      console.log("ai 피드백 추가 조회 에러: ", err);
+    }
+  };
+
+  const newCheckPoint = async (e) => {
+    e.preventDefault();
+    const tem = {
+      prompt: e.target[0].value,
+      result: "답변 준비중입니다...",
+    };
+    setData([...data, tem]);
+    try {
+      const res = await api.post(
+        `/presentations/${presentation_id}/speeches/${speech_id}/ai-chat-logs`,
+        {
+          params: {
+            "presentation-id": presentation_id,
+            "speech-id": speech_id,
+          },
+          prompt: e.target[0].value,
+        }
+      );
+      if (res.status === 202) {
+        e.target[0].value = "";
+        getAdditionalLogs(res.data.id);
+      }
+      console.log("ai 피드백 추가 응답: ", res);
+    } catch (err) {
+      console.log("🩸ai 피드백 추가 에러: ", err);
+    }
   };
 
   return (
@@ -110,13 +180,13 @@ export default function AiFeedbackModal({ presentation_id, speech_id }) {
               {data.map((item, i) => (
                 <div key={i}>
                   <div className="me-msg">
-                    <h3>{item.checkpoint}</h3>
+                    <h3>{item.prompt}</h3>
                   </div>
                   <div className="ai-msg">
                     <div className="profile">
                       <SmartToyIcon />
                     </div>
-                    <h3>{item.feedback}</h3>
+                    <h3>{item.result}</h3>
                   </div>
                 </div>
               ))}
