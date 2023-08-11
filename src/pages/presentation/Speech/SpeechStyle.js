@@ -50,12 +50,12 @@ export const Script = styled.div`
 export const WaveWrapper = styled.div`
   display: ${(props) => (props.$ready ? "block" : "none")};
   /* width: 748px; */
-  width: 90%;
+  width: 100%;
   /* height: 64px; */
   height: 100%;
   /* width: 100%;
   height: 100%; */
-  margin-bottom: 3rem;
+  /* margin-bottom: 3rem; */
   /* border: 1px solid grey; */
 `;
 // 파형 로딩 박스
@@ -101,11 +101,11 @@ export const Text = styled.span`
     props.$played === "playing"
       ? "transparent"
       : props.$played === "played"
-      ? "orange"
+      ? "#ff7134"
       : "black"};
   background-image: ${(props) =>
     props.$played === "playing"
-      ? "linear-gradient(to right, orange 50%, black 50% 100%)"
+      ? "linear-gradient(to right, #ff7134 50%, black 50% 100%)"
       : ""};
 
   background-size: 200% 100%;
