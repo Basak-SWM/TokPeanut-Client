@@ -328,7 +328,7 @@ const Guide = styled(Box)`
   background-color: #fff;
   z-index: 100;
   padding: 2rem 0;
-  border-bottom: #ff7134 1px solid;
+  border-bottom: rgba(0, 0, 0, 0.1) 1px solid;
 `;
 
 export default PresentationList;
