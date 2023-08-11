@@ -20,6 +20,8 @@ import Tooltip from "@mui/material/Tooltip";
 import ToolBarMo from "../../script/ToolbarMo";
 
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import PauseIcon from "@mui/icons-material/Pause";
+import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import FilledBtn from "../../button/FilledBtn";
 
 import Nav from "../../layout/Nav";
@@ -439,6 +441,7 @@ const Speech = () => {
   // 파형
   const wavesurferRef = useRef(null);
   const playButton = useRef(null);
+  const [playing, setPlaying] = useState(false);
 
   useEffect(() => {
     if (audio) {
@@ -472,11 +475,13 @@ const Speech = () => {
         // 플레이/퍼즈 때 버튼 텍스트 변경
         wavesurfer.on("play", () => {
           start();
-          playButton.current.textContent = "pause";
+          // playButton.current.textContent = "pause";
+          setPlaying(true);
         });
         wavesurfer.on("pause", () => {
           stop();
-          playButton.current.textContent = "play";
+          // playButton.current.textContent = "play";
+          setPlaying(false);
         });
 
         wavesurfer.on("ready", () => {
@@ -697,7 +702,6 @@ const Speech = () => {
                                 onBlur={(e) => {
                                   handleBlur(e, i);
                                 }}
-                                // contentEditable={cursor === edit} // 현재 커서가 수정펜일 때만 수정 모드
                                 contentEditable={selectedSymbol === 3} // 현재 커서가 수정펜일 때만 수정 모드
                                 edited={edited[i]}
                                 spellCheck={false}
@@ -743,41 +747,23 @@ const Speech = () => {
                 $ready={isDone && waveFormLoaded ? 1 : 0}
               />
             </WaveContainer>
-            {/* </div> */}
-
-            {/* {isDone ? null : (
-              <button
-                onClick={() => {
-                  setIsDone(true);
-                }}
-              >
-                완료
-              </button>
-            )} */}
             <PC>
               <ScriptBarWrap>
                 {isDone ? (
                   <ul className="btn-wrap activate">
                     <li>
                       <FilledBtn text={"코치 연결하기"} />
-                      {/* <Link
-                        to={`/presentation/practice?presentation_id=${presentation_id}`}
-                      > */}
-
                       <FilledBtn
                         text={"연습 시작하기"}
                         onClick={createSpeech}
                       />
-
-                      {/* </Link> */}
                     </li>
                     <li>
                       <PlayBtn variant="contained" ref={playButton}>
-                        <PlayArrowIcon />
+                        {playing ? <PauseIcon /> : <PlayArrowIcon />}
                       </PlayBtn>
-                      {/* <FilledBtn text={"Reset"} onClick={onReset} /> */}
                       <PlayBtn variant="contained" onClick={onReset}>
-                        R
+                        <RestartAltIcon />
                       </PlayBtn>
                     </li>
                     <li>
@@ -804,7 +790,7 @@ const Speech = () => {
                         <PlayArrowIcon />
                       </PlayBtn>
                       <PlayBtn variant="contained" disabled>
-                        R
+                        <RestartAltIcon />
                       </PlayBtn>
                     </li>
                     <li>
@@ -816,16 +802,6 @@ const Speech = () => {
                 )}
               </ScriptBarWrap>
             </PC>
-            {/* <div>
-              <button ref={playButton} disabled={!isDone}>
-                play
-              </button>
-              <button onClick={onReset} disabled={!isDone}>
-                reset
-              </button>
-            </div>
-            {isDone ? <Link to="/presentation/practice">연습 시작</Link> : null}
-            <div>count: {count}</div> */}
           </Script>
 
           <Pagination />
