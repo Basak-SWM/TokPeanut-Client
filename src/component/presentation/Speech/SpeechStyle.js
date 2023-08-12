@@ -149,15 +149,16 @@ export const Tool = styled.span`
 // 수정 전 단어 + 툴팁
 export const OriginalText = styled.span`
   visibility: hidden;
-  width: 120%;
+  width: ${(props) => props.$len * 1.5}rem;
   bottom: 100%;
   left: 50%;
-  margin-left: calc(-60% - 0.5rem);
+  /* margin-left: calc(-60% - 0.5rem); */
+  margin-left: ${(props) => props.$len * -0.75 - 0.5}rem;
   font-size: 1.5rem;
   background-color: rgba(0, 0, 0, 0.3);
   color: #fff;
   text-align: center;
-  padding: 0.5rem 0.2rem;
+  /* padding: 0.5rem 0.2rem; */
   border-radius: 5px;
   position: absolute;
   z-index: 1;

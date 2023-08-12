@@ -725,7 +725,10 @@ const Speech = () => {
                               {
                                 // 수정 전 단어 툴팁
                                 edited[i] ? (
-                                  <s.OriginalText contentEditable={false}>
+                                  <s.OriginalText
+                                    contentEditable={false}
+                                    $len={word.length + 5}
+                                  >
                                     수정 전: {word}
                                   </s.OriginalText>
                                 ) : null
