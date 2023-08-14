@@ -207,7 +207,11 @@ export default function AiFeedbackModal({ presentation_id, speech_id }) {
                   {data.map((item, i) => (
                     <div key={i}>
                       <div className="me-msg">
-                        <h3>{item.prompt}</h3>
+                        <h3>
+                          {item.prompt.split("\n").map((t) => (
+                            <p key={t}>{t}</p>
+                          ))}
+                        </h3>
                       </div>
                       <div className="ai-msg">
                         <div className="profile">
@@ -218,6 +222,8 @@ export default function AiFeedbackModal({ presentation_id, speech_id }) {
                             <CircularProgress color="inherit" size={30} />
                           ) : (
                             item.result
+                              .split("\n")
+                              .map((t) => <p key={t}>{t}</p>)
                           )}
                         </h3>
                       </div>
@@ -317,6 +323,7 @@ const ModalWrap = styled(Box)`
         line-height: 150%;
         font-weight: 600;
         padding: 1rem 2rem;
+        word-break: keep-all;
       }
       .me-msg {
         display: flex;
