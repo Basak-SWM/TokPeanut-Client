@@ -85,43 +85,57 @@ const Speech = () => {
   const [correction, setCorrection] = useState({
     PAUSE_TOO_LONG: new Set(),
     PAUSE_TOO_SHORT: new Set(),
-    TOO_FAST: new Set(),
-    startFast: new Set(),
-    TOO_SLOW: new Set(),
-    startSlow: new Set(),
+    // TOO_FAST: new Set(),
+    // startFast: new Set(),
+    // TOO_SLOW: new Set(),
+    // startSlow: new Set(),
   });
   const getCorrection = useCallback(async (url) => {
     try {
       const res = await axios.get(url);
-      // console.log("correction response:", res);
+      console.log("correction response:", res);
       let correctionList = JSON.parse(res.data);
       const correction = {
         PAUSE_TOO_LONG: new Set(correctionList.PAUSE_TOO_LONG),
         PAUSE_TOO_SHORT: new Set(correctionList.PAUSE_TOO_SHORT),
-        TOO_FAST: new Set(
-          correctionList.TOO_FAST.map((seg) => {
-            let fastSeg = [];
-            for (let i = seg[0]; i <= seg[1]; i++) {
-              fastSeg.push(i);
-            }
-            return fastSeg;
-          }).flat()
-        ),
-        startFast: new Set(correctionList.TOO_FAST.map((seg) => seg[0])),
-        TOO_SLOW: new Set(
-          correctionList.TOO_SLOW.map((seg) => {
-            let slowSeg = [];
-            for (let i = seg[0]; i <= seg[1]; i++) {
-              slowSeg.push(i);
-            }
-            return slowSeg;
-          }).flat()
-        ),
-        startSlow: new Set(correctionList.TOO_SLOW.map((seg) => seg[0])),
+        // TOO_FAST: new Set(
+        //   correctionList.TOO_FAST.map((seg) => {
+        //     let fastSeg = [];
+        //     for (let i = seg[0]; i <= seg[1]; i++) {
+        //       fastSeg.push(i);
+        //     }
+        //     return fastSeg;
+        //   }).flat()
+        // ),
+        // startFast: new Set(correctionList.TOO_FAST.map((seg) => seg[0])),
+        // TOO_SLOW: new Set(
+        //   correctionList.TOO_SLOW.map((seg) => {
+        //     let slowSeg = [];
+        //     for (let i = seg[0]; i <= seg[1]; i++) {
+        //       slowSeg.push(i);
+        //     }
+        //     return slowSeg;
+        //   }).flat()
+        // ),
+        // startSlow: new Set(correctionList.TOO_SLOW.map((seg) => seg[0])),
       };
       setCorrection(correction);
     } catch (err) {
       console.log("🩸correction error:", err);
+    }
+  }, []);
+  const [LPM, setLPM] = useState({
+    WINDOW_SIZE: null,
+    speed_list: [],
+  });
+  const getLPM = useCallback(async (url) => {
+    try {
+      const res = await axios.get(url);
+      console.log("LPM response:", res);
+      const LPM = JSON.parse(res.data);
+      setLPM(LPM);
+    } catch (err) {
+      console.log("🩸LPM error:", err);
     }
   }, []);
 
@@ -205,7 +219,8 @@ const Speech = () => {
         setIsDone(true);
         getSpeech();
         getSTT(res.data.STT);
-        getCorrection(res.data.SPEECH_CORRECTION);
+        getCorrection(res.data.SPEECH_CORRECTION); // 휴지 긺/짧음 가져오기
+        getLPM(res.data.LPM);
         // 음높이(HERTZ_AVG), 속도(LPM_AVG), 휴지(PAUSE_RATIO) 가져오기
         getStatistics(
           res.data.HERTZ_AVG,
@@ -662,19 +677,34 @@ const Speech = () => {
                           }}
                         >
                           <CorrectionLine
+                            // $status={
+                            //   correction.TOO_FAST.has(i)
+                            //     ? "fast"
+                            //     : correction.TOO_SLOW.has(i)
+                            //     ? "slow"
+                            //     : null
+                            // }
                             $status={
-                              correction.TOO_FAST.has(i)
+                              LPM.speed_list[i] > 0
                                 ? "fast"
-                                : correction.TOO_SLOW.has(i)
+                                : LPM.speed_list[i] < 0
                                 ? "slow"
                                 : null
                             }
+                            $opacity={
+                              LPM.speed_list[i] > 0
+                                ? LPM.speed_list[i] / LPM.WINDOW_SIZE
+                                : LPM.speed_list[i] < 0
+                                ? -(LPM.speed_list[i] / LPM.WINDOW_SIZE)
+                                : null
+                            }
                           >
-                            {correction.startFast.has(i)
+                            {/* {correction.startFast.has(i)
                               ? "너무 빨라요"
                               : correction.startSlow.has(i)
                               ? "너무 느려요"
-                              : "\u00A0"}
+                              : "\u00A0"} */}
+                            &nbsp;
                           </CorrectionLine>
                           <s.Text
                             key={i}
@@ -1001,7 +1031,7 @@ const CorrectionLine = styled.span`
       : props.$status === "slow"
       ? "#0D1282"
       : "transparent"};
-  opacity: 0.7;
+  opacity: ${(props) => props.$opacity};
   font-size: 1rem;
   font-weight: bold;
   color: white;
