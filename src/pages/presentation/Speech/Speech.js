@@ -20,6 +20,8 @@ import Tooltip from "@mui/material/Tooltip";
 import ToolBarMo from "../../script/ToolbarMo";
 
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import PauseIcon from "@mui/icons-material/Pause";
+import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import FilledBtn from "../../button/FilledBtn";
 
 import Nav from "../../layout/Nav";
@@ -83,10 +85,10 @@ const Speech = () => {
   const [correction, setCorrection] = useState({
     PAUSE_TOO_LONG: new Set(),
     PAUSE_TOO_SHORT: new Set(),
-    TOO_FAST: new Set(),
-    startFast: new Set(),
-    TOO_SLOW: new Set(),
-    startSlow: new Set(),
+    // TOO_FAST: new Set(),
+    // startFast: new Set(),
+    // TOO_SLOW: new Set(),
+    // startSlow: new Set(),
   });
   const getCorrection = useCallback(async (url) => {
     try {
@@ -96,30 +98,41 @@ const Speech = () => {
       const correction = {
         PAUSE_TOO_LONG: new Set(correctionList.PAUSE_TOO_LONG),
         PAUSE_TOO_SHORT: new Set(correctionList.PAUSE_TOO_SHORT),
-        TOO_FAST: new Set(
-          correctionList.TOO_FAST.map((seg) => {
-            let fastSeg = [];
-            for (let i = seg[0]; i <= seg[1]; i++) {
-              fastSeg.push(i);
-            }
-            return fastSeg;
-          }).flat()
-        ),
-        startFast: new Set(correctionList.TOO_FAST.map((seg) => seg[0])),
-        TOO_SLOW: new Set(
-          correctionList.TOO_SLOW.map((seg) => {
-            let slowSeg = [];
-            for (let i = seg[0]; i <= seg[1]; i++) {
-              slowSeg.push(i);
-            }
-            return slowSeg;
-          }).flat()
-        ),
-        startSlow: new Set(correctionList.TOO_SLOW.map((seg) => seg[0])),
+        // TOO_FAST: new Set(
+        //   correctionList.TOO_FAST.map((seg) => {
+        //     let fastSeg = [];
+        //     for (let i = seg[0]; i <= seg[1]; i++) {
+        //       fastSeg.push(i);
+        //     }
+        //     return fastSeg;
+        //   }).flat()
+        // ),
+        // startFast: new Set(correctionList.TOO_FAST.map((seg) => seg[0])),
+        // TOO_SLOW: new Set(
+        //   correctionList.TOO_SLOW.map((seg) => {
+        //     let slowSeg = [];
+        //     for (let i = seg[0]; i <= seg[1]; i++) {
+        //       slowSeg.push(i);
+        //     }
+        //     return slowSeg;
+        //   }).flat()
+        // ),
+        // startSlow: new Set(correctionList.TOO_SLOW.map((seg) => seg[0])),
       };
       setCorrection(correction);
     } catch (err) {
       console.log("🩸correction error:", err);
+    }
+  }, []);
+  const [LPM, setLPM] = useState([]);
+  const getLPM = useCallback(async (url) => {
+    try {
+      const res = await axios.get(url);
+      // console.log("LPM response:", res);
+      const LPM = JSON.parse(res.data);
+      setLPM(LPM);
+    } catch (err) {
+      console.log("🩸LPM error:", err);
     }
   }, []);
 
@@ -203,7 +216,8 @@ const Speech = () => {
         setIsDone(true);
         getSpeech();
         getSTT(res.data.STT);
-        getCorrection(res.data.SPEECH_CORRECTION);
+        getCorrection(res.data.SPEECH_CORRECTION); // 휴지 긺/짧음 가져오기
+        getLPM(res.data.LPM);
         // 음높이(HERTZ_AVG), 속도(LPM_AVG), 휴지(PAUSE_RATIO) 가져오기
         getStatistics(
           res.data.HERTZ_AVG,
@@ -342,19 +356,27 @@ const Speech = () => {
     { name: "지우개", src: "/img/script/toolbar/eraser.svg" },
   ];
 
+  const correctionIcons = [
+    { name: "휴지 긺", src: "/img/script/space_long.svg" },
+    { name: "휴지 짧음", src: "/img/script/space_short.svg" },
+  ];
+
   // 기호 클릭시 selectedSymbol을 해당 기호 이미지로 변경 -> 커서 변경
   // 한 번 더 클릭시 기본 커서로 변경
   const clickTool = (i) => {
     // const selectedSymbolIdx = e.target.id;
     const selectedSymbolIdx = i;
+    console.log(i);
 
-    if (selectedSymbol) {
+    if (!isNaN(selectedSymbol)) {
       setSelectedSymbol(NaN);
     } else {
       setSelectedSymbol(selectedSymbolIdx);
     }
     // 커서 변경
-    selectedSymbol ? setCursor("") : setCursor(symbols[selectedSymbolIdx].src);
+    !isNaN(selectedSymbol)
+      ? setCursor("")
+      : setCursor(symbols[selectedSymbolIdx].src);
   };
 
   const [waveFormLoaded, setWaveFormLoaded] = useState(false);
@@ -370,15 +392,15 @@ const Speech = () => {
     switch (selectedSymbol) {
       // 기호 표시
       case 0:
-        highlighted[selectedWordIdx] = "yellow";
+        highlighted[selectedWordIdx] = "rgba(255,255,204)";
         setHighlighted([...highlighted]);
         break;
       case 1:
-        highlighted[selectedWordIdx] = "pink";
+        highlighted[selectedWordIdx] = "rgb(255, 204, 255)";
         setHighlighted([...highlighted]);
         break;
       case 2:
-        highlighted[selectedWordIdx] = "yellowgreen";
+        highlighted[selectedWordIdx] = "rgb(204, 255, 204)";
         setHighlighted([...highlighted]);
         break;
       case 3:
@@ -439,6 +461,7 @@ const Speech = () => {
   // 파형
   const wavesurferRef = useRef(null);
   const playButton = useRef(null);
+  const [playing, setPlaying] = useState(false);
 
   useEffect(() => {
     if (audio) {
@@ -448,18 +471,18 @@ const Speech = () => {
           container: wavesurferRef.current,
           audioRate: 1, // 재생 속도 (default 1)
           barHeight: 1, // 막대 높이 (default 1)
-          barWidth: 3, // 막대 넓이
-          barGap: 1,
-          cursorColor: "#ddd5e9",
-          cursorWidth: 3,
+          barWidth: 2, // 막대 넓이
+          barGap: 5,
+          cursorColor: "#ff4e00",
+          cursorWidth: 2,
           fillParent: true, // 부모 요소를 가득 채울지, mixPxPerSec 옵션에 따를지
           height: 64, // 웨이브 폼 전체의 높이
           hideScrollbar: true, // 가로 스크롤바 표시 여부
           minPxPerSec: 50, // 오디오 파일의 1초당 렌더링 될 픽셀 수의 최솟값. zoom level
           normalize: true, // true면 가장 큰 막대의 길이에 비례하여 막대 높이 설정
-          progressColor: "#dd5e98", // 커서 왼쪽의 파형 색상
+          progressColor: "#F86F03", // 커서 왼쪽의 파형 색상
           responsive: false, // 웨이브 폼이 부모 요소보다 길어서 넘치는 경우 스크롤바 or 줄여서 렌더링
-          waveColor: "#ff4e00", // 커서 오른쪽의 파형 색상
+          waveColor: "#3b3b3b", // 커서 오른쪽의 파형 색상
           interact: false, // 파형 클릭 불가능
           splitChannels: false, // 두 줄로 출력
           autoScroll: true, // 자동 스크롤
@@ -472,11 +495,13 @@ const Speech = () => {
         // 플레이/퍼즈 때 버튼 텍스트 변경
         wavesurfer.on("play", () => {
           start();
-          playButton.current.textContent = "pause";
+          // playButton.current.textContent = "pause";
+          setPlaying(true);
         });
         wavesurfer.on("pause", () => {
           stop();
-          playButton.current.textContent = "play";
+          // playButton.current.textContent = "play";
+          setPlaying(false);
         });
 
         wavesurfer.on("ready", () => {
@@ -561,6 +586,15 @@ const Speech = () => {
     );
   };
 
+  const [widthList, setWidthList] = useState([]);
+  useEffect(() => {
+    let list = [];
+    for (let i = 0; i < text.length; i++) {
+      list.push(document.getElementById(i).offsetWidth);
+    }
+    setWidthList(list);
+  }, [text]);
+
   return (
     <>
       <ThemeProvider theme={theme}>
@@ -630,11 +664,19 @@ const Speech = () => {
 
                           {correction.PAUSE_TOO_LONG &&
                             correction.PAUSE_TOO_LONG.has(i - 1) && (
-                              <Correction> 🔸🔸 </Correction>
+                              <img
+                                src={correctionIcons[0].src}
+                                alt="pause too long"
+                                className="correction pause_too_long"
+                              />
                             )}
                           {correction.PAUSE_TOO_SHORT &&
                             correction.PAUSE_TOO_SHORT.has(i - 1) && (
-                              <Correction> 🔹🔹 </Correction>
+                              <img
+                                src={correctionIcons[1].src}
+                                alt="pause too short"
+                                className="correction pause_too_short"
+                              />
                             )}
                         </Symbol>
                         <span
@@ -645,18 +687,17 @@ const Speech = () => {
                         >
                           <CorrectionLine
                             $status={
-                              correction.TOO_FAST.has(i)
-                                ? "fast"
-                                : correction.TOO_SLOW.has(i)
-                                ? "slow"
+                              LPM[i] > 0 ? "fast" : LPM[i] < 0 ? "slow" : null
+                            }
+                            $opacity={
+                              LPM[i] > 0
+                                ? LPM[i] / 2
+                                : LPM[i] < 0
+                                ? -(LPM[i] / 2)
                                 : null
                             }
                           >
-                            {correction.startFast.has(i)
-                              ? "너무 빨라요"
-                              : correction.startSlow.has(i)
-                              ? "너무 느려요"
-                              : "\u00A0"}
+                            &nbsp;
                           </CorrectionLine>
                           <s.Text
                             key={i}
@@ -668,10 +709,10 @@ const Speech = () => {
                                 : "not played"
                             }
                             $duration={duration[i]}
-                            color={highlighted[i]}
-                            $continued={
-                              highlighted[i] === highlighted[i + 1] ? 1 : 0
-                            } // 형광펜이 연달아 적용 되는지
+                            // color={highlighted[i]}
+                            // $continued={
+                            //   highlighted[i] === highlighted[i + 1] ? 1 : 0
+                            // }
                             onClick={clickWord}
                             id={i}
                             $edited={edited[i] ? 1 : 0}
@@ -697,7 +738,6 @@ const Speech = () => {
                                 onBlur={(e) => {
                                   handleBlur(e, i);
                                 }}
-                                // contentEditable={cursor === edit} // 현재 커서가 수정펜일 때만 수정 모드
                                 contentEditable={selectedSymbol === 3} // 현재 커서가 수정펜일 때만 수정 모드
                                 edited={edited[i]}
                                 spellCheck={false}
@@ -708,13 +748,25 @@ const Speech = () => {
                               {
                                 // 수정 전 단어 툴팁
                                 edited[i] ? (
-                                  <s.OriginalText contentEditable={false}>
+                                  <s.OriginalText
+                                    contentEditable={false}
+                                    $len={word.length + 5}
+                                  >
                                     수정 전: {word}
                                   </s.OriginalText>
                                 ) : null
                               }
                             </span>
                           </s.Text>
+                          {highlighted[i] && (
+                            <s.Highlight
+                              color={highlighted[i]}
+                              $width={widthList[i]}
+                              $continued={
+                                highlighted[i] === highlighted[i + 1] ? 1 : 0
+                              }
+                            />
+                          )}
                         </span>
                       </span>
                     ))}
@@ -743,41 +795,23 @@ const Speech = () => {
                 $ready={isDone && waveFormLoaded ? 1 : 0}
               />
             </WaveContainer>
-            {/* </div> */}
-
-            {/* {isDone ? null : (
-              <button
-                onClick={() => {
-                  setIsDone(true);
-                }}
-              >
-                완료
-              </button>
-            )} */}
             <PC>
               <ScriptBarWrap>
                 {isDone ? (
                   <ul className="btn-wrap activate">
                     <li>
                       <FilledBtn text={"코치 연결하기"} />
-                      {/* <Link
-                        to={`/presentation/practice?presentation_id=${presentation_id}`}
-                      > */}
-
                       <FilledBtn
                         text={"연습 시작하기"}
                         onClick={createSpeech}
                       />
-
-                      {/* </Link> */}
                     </li>
                     <li>
                       <PlayBtn variant="contained" ref={playButton}>
-                        <PlayArrowIcon />
+                        {playing ? <PauseIcon /> : <PlayArrowIcon />}
                       </PlayBtn>
-                      {/* <FilledBtn text={"Reset"} onClick={onReset} /> */}
                       <PlayBtn variant="contained" onClick={onReset}>
-                        R
+                        <RestartAltIcon />
                       </PlayBtn>
                     </li>
                     <li>
@@ -804,7 +838,7 @@ const Speech = () => {
                         <PlayArrowIcon />
                       </PlayBtn>
                       <PlayBtn variant="contained" disabled>
-                        R
+                        <RestartAltIcon />
                       </PlayBtn>
                     </li>
                     <li>
@@ -816,16 +850,6 @@ const Speech = () => {
                 )}
               </ScriptBarWrap>
             </PC>
-            {/* <div>
-              <button ref={playButton} disabled={!isDone}>
-                play
-              </button>
-              <button onClick={onReset} disabled={!isDone}>
-                reset
-              </button>
-            </div>
-            {isDone ? <Link to="/presentation/practice">연습 시작</Link> : null}
-            <div>count: {count}</div> */}
           </Script>
 
           <Pagination />
@@ -877,15 +901,17 @@ const Script = styled(Box)`
 const WaveContainer = styled.div`
   height: 64px;
   margin-bottom: 3rem;
-  width: 100%;
+  width: 90%;
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: #fff6f4;
+
   .text {
-    width: 90%;
-    height: 120%;
+    width: 100%;
+    height: 64px;
     /* background-color: #f5f5f5; */
-    background-color: rgb(255, 112, 51, 0.2);
+    /* background-color: rgb(255, 112, 51, 0.2); */
     font-size: 1.5rem;
     display: flex;
     align-items: center;
@@ -973,6 +999,7 @@ const TextArea = styled(Box)`
     font-size: 2rem;
     line-height: 200%;
     color: #3b3b3b;
+    /* word-spacing: 5px; */
     .pencil3 {
       background-color: #cbf5ca;
     }
@@ -1000,43 +1027,35 @@ const TextArea = styled(Box)`
 `;
 
 const CorrectionLine = styled.span`
-  /* height: 2px; */
   line-height: 100%;
-  /* border-bottom: ${(props) =>
-    props.$status === "fast"
-      ? "solid red .3rem"
-      : props.$status === "slow"
-      ? "solid green .3rem"
-      : "transparent"}; */
   background-color: ${(props) =>
     props.$status === "fast"
-      ? "red"
+      ? "#D71313"
       : props.$status === "slow"
-      ? "green"
+      ? "#0D1282"
       : "transparent"};
-  opacity: 0.7;
+  opacity: ${(props) => props.$opacity};
   font-size: 1rem;
   font-weight: bold;
   color: white;
-  /* color: ${(props) =>
-    props.$status === "fast"
-      ? "red"
-      : props.$status === "slow"
-      ? "green"
-      : "transparent"}; */
-  /* background-color: red; */
 `;
 const Symbol = styled.span`
   /* margin: auto; */
   height: 3rem;
   vertical-align: bottom;
   padding-bottom: 1rem;
-  /* img {
-    margin-top: 2rem;
-  } */
-`;
-const Correction = styled.span`
-  color: #ff7134;
+  .correction {
+    width: 2.5rem;
+    /* margin-left: -5px; */
+  }
+  .pause_too_long {
+    filter: invert(5%) sepia(86%) saturate(7388%) hue-rotate(247deg)
+      brightness(103%) contrast(107%);
+  }
+  .pause_too_short {
+    filter: invert(12%) sepia(97%) saturate(5608%) hue-rotate(9deg)
+      brightness(90%) contrast(102%);
+  }
 `;
 
 const Disabled = styled(Box)`
