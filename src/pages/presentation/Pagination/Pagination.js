@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import qs from "qs";
 import * as s from "./PaginationStyle";
 import axios from "axios";
+import dayjs from "dayjs";
+import api from "../../../component/api";
 
 import styled from "@emotion/styled";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
@@ -32,21 +34,46 @@ const Pagination = () => {
   const presentation_id = query.presentation_id;
   const speech_id = query.speech_id;
 
-  const [speechList, setSpeechList] = useState([]);
-  const getSpeechList = async () => {
-    let res = null;
+  const patchBookmark = async (e, selectedSpeechId) => {
+    e.stopPropagation();
+    const isBookmarked = e.target.checked;
     try {
-      res = await axios.get(`/presentations/${presentation_id}/speeches`);
+      const res = await api.patch(
+        `/presentations/${presentation_id}/speeches/${selectedSpeechId}`,
+        {
+          params: {
+            "presentation-id": presentation_id,
+            "speech-id": selectedSpeechId,
+          },
+          bookmarked: isBookmarked,
+        }
+      );
+      console.log("patch bookmark response:", res);
+      getSpeechList();
+    } catch (err) {
+      console.log("patch bookmark error:", err);
+    }
+  };
+
+  const [speechList, setSpeechList] = useState([]);
+  const getSpeechList = useCallback(async () => {
+    try {
+      const res = await api.get(`/presentations/${presentation_id}/speeches`);
       console.log("speech list response:", res);
+      res.data.forEach((speech) => {
+        const date = dayjs(speech.createdDate);
+        // speech.createdDate = dayjs(speech.createdDate).diff(nowDate, "hour");
+        speech.createdDate = dayjs().to(date);
+      });
+      setSpeechList(res.data);
     } catch (err) {
       console.log("speech list error:", err);
     }
-    setSpeechList(res.data);
-  };
+  }, [presentation_id]);
 
   useEffect(() => {
     getSpeechList();
-  }, []);
+  }, [getSpeechList]);
 
   const navigate = useNavigate();
 
@@ -60,47 +87,9 @@ const Pagination = () => {
       navigate(
         `/presentation/speech?presentation_id=${presentation_id}&speech_id=${speech_id}`
       );
+      window.location.reload();
     }
   };
-  // mock data
-  // const speechList = [
-  //   {
-  //     id: 1,
-  //     title: "Speech 1",
-  //     date: "2023-07-01",
-  //     stared: false,
-  //   },
-  //   {
-  //     id: 2,
-  //     title: "Speech 2",
-  //     date: "2023-06-01",
-  //     stared: true,
-  //   },
-  //   {
-  //     id: 3,
-  //     title: "Speech 3",
-  //     date: "2023-05-01",
-  //     stared: false,
-  //   },
-  //   {
-  //     id: 4,
-  //     title: "Speech 3",
-  //     date: "2023-05-01",
-  //     stared: false,
-  //   },
-  //   {
-  //     id: 5,
-  //     title: "Speech 3",
-  //     date: "2023-05-01",
-  //     stared: false,
-  //   },
-  //   {
-  //     id: 6,
-  //     title: "Speech 3",
-  //     date: "2023-05-01",
-  //     stared: false,
-  //   },
-  // ];
 
   return (
     <>
@@ -108,38 +97,26 @@ const Pagination = () => {
         <PageBtnWrap>
           <ul>
             {speechList.map((speech, i) => (
-              <li className={speech.id === speech_id * 1 ? "select" : ""}>
+              <li
+                className={speech.id === speech_id * 1 ? "select" : ""}
+                key={speech.id}
+              >
                 <Button onClick={() => navigateToSpeech(speech.id, i)}>
-                  {i + 1}
+                  <div>Sp {i + 1}</div>
+                  <div className="sub">{speech.createdDate}</div>
                 </Button>
                 <Checkbox
                   {...label}
                   icon={<StarBorderIcon />}
                   checkedIcon={<StarIcon />}
-                  // checked={speech.stared}
-                  onClick={(e) => e.stopPropagation()}
+                  checked={speech.bookmarked}
+                  onClick={(e) => patchBookmark(e, speech.id)}
                 />
               </li>
             ))}
           </ul>
         </PageBtnWrap>
       </ThemeProvider>
-      {/* <s.Container>
-        {speechList.map((speech, i) => (
-          <s.Speech id={speech.id} key={speech.id} onClick={navigateToSpeech}>
-            <s.SpeechTitle>
-              {speech.stared ? (
-                <s.SpeechTitleStar>★</s.SpeechTitleStar>
-              ) : (
-                <s.SpeechTitleStar>☆</s.SpeechTitleStar>
-              )} */}
-      {/* 실제 스피치 id와 사용자에게 보여주는 스피치 번호는 다름 */}
-      {/* 스피치 {i + 1}
-            </s.SpeechTitle>
-            <s.SpeechDate>{speech.date}</s.SpeechDate>
-          </s.Speech>
-        ))}
-      </s.Container> */}
     </>
   );
 };
@@ -152,10 +129,13 @@ const PageBtnWrap = styled(Box)`
   right: 3%;
   ul {
     max-height: 80vh;
-    /* overflow-y: scroll; */
+    overflow: hidden auto;
     background-color: #fff;
     border: 1px solid rgba(0, 0, 0, 0.1);
     margin-top: 13rem;
+    &::-webkit-scrollbar {
+      display: none;
+    }
     .select {
       button {
         background-color: #ffeee0;
@@ -174,12 +154,20 @@ const PageBtnWrap = styled(Box)`
       border-bottom: 1px solid rgba(0, 0, 0, 0.1);
       position: relative;
       button {
+        display: flex;
+        flex-direction: column;
+        /* align-items: flex-start; */
+        /* padding-left: 1.5rem; */
         width: 100%;
-        font-size: 2.5rem;
+        font-size: 2rem;
         color: #3b3b3b;
         height: 100%;
         box-shadow: none;
         border-radius: 0;
+        .sub {
+          font-size: 1.5rem;
+          color: #a5a5a5;
+        }
       }
       span {
         position: absolute;
@@ -200,7 +188,8 @@ const PageBtnWrap = styled(Box)`
     ul {
       display: flex;
       align-items: center;
-      overflow-y: scroll;
+      overflow-y: auto;
+      overflow-x: hidden;
       margin-top: 10rem;
       -ms-overflow-style: none; /* IE and Edge */
       scrollbar-width: none; /* Firefox */

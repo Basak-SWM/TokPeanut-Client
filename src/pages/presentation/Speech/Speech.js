@@ -2,21 +2,12 @@ import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import WaveSurfer from "wavesurfer.js";
 import mp3 from "../mp3.mp3";
-import stt from "../stt.json";
+// import stt from "../stt.json";
 import * as s from "./SpeechStyle";
 import Pagination from "../Pagination/Pagination";
 import qs from "qs";
 import axios from "axios";
-
-import highlight from "../../../image/icons/highlight.png";
-import faster from "../../../image/icons/faster.png";
-import slower from "../../../image/icons/slower.png";
-import edit from "../../../image/icons/edit.png";
-import enter from "../../../image/icons/enter.png";
-import pause from "../../../image/icons/pause.png";
-import mouse from "../../../image/icons/mouse.png";
-import slash from "../../../image/icons/slash.png";
-import erase from "../../../image/icons/erase.png";
+import api from "../../../component/api";
 
 import styled from "@emotion/styled";
 import { createGlobalStyle } from "styled-components";
@@ -37,6 +28,7 @@ import theme from "../../../style/theme";
 import AiFeedbackModal from "../../modal/AiFeedbackModal";
 import StatisticsModal from "../../modal/StatisticsModal";
 
+// import peanut_run from "../../../image/peanut_run.png";
 import peanut_run from "../../../image/peanut_run.png";
 
 // custom hook (timer)
@@ -86,98 +78,268 @@ const Speech = () => {
   const presentation_id = query.presentation_id;
   const speech_id = query.speech_id;
   const navigate = useNavigate();
-  let audioSegments = [];
   const [audio, setAudio] = useState(null);
 
-  const getSpeech = async () => {
+  const [correction, setCorrection] = useState({
+    PAUSE_TOO_LONG: new Set(),
+    PAUSE_TOO_SHORT: new Set(),
+    TOO_FAST: new Set(),
+    startFast: new Set(),
+    TOO_SLOW: new Set(),
+    startSlow: new Set(),
+  });
+  const getCorrection = useCallback(async (url) => {
+    try {
+      const res = await axios.get(url);
+      // console.log("correction response:", res);
+      let correctionList = JSON.parse(res.data);
+      const correction = {
+        PAUSE_TOO_LONG: new Set(correctionList.PAUSE_TOO_LONG),
+        PAUSE_TOO_SHORT: new Set(correctionList.PAUSE_TOO_SHORT),
+        TOO_FAST: new Set(
+          correctionList.TOO_FAST.map((seg) => {
+            let fastSeg = [];
+            for (let i = seg[0]; i <= seg[1]; i++) {
+              fastSeg.push(i);
+            }
+            return fastSeg;
+          }).flat()
+        ),
+        startFast: new Set(correctionList.TOO_FAST.map((seg) => seg[0])),
+        TOO_SLOW: new Set(
+          correctionList.TOO_SLOW.map((seg) => {
+            let slowSeg = [];
+            for (let i = seg[0]; i <= seg[1]; i++) {
+              slowSeg.push(i);
+            }
+            return slowSeg;
+          }).flat()
+        ),
+        startSlow: new Set(correctionList.TOO_SLOW.map((seg) => seg[0])),
+      };
+      setCorrection(correction);
+    } catch (err) {
+      console.log("🩸correction error:", err);
+    }
+  }, []);
+
+  // stt 결과 가져오기
+  const getSTT = useCallback(async (url) => {
+    try {
+      const res = await axios.get(url);
+      // console.log("stt response:", res);
+      const stt = JSON.parse(res.data);
+      initSTT(stt);
+    } catch (err) {
+      console.log("🩸stt error:", err);
+    }
+  }, []);
+
+  const [statistics, setStatistics] = useState({
+    hertz: null,
+    lpm: null,
+    pause: null,
+  });
+  const getStatistics = useCallback(
+    async (HERZ, LPM, PAUSE) => {
+      try {
+        const hertzRes = await axios.get(HERZ);
+        statistics.hertz = (hertzRes.data * 1).toFixed(1);
+        // statistics.hertz = 100;
+
+        const lpmRes = await axios.get(LPM);
+        statistics.lpm = (lpmRes.data * 1).toFixed(1);
+
+        const pauseRes = await axios.get(PAUSE);
+        statistics.pause = (pauseRes.data * 1).toFixed(1);
+
+        setStatistics(statistics);
+      } catch (err) {
+        console.log("🩸statistics error:", err);
+      }
+    },
+    [statistics]
+  );
+  // audio 가져와서 변환
+  const getAudio = useCallback(async (audioUrl) => {
+    try {
+      const res = await axios.get(audioUrl, {
+        responseType: "blob",
+      });
+      // console.log("audio response:", res);
+      const blob = new Blob([res.data]);
+      setAudio(blob);
+    } catch (err) {
+      console.log("🩸audio error:", err);
+    }
+  }, []);
+  // full audio url 가져오기
+  const getSpeech = useCallback(async () => {
     let res = null;
     try {
-      res = await axios.get(
+      res = await api.get(
         `/presentations/${presentation_id}/speeches/${speech_id}`
       );
-      console.log("speech response:", res);
-      const audioSegmentsUrl = res.data.audioSegments;
-      combineAudio(audioSegmentsUrl);
+      // console.log("speech response:", res);
+      // 여기서 사용자 기호 초기화
+      initUserSymbols(res.data.userSymbol);
+      const audioUrl = res.data.fullAudioS3Url;
+      getAudio(audioUrl);
     } catch (err) {
-      console.log("speech error:", err);
+      console.log("🩸speech error:", err);
     }
-  };
+  }, [presentation_id, speech_id, getAudio]);
 
-  const combineAudio = async (audioSegmentsUrl) => {
-    try {
-      for (const url of audioSegmentsUrl) {
-        const res = await axios.get(url);
-        const blob = convertToBlob(res.data);
-        audioSegments.push(blob);
-      }
-
-      const combinedBlob = new Blob(audioSegments, { type: "audio/webm" });
-      console.log("Combined Blob: ", combinedBlob);
-      setAudio(combinedBlob);
-    } catch (error) {
-      console.error("Error combining audio:", error);
-    }
-
-    // for (let i = 0; i < audioSegmentsUrl.length; i++) {
-    //   const audioSegment = await axios.get(audioSegmentsUrl[i]);
-    //   audioSegments.push(convertToBlob(audioSegment.data));
-    //   // console.log("audio segment res: ", audioSegment);
-    // }
-    // console.log(audioSegments);
-    // setAudio(new Blob(audioSegments, { type: "audio/webm" }));
-  };
-
-  const convertToBlob = (audioSegmentString) => {
-    const encoder = new TextEncoder();
-    const uint8Array = encoder.encode(audioSegmentString);
-
-    const blob = new Blob([uint8Array], { type: "audio/webm" });
-    console.log("blob: ", blob);
-    return blob;
-  };
-
-  const getResult = async () => {
+  // 분석 결과 url 가져오기
+  const getResult = useCallback(async () => {
     let res = null;
     try {
-      res = await axios.get(
+      res = await api.get(
         `/presentations/${presentation_id}/speeches/${speech_id}/analysis-records`
       );
-      console.log("분석 결과 url response:", res);
+      console.log("분석 결과 url response:", res, res.status);
+      // 분석 완료 여부 확인
+      if (res.status === 200) {
+        setIsDone(true);
+        getSpeech();
+        getSTT(res.data.STT);
+        getCorrection(res.data.SPEECH_CORRECTION);
+        // 음높이(HERTZ_AVG), 속도(LPM_AVG), 휴지(PAUSE_RATIO) 가져오기
+        getStatistics(
+          res.data.HERTZ_AVG,
+          res.data.LPM_AVG,
+          res.data.PAUSE_RATIO
+        );
+      } else {
+        console.log("분석 중");
+      }
     } catch (err) {
-      console.log("분석 결과 url error:", err);
+      console.log("🩸분석 결과 url error:", err);
     }
-  };
+    return res.status;
+  }, [
+    presentation_id,
+    speech_id,
+    getSTT,
+    getCorrection,
+    getStatistics,
+    getSpeech,
+  ]);
+
+  // 스크립트를 위한 스피치 정보 조회
   useEffect(() => {
-    getSpeech();
-    getResult();
-  }, []);
+    // let polling = setInterval(async () => {
+    //   const status = await getResult();
+    //   if (status === 200) {
+    //     clearInterval(polling);
+    //   }
+    // }, 3000);
+
+    const polling = async () => {
+      const status = await getResult();
+      if (status === 200) {
+        clearInterval(repeat);
+      }
+    };
+    polling(); // 최초(즉시)실행
+    const repeat = setInterval(polling, 3000);
+
+    // getSpeech();
+  }, [presentation_id, speech_id, getResult]);
+
+  const [text, setText] = useState([]);
+  const [started, setStarted] = useState([]);
+  const [ended, setEnded] = useState([]);
+  const [duration, setDuration] = useState([]);
+  // 각 기호의 렌더링 여부
+  // 하나의 {객체}로 합치기
+  // option으로 <Text "도심은", option={} />
+  // useReduce로 묶어보기
+
+  const [enterSymbol, setEnterSymbol] = useState([]);
+  const [pauseSymbol, setPauseSymbol] = useState([]);
+  const [mouseSymbol, setMouseSymbol] = useState([]);
+  const [slashSymbol, setSlashSymbol] = useState([]);
+  const [highlighted, setHighlighted] = useState([]);
+  const [edited, setEdited] = useState([]);
+  const initUserSymbols = (userSymbol) => {
+    const symbols = JSON.parse(userSymbol);
+    // console.log("user symbols:", symbols);
+
+    if (!symbols) return;
+
+    setEnterSymbol(symbols.enter);
+    setPauseSymbol(symbols.pause);
+    setMouseSymbol(symbols.mouse);
+    setSlashSymbol(symbols.slash);
+    setHighlighted(symbols.highlight);
+    setEdited(symbols.edit);
+  };
+
+  const wordRef = useRef([]);
+
+  const initSTT = (stt) => {
+    setText(stt.segments.flatMap((seg) => seg.words.map((w) => w[2])));
+    setStarted(
+      stt.segments.flatMap((seg) => seg.words.map((w) => w[0] * 0.01))
+    );
+    setEnded(stt.segments.flatMap((seg) => seg.words.map((w) => w[1] * 0.01)));
+    setDuration(
+      stt.segments.flatMap((seg) => seg.words.map((w) => (w[1] - w[0]) * 0.001))
+    );
+  };
+
+  const patchUserSymbol = useCallback(
+    async (
+      enterSymbol,
+      pauseSymbol,
+      mouseSymbol,
+      slashSymbol,
+      highlighted,
+      edited
+    ) => {
+      if (!isDone) return;
+      try {
+        const symbolObj = {
+          enter: enterSymbol,
+          pause: pauseSymbol,
+          mouse: mouseSymbol,
+          slash: slashSymbol,
+          highlight: highlighted,
+          edit: edited,
+        };
+        const res = await api.patch(
+          `/presentations/${presentation_id}/speeches/${speech_id}`,
+          {
+            params: {
+              "presentation-id": presentation_id,
+              "speech-id": speech_id,
+            },
+            userSymbol: JSON.stringify(symbolObj),
+          }
+        );
+        // console.log("patch user symbol response:", res);
+      } catch (err) {
+        console.log("🩸patch user symbol error:", err);
+      }
+    },
+    [isDone, presentation_id, speech_id]
+  );
 
   // tool bar
   const [cursor, setCursor] = useState("");
   const [selectedSymbol, setSelectedSymbol] = useState(NaN); // 커서 관리를 위한 현재 선택된 기호 인덱스
-  // 사용자 기호
-  // const symbols = [
-  //   highlight,
-  //   faster,
-  //   slower,
-  //   edit,
-  //   enter,
-  //   pause,
-  //   mouse,
-  //   slash,
-  //   erase,
-  // ];
 
   const symbols = [
     { name: "강조", src: "/img/script/toolbar/color/pencil1.svg" },
     { name: "빠르게", src: "/img/script/toolbar/color/pencil2.svg" },
     { name: "느리게", src: "/img/script/toolbar/color/pencil3.svg" },
-    { name: "수정", src: "/img/script/toolbar/pencil.svg" },
+    { name: "수정", src: "/img/script/toolbar/edit.svg" },
     { name: "엔터", src: "/img/script/toolbar/down-left.svg" },
     { name: "쉬기", src: "/img/script/toolbar/pause.svg" },
     { name: "클릭", src: "/img/script/toolbar/mouse.svg" },
     { name: "끊어읽기", src: "/img/script/toolbar/slash.svg" },
-    { name: "지우개", src: erase },
+    { name: "지우개", src: "/img/script/toolbar/eraser.svg" },
   ];
 
   // 기호 클릭시 selectedSymbol을 해당 기호 이미지로 변경 -> 커서 변경
@@ -195,37 +357,13 @@ const Speech = () => {
     selectedSymbol ? setCursor("") : setCursor(symbols[selectedSymbolIdx].src);
   };
 
-  // stt 결과 형식에 맞게 데이터 파싱
-  const text = stt.segments.flatMap((seg) => seg.words.map((w) => w[2]));
-  const started = stt.segments.flatMap((seg) =>
-    seg.words.map((w) => w[0] * 0.01)
-  );
-  const ended = stt.segments.flatMap((seg) =>
-    seg.words.map((w) => w[1] * 0.01)
-  );
-  const duration = stt.segments.flatMap((seg) =>
-    seg.words.map((w) => (w[1] - w[0]) * 0.001)
-  );
-
-  // 각 기호의 렌더링 여부
-  // 하나의 {객체}로 합치기
-  // option으로 <Text "도심은", option={} />
-  // useReduce로 묶어보기
-  const [enterSymbol, setEnterSymbol] = useState(text.map(() => false));
-  const [pauseSymbol, setPauseSymbol] = useState(text.map(() => false));
-  const [mouseSymbol, setMouseSymbol] = useState(text.map(() => false));
-  const [slashSymbol, setSlashSymbol] = useState(text.map(() => false));
-  const [highlighted, setHighlighted] = useState(text.map(() => ""));
-  const [edited, setEdited] = useState(text.map(() => null));
-  const wordRef = useRef([]);
-  // const [edited, setEdited] = useState(text.map(() => false));
-
   const [waveFormLoaded, setWaveFormLoaded] = useState(false);
   const [waveSurferInstance, setWaveSurferInstance] = useState(null);
 
   const { count, start, stop, reset, setCount } = useCounter(0, 100); //0.1초 단위 타이머
 
   const clickWord = (e) => {
+    if (!waveFormLoaded) return;
     const selectedWordIdx = e.currentTarget.id; // 클릭된 단어 인덱스
     wordRef.current[selectedWordIdx].focus();
 
@@ -247,12 +385,7 @@ const Speech = () => {
         edited[selectedWordIdx] = edited[selectedWordIdx]
           ? edited[selectedWordIdx]
           : text[selectedWordIdx]; // 원래 단어로 초기화
-        // console.log(e.target, selected.current);
-        // selected.current.focus();
         setEdited([...edited]);
-
-        // console.log(document.querySelectorAll(".edited"));
-
         break;
       case 4:
         enterSymbol[selectedWordIdx] = true;
@@ -291,6 +424,10 @@ const Speech = () => {
         setCount(started[selectedWordIdx]);
         break;
     }
+    // if (!isNaN(selectedSymbol)) {
+    //   patchUserSymbol();
+    //   console.log("클릭: ", edited[selectedWordIdx]);
+    // }
   };
 
   const onReset = () => {
@@ -305,13 +442,6 @@ const Speech = () => {
 
   useEffect(() => {
     if (audio) {
-      console.log("audio:", audio);
-
-      const audioElement = document.querySelector("#audio");
-      let audioUrl = URL.createObjectURL(audio);
-      audioElement.src = audioUrl;
-      // audioElement.play();
-
       let wavesurfer = null;
       const initWaveSurfer = () => {
         wavesurfer = WaveSurfer.create({
@@ -322,7 +452,7 @@ const Speech = () => {
           barGap: 1,
           cursorColor: "#ddd5e9",
           cursorWidth: 3,
-          fillParent: false, // 부모 요소를 가득 채울지, mixPxPerSec 옵션에 따를지
+          fillParent: true, // 부모 요소를 가득 채울지, mixPxPerSec 옵션에 따를지
           height: 64, // 웨이브 폼 전체의 높이
           hideScrollbar: true, // 가로 스크롤바 표시 여부
           minPxPerSec: 50, // 오디오 파일의 1초당 렌더링 될 픽셀 수의 최솟값. zoom level
@@ -335,8 +465,8 @@ const Speech = () => {
           autoScroll: true, // 자동 스크롤
           scrollParent: true,
         });
-        wavesurfer.load(mp3);
-        // wavesurfer.load(audio);
+        // wavesurfer.load(mp3);
+        wavesurfer.loadBlob(audio);
 
         setWaveSurferInstance(wavesurfer);
         // 플레이/퍼즈 때 버튼 텍스트 변경
@@ -390,20 +520,39 @@ const Speech = () => {
         updated[i] = e.target.innerText;
       }
       setEdited(updated);
+      // patchUserSymbol();
     },
     [edited, text]
   );
+  useEffect(() => {
+    patchUserSymbol(
+      enterSymbol,
+      pauseSymbol,
+      mouseSymbol,
+      slashSymbol,
+      highlighted,
+      edited
+    );
+  }, [
+    enterSymbol,
+    pauseSymbol,
+    mouseSymbol,
+    slashSymbol,
+    highlighted,
+    edited,
+    // patchUserSymbol,
+  ]);
 
   const createSpeech = async () => {
-    // prev_speech 전달 필요
     let res = null;
     try {
-      res = await axios.post(`/presentations/${presentation_id}/speeches`, {
+      res = await api.post(`/presentations/${presentation_id}/speeches`, {
         params: { "presentation-id": presentation_id },
+        referenceSpeechId: speech_id,
       });
-      console.log("new speech response:", res);
+      // console.log("new speech response:", res);
     } catch (err) {
-      console.log("new speech error: ", err);
+      console.log("🩸new speech error: ", err);
     }
     // 새로 생성된 speech의 id로 practice 페이지로 이동
     navigate(
@@ -425,7 +574,7 @@ const Speech = () => {
                 <ToolBarWrap cursor={cursor}>
                   <ul className="activate">
                     {symbols.map((c, i) => (
-                      <li>
+                      <li key={i}>
                         <Button
                           className="color"
                           id="color1"
@@ -433,7 +582,7 @@ const Speech = () => {
                             clickTool(i);
                           }}
                         >
-                          <img src={c.src} />
+                          <img src={c.src} alt={c.name} />
                           <p>{c.name}</p>
                         </Button>
                       </li>
@@ -446,9 +595,14 @@ const Speech = () => {
                 <ToolBarWrap>
                   <ul className="disabled">
                     {symbols.map((c, i) => (
-                      <li>
+                      <li key={i}>
                         <Button disabled>
-                          <img src={i < 3 ? symbols[3].src : c.src} />
+                          <img
+                            src={
+                              i < 3 ? "/img/script/toolbar/pencil.svg" : c.src
+                            }
+                            alt="symbol"
+                          />
                           <p>{c.name}</p>
                         </Button>
                       </li>
@@ -459,104 +613,139 @@ const Speech = () => {
             )
           }
 
-          {/* <s.Tools>
-            {symbols.map((c, i) => (
-              <s.ToolKit
-                className="word"
-                key={i}
-                id={i}
-                src={c}
-                cursor={cursor}
-                onClick={clickTool}
-              />
-            ))}
-            {isDone ? null : <s.DisableBox />}
-          </s.Tools> */}
-
           <Script>
-            {/* <s.ScriptContainer> */}
             <Screen>
               {isDone ? (
                 <TextArea>
                   <p>
                     {text.map((word, i) => (
-                      <s.Text
-                        played={
-                          started[i] < count
-                            ? count < ended[i]
-                              ? "playing"
-                              : "played"
-                            : "not played"
-                        }
-                        duration={duration[i]}
-                        color={highlighted[i]}
-                        continued={highlighted[i] === highlighted[i + 1]} // 형광펜이 연달아 적용 되는지
-                        onClick={clickWord}
-                        key={i}
-                        id={i}
-                        edited={edited[i] ? true : false}
-                      >
-                        {enterSymbol[i] ? (
-                          <>
-                            <img src={symbols[4].src} />
-                            <br />
-                          </>
-                        ) : null}
-                        {pauseSymbol[i] ? <img src={symbols[5].src} /> : null}
-                        {mouseSymbol[i] ? <img src={symbols[6].src} /> : null}
-                        {slashSymbol[i] ? <img src={symbols[7].src} /> : null}
-                        <span>
-                          <span
-                            ref={(el) => (wordRef.current[i] = el)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                e.preventDefault(); // 줄바꿈 방지
-                              }
-                            }}
-                            onBlur={(e) => {
-                              handleBlur(e, i);
-                            }}
-                            // contentEditable={cursor === edit} // 현재 커서가 수정펜일 때만 수정 모드
-                            contentEditable={selectedSymbol === 3} // 현재 커서가 수정펜일 때만 수정 모드
-                            edited={edited[i]}
-                            spellCheck={false}
-                            suppressContentEditableWarning={true} // warning 무시
+                      <span key={i}>
+                        <Symbol>
+                          {enterSymbol[i] && (
+                            <>
+                              <img src={symbols[4].src} alt="enter" />
+                              <br />
+                            </>
+                          )}
+
+                          {correction.PAUSE_TOO_LONG &&
+                            correction.PAUSE_TOO_LONG.has(i - 1) && (
+                              <Correction> 🔸🔸 </Correction>
+                            )}
+                          {correction.PAUSE_TOO_SHORT &&
+                            correction.PAUSE_TOO_SHORT.has(i - 1) && (
+                              <Correction> 🔹🔹 </Correction>
+                            )}
+                        </Symbol>
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            flexDirection: "column",
+                          }}
+                        >
+                          <CorrectionLine
+                            $status={
+                              correction.TOO_FAST.has(i)
+                                ? "fast"
+                                : correction.TOO_SLOW.has(i)
+                                ? "slow"
+                                : null
+                            }
                           >
-                            {edited[i] ? edited[i] : word}
-                          </span>
-                          {edited[i] ? (
-                            <s.OriginalText contentEditable={false}>
-                              수정 전: {word}
-                            </s.OriginalText>
-                          ) : null}
+                            {correction.startFast.has(i)
+                              ? "너무 빨라요"
+                              : correction.startSlow.has(i)
+                              ? "너무 느려요"
+                              : "\u00A0"}
+                          </CorrectionLine>
+                          <s.Text
+                            key={i}
+                            $played={
+                              started[i] < count
+                                ? count < ended[i]
+                                  ? "playing"
+                                  : "played"
+                                : "not played"
+                            }
+                            $duration={duration[i]}
+                            color={highlighted[i]}
+                            $continued={
+                              highlighted[i] === highlighted[i + 1] ? 1 : 0
+                            } // 형광펜이 연달아 적용 되는지
+                            onClick={clickWord}
+                            id={i}
+                            $edited={edited[i] ? 1 : 0}
+                          >
+                            {pauseSymbol[i] && (
+                              <img src={symbols[5].src} alt="pause" />
+                            )}
+                            {mouseSymbol[i] && (
+                              <img src={symbols[6].src} alt="click" />
+                            )}
+                            {slashSymbol[i] && (
+                              <img src={symbols[7].src} alt="slash" />
+                            )}
+                            <span>
+                              <span
+                                ref={(el) => (wordRef.current[i] = el)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    e.preventDefault(); // 줄바꿈 방지
+                                    handleBlur(e, i);
+                                  }
+                                }}
+                                onBlur={(e) => {
+                                  handleBlur(e, i);
+                                }}
+                                // contentEditable={cursor === edit} // 현재 커서가 수정펜일 때만 수정 모드
+                                contentEditable={selectedSymbol === 3} // 현재 커서가 수정펜일 때만 수정 모드
+                                edited={edited[i]}
+                                spellCheck={false}
+                                suppressContentEditableWarning={true} // warning 무시
+                              >
+                                {edited[i] ? edited[i] : word}
+                              </span>
+                              {
+                                // 수정 전 단어 툴팁
+                                edited[i] ? (
+                                  <s.OriginalText contentEditable={false}>
+                                    수정 전: {word}
+                                  </s.OriginalText>
+                                ) : null
+                              }
+                            </span>
+                          </s.Text>
                         </span>
-                      </s.Text>
+                      </span>
                     ))}
                   </p>
                 </TextArea>
               ) : (
                 <>
                   <div className="logo-box">
-                    <img src={peanut_run} />
+                    {/* <img src={peanut_run} alt="peanut run" /> */}
                   </div>
-                  <h1>열심히 분석 중...</h1>
+                  <h1>열심히 분석 중입니다.</h1>
                 </>
               )}
-
-              {/* </s.ScriptContainer> */}
             </Screen>
-            <div className="sound-wave">
+            {/* <div className="sound-wave"> */}
+            <WaveContainer>
               {isDone ? (
                 waveFormLoaded ? null : (
-                  <s.LoadingBox>loading...</s.LoadingBox>
+                  <div className="text">클릭하여 편집을 시작하세요</div>
                 )
               ) : (
-                <s.LoadingBox>analyzing...</s.LoadingBox>
+                <div className="text">analyzing...</div>
               )}
-              <s.WaveWrapper ref={wavesurferRef} />
-            </div>
-            <audio id="audio" controls />
-            {isDone ? null : (
+              <s.WaveWrapper
+                ref={wavesurferRef}
+                $ready={isDone && waveFormLoaded ? 1 : 0}
+              />
+            </WaveContainer>
+            {/* </div> */}
+
+            {/* {isDone ? null : (
               <button
                 onClick={() => {
                   setIsDone(true);
@@ -564,7 +753,7 @@ const Speech = () => {
               >
                 완료
               </button>
-            )}
+            )} */}
             <PC>
               <ScriptBarWrap>
                 {isDone ? (
@@ -574,9 +763,12 @@ const Speech = () => {
                       {/* <Link
                         to={`/presentation/practice?presentation_id=${presentation_id}`}
                       > */}
-                      <span onClick={createSpeech}>
-                        <FilledBtn text={"연습 시작하기"} />
-                      </span>
+
+                      <FilledBtn
+                        text={"연습 시작하기"}
+                        onClick={createSpeech}
+                      />
+
                       {/* </Link> */}
                     </li>
                     <li>
@@ -593,6 +785,7 @@ const Speech = () => {
                       <StatisticsModal
                         presentation_id={presentation_id}
                         speech_id={speech_id}
+                        statistics={statistics}
                       />
                       <AiFeedbackModal
                         presentation_id={presentation_id}
@@ -664,7 +857,8 @@ const Container = styled(Box)`
 `;
 
 const Script = styled(Box)`
-  width: 100%;
+  /* width: 100%; */
+  width: 80vw;
   height: 80vh;
   margin: 13rem 10rem 0 5rem;
   background-color: #fff;
@@ -680,6 +874,26 @@ const Script = styled(Box)`
   }
 `;
 
+const WaveContainer = styled.div`
+  height: 64px;
+  margin-bottom: 3rem;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .text {
+    width: 90%;
+    height: 120%;
+    /* background-color: #f5f5f5; */
+    background-color: rgb(255, 112, 51, 0.2);
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+  }
+`;
+
 const Screen = styled(Box)`
   width: 100%;
   height: 100%;
@@ -690,26 +904,31 @@ const Screen = styled(Box)`
   flex-direction: column;
   position: relative;
 
-  .sound-wave {
-    margin-bottom: 3rem;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    img {
-      width: 40%;
-    }
-  }
   .logo-box {
+    @keyframes run {
+      0% {
+        background-position-x: 0px;
+      }
+      100% {
+        background-position-x: -210vh;
+      }
+    }
+    animation: run 0.6s infinite steps(7);
+    background-image: url(${peanut_run});
+    background-size: 210vh 30vh;
+    height: 30vh;
+    width: 30vh;
+    will-change: transform;
     img {
-      width: 45rem;
-      opacity: 0.8;
+      /* width: 45rem;
+      opacity: 0.8; */
     }
   }
+
   h1 {
     font-size: 3rem;
     color: #ff7134;
-    /* font-weight: bold; */
+    font-weight: bold;
     margin-top: 2rem;
     text-align: center;
   }
@@ -738,10 +957,16 @@ const Screen = styled(Box)`
 `;
 
 const TextArea = styled(Box)`
+  width: 90%;
+  height: 100%;
   padding: 3rem;
   p {
     /* height: fit-content; */
-    max-height: 420px;
+    /* display: flex; */
+    /* align-items: center; */
+    flex-direction: row;
+    /* height: 420px; */
+    height: 50vh;
     overflow-y: scroll;
     padding: 3rem;
     background-color: #f5f5f5;
@@ -772,6 +997,46 @@ const TextArea = styled(Box)`
       font-size: 1.8rem;
     }
   }
+`;
+
+const CorrectionLine = styled.span`
+  /* height: 2px; */
+  line-height: 100%;
+  /* border-bottom: ${(props) =>
+    props.$status === "fast"
+      ? "solid red .3rem"
+      : props.$status === "slow"
+      ? "solid green .3rem"
+      : "transparent"}; */
+  background-color: ${(props) =>
+    props.$status === "fast"
+      ? "red"
+      : props.$status === "slow"
+      ? "green"
+      : "transparent"};
+  opacity: 0.7;
+  font-size: 1rem;
+  font-weight: bold;
+  color: white;
+  /* color: ${(props) =>
+    props.$status === "fast"
+      ? "red"
+      : props.$status === "slow"
+      ? "green"
+      : "transparent"}; */
+  /* background-color: red; */
+`;
+const Symbol = styled.span`
+  /* margin: auto; */
+  height: 3rem;
+  vertical-align: bottom;
+  padding-bottom: 1rem;
+  /* img {
+    margin-top: 2rem;
+  } */
+`;
+const Correction = styled.span`
+  color: #ff7134;
 `;
 
 const Disabled = styled(Box)`
