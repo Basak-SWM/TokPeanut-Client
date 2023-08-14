@@ -21,10 +21,10 @@ jobs:
             ${{ runner.OS }}-
 
       - name: Install Dependencies
-        run: npm install
+        run: cd client && npm install
 
       - name: Build
-        run: npm run build
+        run: cd client && npm run build
         env:
           REACT_APP_API_BASE_URL: ${{vars.STAGING_API_URL}}
 
