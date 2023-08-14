@@ -87,12 +87,21 @@ to {
   background-position-x: 100%;
 }
 `;
+
+export const Highlight = styled.span`
+  background-color: ${(props) => props.color};
+  position: absolute;
+  height: 4rem;
+  width: ${(props) => props.$width}px;
+  margin-top: 1rem;
+  z-index: 0;
+  padding-right: ${(props) => (props.$continued ? "5px" : "none")};
+`;
+
 // 스크립트의 단어
 export const Text = styled.span`
-  /* display: inline-flex;
-  width: fit-content; */
+  z-index: 10;
   flex-direction: column;
-  /* min-width: 50px; */
   position: relative;
   background-clip: ${(props) => (props.$played === "playing" ? "text" : "")};
   -webkit-background-clip: ${(props) =>
@@ -118,22 +127,17 @@ export const Text = styled.span`
   animation-direction: reverse;
   animation-fill-mode: forwards;
 
-  background-color: ${(props) => props.color};
-  margin-right: ${(props) => (props.$continued ? "none" : "5px")};
-  padding-right: ${(props) => (props.$continued ? "5px" : "none")};
+  margin-right: 5px;
+  /* margin-right: ${(props) => (props.$continued ? "none" : "5px")};
+  padding-right: ${(props) => (props.$continued ? "5px" : "none")}; */
   text-decoration: ${(props) => (props.$edited ? "underline" : "none")};
-  /* text-decoration: ${(props) =>
-    props.$correction === "fast"
-      ? "red dotted overline "
-      : props.$correction === "slow"
-      ? "green dotted overline "
-      : "none"}; */
 
   &:hover {
     /* text-decoration: orange dashed underline; */
     font-weight: bold;
   }
 `;
+
 export const EditedText = styled.span`
   // text-decoration: underline;
 `;
@@ -161,7 +165,7 @@ export const OriginalText = styled.span`
   /* padding: 0.5rem 0.2rem; */
   border-radius: 5px;
   position: absolute;
-  z-index: 1;
+  z-index: 100;
   transition: all 0.1s ease-in-out;
 
   ${Text}:hover & {
