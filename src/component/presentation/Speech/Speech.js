@@ -93,7 +93,7 @@ const Speech = () => {
   const getCorrection = useCallback(async (url) => {
     try {
       const res = await axios.get(url);
-      console.log("correction response:", res);
+      // console.log("correction response:", res);
       let correctionList = JSON.parse(res.data);
       const correction = {
         PAUSE_TOO_LONG: new Set(correctionList.PAUSE_TOO_LONG),
@@ -124,14 +124,11 @@ const Speech = () => {
       console.log("🩸correction error:", err);
     }
   }, []);
-  const [LPM, setLPM] = useState({
-    WINDOW_SIZE: null,
-    speed_list: [],
-  });
+  const [LPM, setLPM] = useState([]);
   const getLPM = useCallback(async (url) => {
     try {
       const res = await axios.get(url);
-      console.log("LPM response:", res);
+      // console.log("LPM response:", res);
       const LPM = JSON.parse(res.data);
       setLPM(LPM);
     } catch (err) {
@@ -589,6 +586,15 @@ const Speech = () => {
     );
   };
 
+  const [widthList, setWidthList] = useState([]);
+  useEffect(() => {
+    let list = [];
+    for (let i = 0; i < text.length; i++) {
+      list.push(document.getElementById(i).offsetWidth);
+    }
+    setWidthList(list);
+  }, [text]);
+
   return (
     <>
       <ThemeProvider theme={theme}>
@@ -680,33 +686,17 @@ const Speech = () => {
                           }}
                         >
                           <CorrectionLine
-                            // $status={
-                            //   correction.TOO_FAST.has(i)
-                            //     ? "fast"
-                            //     : correction.TOO_SLOW.has(i)
-                            //     ? "slow"
-                            //     : null
-                            // }
                             $status={
-                              LPM.speed_list[i] > 0
-                                ? "fast"
-                                : LPM.speed_list[i] < 0
-                                ? "slow"
-                                : null
+                              LPM[i] > 0 ? "fast" : LPM[i] < 0 ? "slow" : null
                             }
                             $opacity={
-                              LPM.speed_list[i] > 0
-                                ? LPM.speed_list[i] / LPM.WINDOW_SIZE
-                                : LPM.speed_list[i] < 0
-                                ? -(LPM.speed_list[i] / LPM.WINDOW_SIZE)
+                              LPM[i] > 0
+                                ? LPM[i] / 2
+                                : LPM[i] < 0
+                                ? -(LPM[i] / 2)
                                 : null
                             }
                           >
-                            {/* {correction.startFast.has(i)
-                              ? "너무 빨라요"
-                              : correction.startSlow.has(i)
-                              ? "너무 느려요"
-                              : "\u00A0"} */}
                             &nbsp;
                           </CorrectionLine>
                           <s.Text
@@ -719,10 +709,10 @@ const Speech = () => {
                                 : "not played"
                             }
                             $duration={duration[i]}
-                            color={highlighted[i]}
-                            $continued={
-                              highlighted[i] === highlighted[i + 1] ? 1 : 0
-                            } // 형광펜이 연달아 적용 되는지
+                            // color={highlighted[i]}
+                            // $continued={
+                            //   highlighted[i] === highlighted[i + 1] ? 1 : 0
+                            // }
                             onClick={clickWord}
                             id={i}
                             $edited={edited[i] ? 1 : 0}
@@ -768,6 +758,15 @@ const Speech = () => {
                               }
                             </span>
                           </s.Text>
+                          {highlighted[i] && (
+                            <s.Highlight
+                              color={highlighted[i]}
+                              $width={widthList[i]}
+                              $continued={
+                                highlighted[i] === highlighted[i + 1] ? 1 : 0
+                              }
+                            />
+                          )}
                         </span>
                       </span>
                     ))}
@@ -1000,6 +999,7 @@ const TextArea = styled(Box)`
     font-size: 2rem;
     line-height: 200%;
     color: #3b3b3b;
+    /* word-spacing: 5px; */
     .pencil3 {
       background-color: #cbf5ca;
     }
