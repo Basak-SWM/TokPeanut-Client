@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useCallback } from "react";
 import Box from "@mui/material/Box";
 import { createTheme, Dialog, ThemeProvider } from "@mui/material";
 import Modal from "@mui/material/Modal";
@@ -12,7 +12,11 @@ import { useTheme } from "@mui/material/styles";
 import CircleIcon from "@mui/icons-material/Circle";
 import { ResponsiveLine } from "@nivo/line";
 
-export default function StatisticsModal({ presentaion_id, speech_id }) {
+export default function StatisticsModal({
+  presentaion_id,
+  speech_id,
+  statistics,
+}) {
   const theme = createTheme({
     typography: {
       fontFamily: "Pretendard",
@@ -62,44 +66,37 @@ export default function StatisticsModal({ presentaion_id, speech_id }) {
         ],
       },
     ],
-    hz: 300,
+    hz: statistics.hertz,
     // db: [],
-    speed: 300,
-    pause: 22,
+    speed: statistics.lpm,
+    pause: statistics.pause,
   };
 
-  const PitchLine = () => (
-    <ResponsiveLine
-      data={data.pitch}
-      margin={{ top: 20, right: 20, bottom: 20, left: 25 }}
-      xScale={{ type: "point" }}
-      yScale={{
-        type: "linear",
-        min: 0,
-        stacked: true,
-        reverse: false,
-      }}
-      // axisBottom={{
-      //   tickSize: 3,
-      //   tickPadding: 5,
-      //   tickRotation: 0,
-      // }}
-      // axisLeft={{
-      //   tickSize: 3,
-      //   tickPadding: 5,
-      //   tickRotation: 0,
-      // }}
-      enableGridY={false}
-      enableGridX={false}
-      colors="#FF7134"
-      pointSize={0}
-      lineWidth={1}
-    />
+  const PitchLine = useCallback(
+    () => (
+      <ResponsiveLine
+        data={data.pitch}
+        margin={{ top: 20, right: 20, bottom: 20, left: 25 }}
+        xScale={{ type: "point" }}
+        yScale={{
+          type: "linear",
+          min: 0,
+          stacked: true,
+          reverse: false,
+        }}
+        enableGridY={false}
+        enableGridX={false}
+        colors="#FF7134"
+        pointSize={0}
+        lineWidth={1}
+      />
+    ),
+    []
   );
 
   return (
     <ThemeProvider theme={theme}>
-      <FilledBtn text={"통계 보기"} handle={handleOpen} />
+      <FilledBtn text={"통계 보기"} onClick={handleOpen} />
       <StatisticsModalWrap
         fullScreen={fullScreen}
         open={open}
@@ -131,7 +128,9 @@ export default function StatisticsModal({ presentaion_id, speech_id }) {
             <li>
               <div className="sub-title">
                 <CircleIcon />
-                <h2>음높이 : 평균 {data.hz}hz</h2>
+                <h2>
+                  음높이 : 평균 <span>{data.hz}</span> hz
+                </h2>
               </div>
               <p>
                 200Hz수준의 음높이를 유지하세요. <br />
@@ -150,7 +149,9 @@ export default function StatisticsModal({ presentaion_id, speech_id }) {
             <li>
               <div className="sub-title">
                 <CircleIcon />
-                <h2>속도 : 평균 {data.speed} 음절/min</h2>
+                <h2>
+                  속도 : 평균 <span>{data.speed}</span> 음절/min
+                </h2>
               </div>
               <p>
                 속도를 350 음절/min 이하로 유지하세요. <br />
@@ -161,7 +162,9 @@ export default function StatisticsModal({ presentaion_id, speech_id }) {
             <li>
               <div className="sub-title">
                 <CircleIcon />
-                <h2>휴지 : {data.pause}%</h2>
+                <h2>
+                  휴지 : 평균 <span>{data.pause}</span> %
+                </h2>
               </div>
               <p>
                 말하기의 전달력을 높이려면 휴지 비율을 전체 20~25% 사이로
@@ -230,6 +233,9 @@ const ModalWrap = styled(Box)`
           color: #3b3b3b;
           line-height: 150%;
           font-weight: 700;
+          span {
+            color: #ff7134;
+          }
         }
       }
       p {

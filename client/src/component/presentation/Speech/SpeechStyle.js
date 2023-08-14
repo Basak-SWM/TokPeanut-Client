@@ -48,8 +48,11 @@ export const Script = styled.div`
 `;
 // 파형 ref
 export const WaveWrapper = styled.div`
-  width: 748px;
-  height: 64px;
+  display: ${(props) => (props.$ready ? "block" : "none")};
+  /* width: 748px; */
+  width: 90%;
+  /* height: 64px; */
+  height: 100%;
   /* width: 100%;
   height: 100%; */
   margin-bottom: 3rem;
@@ -60,6 +63,7 @@ export const LoadingBox = styled.div`
   position: absolute;
   font-size: large;
   background-color: antiquewhite;
+  z-index: 100;
   /* display: flex;
   justify-content: center;
   align-items: center; */
@@ -85,38 +89,49 @@ to {
 `;
 // 스크립트의 단어
 export const Text = styled.span`
-  min-width: 50px;
+  /* display: inline-flex;
+  width: fit-content; */
+  flex-direction: column;
+  /* min-width: 50px; */
   position: relative;
-  background-clip: ${(props) => (props.played === "playing" ? "text" : "")};
+  background-clip: ${(props) => (props.$played === "playing" ? "text" : "")};
   -webkit-background-clip: ${(props) =>
-    props.played === "playing" ? "text" : ""};
+    props.$played === "playing" ? "text" : ""};
   color: ${(props) =>
-    props.played === "playing"
+    props.$played === "playing"
       ? "transparent"
-      : props.played === "played"
+      : props.$played === "played"
       ? "orange"
       : "black"};
   background-image: ${(props) =>
-    props.played === "playing"
+    props.$played === "playing"
       ? "linear-gradient(to right, orange 50%, black 50% 100%)"
       : ""};
 
   background-size: 200% 100%;
   background-position-x: 0%;
-  animation-name: ${(props) => (props.played === "playing" ? PlayingText : "")};
-  animation-duration: ${(props) => props.duration}s;
+  animation-name: ${(props) =>
+    props.$played === "playing" ? PlayingText : ""};
+  animation-duration: ${(props) => props.$duration}s;
   animation-timing-function: linear;
   animation-iteration-count: 1;
   animation-direction: reverse;
   animation-fill-mode: forwards;
 
   background-color: ${(props) => props.color};
-  margin-right: ${(props) => (props.continued ? "none" : "5px")};
-  padding-right: ${(props) => (props.continued ? "5px" : "none")};
-  text-decoration: ${(props) => (props.edited ? "underline" : "none")};
+  margin-right: ${(props) => (props.$continued ? "none" : "5px")};
+  padding-right: ${(props) => (props.$continued ? "5px" : "none")};
+  text-decoration: ${(props) => (props.$edited ? "underline" : "none")};
+  /* text-decoration: ${(props) =>
+    props.$correction === "fast"
+      ? "red dotted overline "
+      : props.$correction === "slow"
+      ? "green dotted overline "
+      : "none"}; */
 
   &:hover {
-    text-decoration: orange dashed underline;
+    /* text-decoration: orange dashed underline; */
+    font-weight: bold;
   }
 `;
 export const EditedText = styled.span`
