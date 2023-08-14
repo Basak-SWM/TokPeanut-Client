@@ -369,14 +369,17 @@ const Speech = () => {
   const clickTool = (i) => {
     // const selectedSymbolIdx = e.target.id;
     const selectedSymbolIdx = i;
+    console.log(i);
 
-    if (selectedSymbol) {
+    if (!isNaN(selectedSymbol)) {
       setSelectedSymbol(NaN);
     } else {
       setSelectedSymbol(selectedSymbolIdx);
     }
     // 커서 변경
-    selectedSymbol ? setCursor("") : setCursor(symbols[selectedSymbolIdx].src);
+    !isNaN(selectedSymbol)
+      ? setCursor("")
+      : setCursor(symbols[selectedSymbolIdx].src);
   };
 
   const [waveFormLoaded, setWaveFormLoaded] = useState(false);
