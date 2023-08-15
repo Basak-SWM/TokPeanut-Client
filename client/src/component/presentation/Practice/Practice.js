@@ -201,6 +201,10 @@ const Practice = ({ isNew }) => {
     { name: "끊어읽기", src: "/img/script/toolbar/slash.svg" },
     { name: "지우개", src: "/img/script/toolbar/eraser.svg" },
   ];
+  const correctionIcons = [
+    { name: "휴지 긺", src: "/img/script/space_long.svg" },
+    { name: "휴지 짧음", src: "/img/script/space_short.svg" },
+  ];
 
   // 실시간 파형
   const waveformRef = useRef(null);
@@ -517,11 +521,19 @@ const Practice = ({ isNew }) => {
 
                             {correction.PAUSE_TOO_LONG &&
                               correction.PAUSE_TOO_LONG.has(i - 1) && (
-                                <Correction> 🔸🔸 </Correction>
+                                <img
+                                  src={correctionIcons[0].src}
+                                  alt="pause too long"
+                                  className="correction pause_too_long"
+                                />
                               )}
                             {correction.PAUSE_TOO_SHORT &&
                               correction.PAUSE_TOO_SHORT.has(i - 1) && (
-                                <Correction> 🔹🔹 </Correction>
+                                <img
+                                  src={correctionIcons[1].src}
+                                  alt="pause too short"
+                                  className="correction pause_too_short"
+                                />
                               )}
                           </Symbol>
                           <span
@@ -958,10 +970,6 @@ const PlayBtn = styled(IconButton)`
   }
 `;
 
-const Correction = styled.span`
-  color: #ff7134;
-`;
-
 const Symbol = styled.span`
   /* margin: auto; */
   height: 3rem;
@@ -970,14 +978,26 @@ const Symbol = styled.span`
   /* img {
     margin-top: 2rem;
   } */
+  .correction {
+    width: 2.5rem;
+    /* margin-left: -5px; */
+  }
+  .pause_too_long {
+    filter: invert(5%) sepia(86%) saturate(7388%) hue-rotate(247deg)
+      brightness(103%) contrast(107%);
+  }
+  .pause_too_short {
+    filter: invert(12%) sepia(97%) saturate(5608%) hue-rotate(9deg)
+      brightness(90%) contrast(102%);
+  }
 `;
 const CorrectionLine = styled.span`
   line-height: 100%;
   background-color: ${(props) =>
     props.$status === "fast"
-      ? "red"
+      ? "#D71313"
       : props.$status === "slow"
-      ? "green"
+      ? "#0D1282"
       : "transparent"};
   opacity: 0.7;
   font-size: 1rem;

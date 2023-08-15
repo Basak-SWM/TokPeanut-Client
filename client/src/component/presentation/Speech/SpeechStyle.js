@@ -50,12 +50,12 @@ export const Script = styled.div`
 export const WaveWrapper = styled.div`
   display: ${(props) => (props.$ready ? "block" : "none")};
   /* width: 748px; */
-  width: 90%;
+  width: 100%;
   /* height: 64px; */
   height: 100%;
   /* width: 100%;
   height: 100%; */
-  margin-bottom: 3rem;
+  /* margin-bottom: 3rem; */
   /* border: 1px solid grey; */
 `;
 // 파형 로딩 박스
@@ -87,12 +87,21 @@ to {
   background-position-x: 100%;
 }
 `;
+
+export const Highlight = styled.span`
+  background-color: ${(props) => props.color};
+  position: absolute;
+  height: 4rem;
+  width: ${(props) => props.$width}px;
+  margin-top: 1rem;
+  z-index: 0;
+  padding-right: ${(props) => (props.$continued ? "5px" : "none")};
+`;
+
 // 스크립트의 단어
 export const Text = styled.span`
-  /* display: inline-flex;
-  width: fit-content; */
+  z-index: 10;
   flex-direction: column;
-  /* min-width: 50px; */
   position: relative;
   background-clip: ${(props) => (props.$played === "playing" ? "text" : "")};
   -webkit-background-clip: ${(props) =>
@@ -101,11 +110,11 @@ export const Text = styled.span`
     props.$played === "playing"
       ? "transparent"
       : props.$played === "played"
-      ? "orange"
+      ? "#ff7134"
       : "black"};
   background-image: ${(props) =>
     props.$played === "playing"
-      ? "linear-gradient(to right, orange 50%, black 50% 100%)"
+      ? "linear-gradient(to right, #ff7134 50%, black 50% 100%)"
       : ""};
 
   background-size: 200% 100%;
@@ -118,22 +127,17 @@ export const Text = styled.span`
   animation-direction: reverse;
   animation-fill-mode: forwards;
 
-  background-color: ${(props) => props.color};
-  margin-right: ${(props) => (props.$continued ? "none" : "5px")};
-  padding-right: ${(props) => (props.$continued ? "5px" : "none")};
+  margin-right: 5px;
+  /* margin-right: ${(props) => (props.$continued ? "none" : "5px")};
+  padding-right: ${(props) => (props.$continued ? "5px" : "none")}; */
   text-decoration: ${(props) => (props.$edited ? "underline" : "none")};
-  /* text-decoration: ${(props) =>
-    props.$correction === "fast"
-      ? "red dotted overline "
-      : props.$correction === "slow"
-      ? "green dotted overline "
-      : "none"}; */
 
   &:hover {
     /* text-decoration: orange dashed underline; */
     font-weight: bold;
   }
 `;
+
 export const EditedText = styled.span`
   // text-decoration: underline;
 `;
@@ -149,18 +153,20 @@ export const Tool = styled.span`
 // 수정 전 단어 + 툴팁
 export const OriginalText = styled.span`
   visibility: hidden;
-  width: 120px;
+  width: ${(props) => props.$len * 1.5}rem;
   bottom: 100%;
   left: 50%;
-  margin-left: -60px;
-  font-size: 14px;
-  background-color: grey;
+  /* margin-left: calc(-60% - 0.5rem); */
+  margin-left: ${(props) => props.$len * -0.75 - 0.5}rem;
+  font-size: 1.5rem;
+  background-color: rgba(0, 0, 0, 0.3);
   color: #fff;
   text-align: center;
-  padding: 5px 0;
+  /* padding: 0.5rem 0.2rem; */
   border-radius: 5px;
   position: absolute;
-  z-index: 1;
+  z-index: 100;
+  transition: all 0.1s ease-in-out;
 
   ${Text}:hover & {
     visibility: visible;
@@ -175,7 +181,7 @@ export const OriginalText = styled.span`
     margin-left: -5px;
     border-width: 5px;
     border-style: solid;
-    border-color: grey transparent transparent transparent;
+    border-color: rgba(0, 0, 0, 0.3) transparent transparent transparent;
   }
 `;
 
