@@ -45,5 +45,5 @@ jobs:
           AWS_DEFAULT_REGION: ap-northeast-2
         run: |
           aws cloudfront create-invalidation \
-            --distribution-id ${{secrets.DISTRIBUTION_ID}} \
+            --distribution-id ${{secrets.PROD_CLOUTFRONT_ID}} \
             --paths "/*"
