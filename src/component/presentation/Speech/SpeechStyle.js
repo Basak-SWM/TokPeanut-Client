@@ -90,7 +90,10 @@ to {
 
 export const Highlight = styled.span`
   background-color: ${(props) => props.color};
-  position: absolute;
+  /* position: absolute; */
+  position: relative;
+  top: -5rem;
+  margin-bottom: -5rem;
   height: 4rem;
   width: ${(props) => props.$width}px;
   margin-top: 1rem;
