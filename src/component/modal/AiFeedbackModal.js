@@ -31,6 +31,7 @@ export default function AiFeedbackModal({ presentation_id, speech_id }) {
   const theme2 = useTheme();
   const fullScreen = useMediaQuery(theme2.breakpoints.down("md"));
 
+  const [aiDone, setAiDone] = useState(false);
   const [open, setOpen] = useState(false);
   const handleOpen = () => {
     setOpen(true);
@@ -103,6 +104,7 @@ export default function AiFeedbackModal({ presentation_id, speech_id }) {
     const polling = async () => {
       const status = await getLogs();
       if (status === 200) {
+        setAiDone(true);
         clearInterval(repeat);
       }
     };
@@ -199,28 +201,43 @@ export default function AiFeedbackModal({ presentation_id, speech_id }) {
             </IconButton>
           </div>
           <div className="message-wrap">
-            <div className="msg">
-              {data.map((item, i) => (
-                <div key={i}>
-                  <div className="me-msg">
-                    <h3>{item.prompt}</h3>
-                  </div>
-                  <div className="ai-msg">
-                    <div className="profile">
-                      <SmartToyIcon />
+            {aiDone ? (
+              <>
+                <div className="msg">
+                  {data.map((item, i) => (
+                    <div key={i}>
+                      <div className="me-msg">
+                        <h3>
+                          {item.prompt.split("\n").map((t) => (
+                            <p key={t}>{t}</p>
+                          ))}
+                        </h3>
+                      </div>
+                      <div className="ai-msg">
+                        <div className="profile">
+                          <SmartToyIcon />
+                        </div>
+                        <h3>
+                          {item.result === "waiting" ? (
+                            <CircularProgress color="inherit" size={30} />
+                          ) : (
+                            item.result
+                              .split("\n")
+                              .map((t) => <p key={t}>{t}</p>)
+                          )}
+                        </h3>
+                      </div>
                     </div>
-                    <h3>
-                      {item.result === "waiting" ? (
-                        <CircularProgress color="inherit" size={30} />
-                      ) : (
-                        item.result
-                      )}
-                    </h3>
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-            <div ref={messageRef}></div>
+                <div ref={messageRef}></div>
+              </>
+            ) : (
+              <div id="ai_not_done">
+                <CircularProgress color="inherit" size={60} />
+                <div ref={messageRef}>잠시만 기다려 주세요...</div>
+              </div>
+            )}
           </div>
 
           <form onSubmit={newCheckPoint}>
@@ -233,7 +250,7 @@ export default function AiFeedbackModal({ presentation_id, speech_id }) {
                   multiline
                   maxRows={1}
                 />
-                <Button variant="contained" type="submit">
+                <Button variant="contained" type="submit" disabled={!aiDone}>
                   다시 입력
                 </Button>
               </div>
@@ -279,8 +296,23 @@ const ModalWrap = styled(Box)`
   .message-wrap {
     background-color: #fafafa;
     padding: 4rem 0 3rem 0;
-    max-height: 48rem;
+    /* max-height: 48rem; */
+    height: 48rem;
     overflow-y: scroll;
+    vertical-align: bottom;
+    #ai_not_done {
+      height: 48rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #ff7134;
+      div {
+        text-align: center;
+        margin-top: 2rem;
+        font-size: 1.5rem;
+      }
+    }
     .msg {
       width: 100%;
       h3 {
@@ -291,6 +323,7 @@ const ModalWrap = styled(Box)`
         line-height: 150%;
         font-weight: 600;
         padding: 1rem 2rem;
+        word-break: keep-all;
       }
       .me-msg {
         display: flex;
