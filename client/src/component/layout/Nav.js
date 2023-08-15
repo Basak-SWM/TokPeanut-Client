@@ -43,10 +43,10 @@ const Nav = () => {
                         fontWeight: "bold",
                         fontSize: "25px",
                         textAlign: "center",
-                        color: "#F38025",
+                        color: "#ff7134",
                       }}
                     >
-                      TokPeanut
+                      TOKPEANUT
                     </div>
                   </a>
                 </div>
@@ -84,7 +84,16 @@ const Nav = () => {
                 <div className="dp-flex mobileNav">
                   <div className="logo">
                     <a href="/">
-                      <img src="/img/logo.svg"></img>
+                      <div
+                        style={{
+                          fontWeight: "bolder",
+                          fontSize: "25px",
+                          textAlign: "center",
+                          color: "#ff7134",
+                        }}
+                      >
+                        TOKPEANUT
+                      </div>
                     </a>
                   </div>
                   <MenuBtn onClick={handleClick}>
