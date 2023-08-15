@@ -575,7 +575,7 @@ const Speech = () => {
         params: { "presentation-id": presentation_id },
         referenceSpeechId: speech_id,
       });
-      // console.log("new speech response:", res);
+      console.log("new speech response:", res);
     } catch (err) {
       console.log("🩸new speech error: ", err);
     }
@@ -991,7 +991,6 @@ const TextArea = styled(Box)`
     /* display: flex; */
     /* align-items: center; */
     flex-direction: row;
-    /* height: 420px; */
     height: 50vh;
     overflow-y: scroll;
     padding: 3rem;
