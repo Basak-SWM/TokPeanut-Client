@@ -1005,7 +1005,7 @@ const CorrectionLine = styled.span`
       : props.$status === "slow"
       ? "#0D1282"
       : "transparent"};
-  opacity: 0.7;
+  opacity: ${(props) => props.$opacity};
   font-size: 1rem;
   font-weight: bold;
   color: white;
