@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import WaveSurfer from "wavesurfer.js";
 import MicrophonePlugin from "wavesurfer.js/dist/plugin/wavesurfer.microphone.min.js";
@@ -114,6 +114,17 @@ const Practice = ({ isNew }) => {
     setHighlighted(symbols.highlight);
     setEdited(symbols.edit);
   };
+  const [LPM, setLPM] = useState([]);
+  const getLPM = useCallback(async (url) => {
+    try {
+      const res = await axios.get(url);
+      // console.log("LPM response:", res);
+      const LPM = JSON.parse(res.data);
+      setLPM(LPM);
+    } catch (err) {
+      console.log("🩸LPM error:", err);
+    }
+  }, []);
 
   // 분석 결과 presigned url 가져오기
   const getResult = async (prev_speech) => {
@@ -125,6 +136,7 @@ const Practice = ({ isNew }) => {
       // console.log("이전 스피치 분석 결과 response:", res);
       getSTT(res.data.STT);
       getCorrection(res.data.SPEECH_CORRECTION);
+      getLPM(res.data.LPM);
     } catch (err) {
       console.log("🩸이전 스피치 분석 결과 error:", err);
     }
@@ -544,23 +556,17 @@ const Practice = ({ isNew }) => {
                           >
                             <CorrectionLine
                               $status={
-                                correction.TOO_FAST.has(i)
-                                  ? "fast"
-                                  : correction.TOO_SLOW.has(i)
-                                  ? "slow"
+                                LPM[i] > 0 ? "fast" : LPM[i] < 0 ? "slow" : null
+                              }
+                              $opacity={
+                                LPM[i] > 0
+                                  ? LPM[i] / 2
+                                  : LPM[i] < 0
+                                  ? -(LPM[i] / 2)
                                   : null
                               }
                             >
-                              {/* {correction.TOO_FAST.has(i)
-                              ? "빨라요"
-                              : correction.TOO_SLOW.has(i)
-                              ? "느려요"
-                              : null} */}
-                              {correction.startFast.has(i)
-                                ? "너무 빨라요"
-                                : correction.startSlow.has(i)
-                                ? "너무 느려요"
-                                : "\u00A0"}
+                              &nbsp;
                             </CorrectionLine>
                             <s.Text
                               color={highlighted[i]}
