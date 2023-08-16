@@ -4,7 +4,7 @@ module.exports = function (app) {
   app.use(
     "/api/v1",
     createProxyMiddleware({
-      target: "http://api.tokpeanut.com:8080",
+      target: "https://api.tokpeanut.com",
       changeOrigin: true,
     })
   );
