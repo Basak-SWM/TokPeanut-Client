@@ -111,7 +111,7 @@ export default function StatisticsModal({
             </IconButton>
           </div>
           <ul className="statistcs-wrap">
-            <li>
+            {/* <li>
               <div className="sub-title">
                 <CircleIcon />
                 <h2>억양 변화</h2>
@@ -121,10 +121,9 @@ export default function StatisticsModal({
                 <br /> 아래 그래프에서 억양 변화를 확인하세요.
               </p>
               <div className="graph-box">
-                {/* <img src="/img/modal/sample.png" width="100%" /> */}
                 <PitchLine />
               </div>
-            </li>
+            </li> */}
             <li>
               <div className="sub-title">
                 <CircleIcon />
