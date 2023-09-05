@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styled from "@emotion/styled";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
 import { Box, IconButton, Button } from "@mui/material";
@@ -28,6 +29,8 @@ const Nav = () => {
   const handleClick = () => {
     setOpen(!open);
   };
+
+  const navigate = useNavigate();
   return (
     <>
       <ThemeProvider theme={theme}>
@@ -68,7 +71,12 @@ const Nav = () => {
                     <a href="/login">로그인</a>
                   </li>
                   <li>
-                    <RBtn variant="outlined">마이페이지</RBtn>
+                    <RBtn
+                      variant="outlined"
+                      onClick={() => navigate("/user/mypage")}
+                    >
+                      마이페이지
+                    </RBtn>
                   </li>
                 </ul>
               </div>
