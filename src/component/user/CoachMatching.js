@@ -4,14 +4,14 @@ import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
 import { Box, IconButton, Button, Grid } from "@mui/material";
 import Nav from "../layout/Nav";
 import theme from "../../style/theme";
-import RequestCardUser from "../../component/card/RequestCardUser";
+import RequestCardCoach from "../../component/card/RequestCardCoach";
 import PaginationBox from "../../component/pagination/Pagination";
 
 const Item = styled(Box)(({ theme }) => ({
   padding: theme.spacing(1),
 }));
 
-const MyMatching = () => {
+const CoachMatching = () => {
   const theme = createTheme({
     typography: {
       fontFamily: "Pretendard",
@@ -34,42 +34,42 @@ const MyMatching = () => {
             <Grid container spacing={1}>
               <Card item xs={12} md={6}>
                 <Item>
-                  <RequestCardUser type={"ing"} />
+                  <RequestCardCoach type={"after"} />
                 </Item>
               </Card>
               <Card item xs={12} md={6}>
                 <Item>
-                  <RequestCardUser type={"waiting"} />
+                  <RequestCardCoach type={"before"} />
                 </Item>
               </Card>
               <Card item xs={12} md={6}>
                 <Item>
-                  <RequestCardUser type={"ing"} />
+                  <RequestCardCoach type={"after"} />
                 </Item>
               </Card>
               <Card item xs={12} md={6}>
                 <Item>
-                  <RequestCardUser type={"reject"} />
+                  <RequestCardCoach type={"reject"} />
                 </Item>
               </Card>
               <Card item xs={12} md={6}>
                 <Item>
-                  <RequestCardUser type={"ing"} />
+                  <RequestCardCoach type={"after"} />
                 </Item>
               </Card>
               <Card item xs={12} md={6}>
                 <Item>
-                  <RequestCardUser type={"done"} />
+                  <RequestCardCoach type={"before"} />
                 </Item>
               </Card>
               <Card item xs={12} md={6}>
                 <Item>
-                  <RequestCardUser type={"ing"} />
+                  <RequestCardCoach type={"after"} />
                 </Item>
               </Card>
               <Card item xs={12} md={6}>
                 <Item>
-                  <RequestCardUser type={"ing"} />
+                  <RequestCardCoach type={"after"} />
                 </Item>
               </Card>
             </Grid>
@@ -108,4 +108,4 @@ const RequestListWrap = styled(Box)`
   margin-top: 3rem;
 `;
 
-export default MyMatching;
+export default CoachMatching;
