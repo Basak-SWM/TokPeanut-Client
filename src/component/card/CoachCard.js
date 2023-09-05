@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import styled from "@emotion/styled";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
 import { Box, IconButton, Button } from "@mui/material";
-import theme from "../../../style/theme";
+import theme from "../../style/theme";
 import { Link } from "react-router-dom";
-import CoachingModal from "../../modal/CoachingModal";
-import SpeechModal from "../../modal/SpeechModal";
+import CoachingModal from "../modal/CoachingModal";
+import SpeechModal from "../modal/SpeechModal";
 
 export default function CoachCard() {
   const theme = createTheme({
@@ -24,19 +24,19 @@ export default function CoachCard() {
   return (
     <>
       <ThemeProvider theme={theme}>
-        <Link href="">
-          <CoachCardWrap>
+        <CoachCardWrap>
+          <Link to="/coach/portfolio">
             <div className="img-box" id="img1"></div>
-            <h2>
-              <strong>밈갬밈</strong> 코치
-            </h2>
-            <p>안녕하세요~ 아나운서 과외 경력 10년차의 밈갬밈입니다~^^</p>
-            <div className="btn-wrap">
-              <CoachingModal />
-              <SpeechModal />
-            </div>
-          </CoachCardWrap>
-        </Link>
+          </Link>
+          <h2>
+            <strong>밈갬밈</strong> 코치
+          </h2>
+          <p>안녕하세요~ 아나운서 과외 경력 10년차의 밈갬밈입니다~^^</p>
+          <div className="btn-wrap">
+            <CoachingModal />
+            <SpeechModal />
+          </div>
+        </CoachCardWrap>
       </ThemeProvider>
     </>
   );

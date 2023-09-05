@@ -21,6 +21,8 @@ import SignInCoach from "./component/signin/SignInCoach";
 
 import MyPage from "./component/user/MyPage";
 import MyMatching from "./component/user/MyMatching";
+import CoachMatching from "./component/user/CoachMatching";
+import UpdatePortfolio from "./component/user/UpdatePortfolio";
 
 import Notfound from "./component/Notfound";
 import dayjs from "dayjs";
@@ -58,6 +60,8 @@ function App() {
 
           <Route path="/user/mypage" element={<MyPage />} />
           <Route path="/user/mymatching" element={<MyMatching />} />
+          <Route path="/user/coachmatching" element={<CoachMatching />} />
+          <Route path="/user/portfolio/update" element={<UpdatePortfolio />} />
 
           <Route path="/*" element={<Notfound />} />
         </Routes>
