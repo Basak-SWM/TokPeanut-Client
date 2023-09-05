@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import styled from "@emotion/styled";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
 import { Box, IconButton, Button, Grid } from "@mui/material";
-import theme from "../../../style/theme";
+import theme from "../../style/theme";
 
 export default function RequestCardCoach({ type }) {
   const theme = createTheme({
@@ -25,7 +25,7 @@ export default function RequestCardCoach({ type }) {
           <PaddingWrap>
             <div className="left-box">
               <div className="profile">
-                <img src="/img/icon/account.svg" />
+                <img src="/img/icon/account.svg" alt="" />
               </div>
               <h2>
                 <strong>밈갬밈</strong> <br />
@@ -33,7 +33,7 @@ export default function RequestCardCoach({ type }) {
               </h2>
             </div>
             <div className="right-box">
-              {type == "before" ? (
+              {type === "before" ? (
                 <>
                   <Button variant="outlined" color="secondary" fullWidth>
                     스크립트보기
@@ -46,7 +46,7 @@ export default function RequestCardCoach({ type }) {
               ) : (
                 <></>
               )}
-              {type == "after" ? (
+              {type === "after" ? (
                 <>
                   <FeedBackBtn variant="contained">피드백 하기</FeedBackBtn>
                   <Accept>수락함</Accept>
@@ -54,7 +54,7 @@ export default function RequestCardCoach({ type }) {
               ) : (
                 <></>
               )}
-              {type == "reject" ? (
+              {type === "reject" ? (
                 <>
                   <Reject>거절함</Reject>
                 </>

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import styled from "@emotion/styled";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
 import { Box, IconButton, Button, Grid } from "@mui/material";
-import theme from "../../../style/theme";
+import theme from "../../style/theme";
 import { Link } from "react-router-dom";
 export default function RequestCardUser({ type }) {
   const theme = createTheme({
@@ -28,7 +28,7 @@ export default function RequestCardUser({ type }) {
                   <br />
                   Speech 3
                 </h2>
-                {type == "done" ? (
+                {type === "done" ? (
                   <div className="feedBack-done">
                     <h4>피드백 완료</h4>
                   </div>
@@ -39,10 +39,10 @@ export default function RequestCardUser({ type }) {
               <h3>
                 <strong>김효근</strong> 코치
               </h3>
-              {type == "ing" ? <FeedBackIng>피드백 중</FeedBackIng> : <></>}
-              {type == "waiting" ? <Waiting>수락대기</Waiting> : <></>}
-              {type == "reject" ? <Reject>거절</Reject> : <></>}
-              {type == "done" ? (
+              {type === "ing" ? <FeedBackIng>피드백 중</FeedBackIng> : <></>}
+              {type === "waiting" ? <Waiting>수락대기</Waiting> : <></>}
+              {type === "reject" ? <Reject>거절</Reject> : <></>}
+              {type === "done" ? (
                 <>
                   <Link href="">
                     <Done>바로가기</Done>

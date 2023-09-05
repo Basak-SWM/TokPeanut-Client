@@ -5,13 +5,13 @@ import { Box, IconButton, Button, Grid } from "@mui/material";
 import Nav from "../layout/Nav";
 import theme from "../../style/theme";
 import TextField from "@mui/material/TextField";
-// import PaginationBox from "../../component/pagination/Pagination";
+import PaginationBox from "../../component/pagination/Pagination";
 import SearchIcon from "@mui/icons-material/Search";
 
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
-import CoachCard from "./card/CoachCard";
+import CoachCard from "../card/CoachCard";
 
 import Pagination from "@mui/material/Pagination";
 
@@ -132,10 +132,10 @@ const CoachList = () => {
               </Item>
             </Card>
           </Grid>
-          {/* <PaginationBox /> */}
-          <PaginationWrap>
+          <PaginationBox />
+          {/* <PaginationWrap>
             <StyledPagination count={50} color="primary" />
-          </PaginationWrap>
+          </PaginationWrap> */}
         </Container>
       </ThemeProvider>
     </>
