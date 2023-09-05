@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import styled from "@emotion/styled";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
 import { Box, IconButton, Button } from "@mui/material";
-import theme from "../../../style/theme";
+import theme from "../../style/theme";
 import { Link } from "react-router-dom";
-import CoachingModal from "../../modal/CoachingModal";
-import SpeechModal from "../../modal/SpeechModal";
+import CoachingModal from "../modal/CoachingModal";
+import SpeechModal from "../modal/SpeechModal";
 
 export default function CoachCard() {
   const theme = createTheme({
