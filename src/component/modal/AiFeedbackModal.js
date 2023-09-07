@@ -11,7 +11,7 @@ import SmartToyIcon from "@mui/icons-material/SmartToy";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import theme from "../../style/theme";
-import api from "../api";
+import api from "../../api";
 
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";

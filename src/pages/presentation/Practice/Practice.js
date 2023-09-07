@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import WaveSurfer from "wavesurfer.js";
 import MicrophonePlugin from "wavesurfer.js/dist/plugin/wavesurfer.microphone.min.js";
-import * as s from "./PracticeStyle";
 import axios from "axios";
 import qs from "qs";
 
@@ -10,13 +9,14 @@ import styled from "@emotion/styled";
 import { createGlobalStyle } from "styled-components";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
 import { Box, IconButton, Button } from "@mui/material";
-import Nav from "../../layout/Nav";
+import Nav from "../../../component/layout/Nav";
+
 import theme from "../../../style/theme";
 import TextField from "@mui/material/TextField";
 
-import FilledBtn from "../../button/FilledBtn";
+import FilledBtn from "../../../component/button/FilledBtn";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
-import SolideBtn from "../../button/SolidBtn";
+import SolideBtn from "../../../component/button/SolidBtn";
 import KeyboardVoiceIcon from "@mui/icons-material/KeyboardVoice";
 import PauseIcon from "@mui/icons-material/Pause";
 import StopIcon from "@mui/icons-material/Stop";
@@ -24,7 +24,7 @@ import StopIcon from "@mui/icons-material/Stop";
 import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
-import api from "../../api";
+import api from "../../../api";
 
 const Practice = ({ isNew }) => {
   const theme = createTheme({
@@ -517,7 +517,6 @@ const Practice = ({ isNew }) => {
                   </div>
                 </TextArea>
               ) : (
-                // <s.ScriptContainer>
                 <TextArea>
                   <div className="text-wrap">
                     <p>
@@ -568,7 +567,7 @@ const Practice = ({ isNew }) => {
                             >
                               &nbsp;
                             </CorrectionLine>
-                            <s.Text
+                            <Text
                               color={highlighted[i]}
                               $continued={
                                 highlighted[i] === highlighted[i + 1] ? 1 : 0
@@ -587,20 +586,11 @@ const Practice = ({ isNew }) => {
                                 <img src={symbols[7].src} alt="slash" />
                               )}
                               {edited[i] ? edited[i] : word}
-                            </s.Text>
+                            </Text>
                           </span>
                         </span>
                       ))}
                     </p>
-                    {/* <StyledTextField
-                    id="outlined-multiline-static"
-                    multiline
-                    rows={4}
-                    fullWidth
-                    defaultValue=""
-                    >
-                      {transcript}
-                    </StyledTextField> */}
                     <STTField>{transcript}</STTField>
                     <span className="stt-text">
                       * 이 텍스트 인식 결과는 스피치 진행 정도를 체크하기 위한
@@ -609,27 +599,12 @@ const Practice = ({ isNew }) => {
                     </span>
                   </div>
                 </TextArea>
-                // </s.ScriptContainer>
               )}
 
               <div className="sound-wave">
-                {recording ? null : (
-                  <s.WaveCover>녹음을 시작해 보세요</s.WaveCover>
-                )}
-                <s.WaveContainer ref={waveformRef} />
+                {recording ? null : <WaveCover>녹음을 시작해 보세요</WaveCover>}
+                <WaveContainer ref={waveformRef} />
               </div>
-
-              {/* <s.Controls>
-                {recording ? (
-                  <s.Button onClick={stopRecording}>일시정지</s.Button>
-                ) : (
-                  <s.Button onClick={startRecording} disabled={!micReady}>
-                    녹음시작
-                  </s.Button>
-                )}
-                <s.Button onClick={resetTranscript}>Reset</s.Button>
-                <audio id="audio" controls />
-              </s.Controls> */}
             </Screen>
             {/* 재생 바 */}
             <PC>
@@ -1010,4 +985,42 @@ const CorrectionLine = styled.span`
   font-weight: bold;
   color: white;
 `;
+
+// 실시간 파형
+export const WaveContainer = styled.div`
+  /* width: 300px; */
+  width: 50%;
+  height: 5rem;
+  border: 3px 0 0 0 solid grey;
+  /* border-radius: 50px; */
+  padding: 20px 10px 20px 10px;
+`;
+// 파형 덮개
+export const WaveCover = styled.div`
+  position: absolute;
+  width: 50%;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  color: #3b3b3b;
+  font-size: 2rem;
+  z-index: 100;
+  padding: 20px 10px 20px 10px;
+`;
+// 스트립트의 단어
+export const Text = styled.span`
+  /* color: black; */
+  background-color: ${(props) => props.color};
+  margin-right: ${(props) => (props.$continued ? "none" : "5px")};
+  padding-right: ${(props) => (props.$continued ? "5px" : "none")};
+  text-decoration: ${(props) => (props.$edited ? "underline" : "none")};
+  &:hover {
+    /* text-decoration: orange dashed underline; */
+    font-weight: bold;
+    cursor: pointer;
+  }
+`;
+
 export default Practice;

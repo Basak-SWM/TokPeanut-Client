@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-// import * as s from "./PresentationListStyle";
 import axios from "axios";
 import dayjs from "dayjs";
 import styled from "@emotion/styled";
@@ -14,14 +13,14 @@ import {
   Switch,
   Grow,
 } from "@mui/material";
-import Nav from "../../layout/Nav";
+import Nav from "../../../component/layout/Nav";
+
 import theme from "../../../style/theme";
-import FilledBtn from "../../button/FilledBtn";
-import SolidBtn from "../../button/SolidBtn";
+import FilledBtn from "../../../component/button/FilledBtn";
+import SolidBtn from "../../../component/button/SolidBtn";
 
 import FolderDeleteIcon from "@mui/icons-material/FolderDelete";
-import api from "../../api";
-
+import api from "../../../api";
 const PresentationList = () => {
   const theme = createTheme({
     typography: {

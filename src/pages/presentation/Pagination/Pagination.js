@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import qs from "qs";
-import * as s from "./PaginationStyle";
 import axios from "axios";
 import dayjs from "dayjs";
-import api from "../../../component/api";
+import api from "../../../api";
 
 import styled from "@emotion/styled";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";

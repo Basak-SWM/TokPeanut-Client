@@ -3,10 +3,10 @@ import styled from "@emotion/styled";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
 import { createGlobalStyle } from "styled-components";
 import { Box, IconButton, Button } from "@mui/material";
-import Nav from "../layout/Nav";
+import Nav from "../../component/layout/Nav";
 import theme from "../../style/theme";
 import TextField from "@mui/material/TextField";
-import JoinModal from "../modal/JoinModal";
+import JoinModal from "../../component/modal/JoinModal";
 
 const Login = () => {
   const theme = createTheme({

@@ -4,27 +4,27 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import GlobalStyle from "./style/GlobalStyle";
 import Topbar from "./component/layout/Nav";
 
-import LandingPage from "./component/LandingPage";
+import LandingPage from "./pages/LandingPage";
 
-import PresentationList from "./component/presentation/PresentationList/PresentationList";
-import Summary from "./component/presentation/Summary/Summary";
-import Speech from "./component/presentation/Speech/Speech";
-import Practice from "./component/presentation/Practice/Practice";
-import NewPresentation from "./component/presentation/NewPresentation/NewPresentation";
+import PresentationList from "./pages/presentation/PresentationList/PresentationList";
+import Summary from "./pages/presentation/Summary/Summary";
+import Speech from "./pages/presentation/Speech/Speech";
+import Practice from "./pages/presentation/Practice/Practice";
+import NewPresentation from "./pages/presentation/NewPresentation/NewPresentation";
 
-import CoachList from "./component/coach/CoachList";
-import Portfolio from "./component/coach/Portfolio";
+import CoachList from "./pages/coach/CoachList";
+import Portfolio from "./pages/coach/Portfolio";
 
-import Login from "./component/login/Login";
-import SignIn from "./component/signin/SignIn";
-import SignInCoach from "./component/signin/SignInCoach";
+import Login from "./pages/login/Login";
+import SignIn from "./pages/signin/SignIn";
+import SignInCoach from "./pages/signin/SignInCoach";
 
-import MyPage from "./component/user/MyPage";
-import MyMatching from "./component/user/MyMatching";
-import CoachMatching from "./component/user/CoachMatching";
-import UpdatePortfolio from "./component/user/UpdatePortfolio";
+import MyPage from "./pages/user/MyPage";
+import MyMatching from "./pages/user/MyMatching";
+import CoachMatching from "./pages/user/CoachMatching";
+import UpdatePortfolio from "./pages/user/UpdatePortfolio";
 
-import Notfound from "./component/Notfound";
+import Notfound from "./pages/Notfound";
 import dayjs from "dayjs";
 import "dayjs/locale/ko";
 import * as relativeTime from "dayjs/plugin/relativeTime";

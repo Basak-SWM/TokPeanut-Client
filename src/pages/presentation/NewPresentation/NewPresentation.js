@@ -1,17 +1,16 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-// import * as s from "./NewPresentationStyle";
 import axios from "axios";
 
 import styled from "@emotion/styled";
 import { createTheme, ThemeProvider } from "@mui/material";
 import { createGlobalStyle } from "styled-components";
 import { Box, IconButton, Button } from "@mui/material";
-import Nav from "../../layout/Nav";
+import Nav from "../../../component/layout/Nav";
 import theme from "../../../style/theme";
 import CircleIcon from "@mui/icons-material/Circle";
 import TextField from "@mui/material/TextField";
-import api from "../../api";
+import api from "../../../api";
 
 const NewPresentation = () => {
   const theme = createTheme({

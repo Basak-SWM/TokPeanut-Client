@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import * as s from "./SummaryStyle";
 import { ResponsiveLine } from "@nivo/line";
-import Nav from "../../layout/Nav";
+import Nav from "../../../component/layout/Nav";
+
 import axios from "axios";
 import qs from "qs";
 import dayjs from "dayjs";
@@ -24,7 +24,7 @@ import StarIcon from "@mui/icons-material/Star";
 import CircleIcon from "@mui/icons-material/Circle";
 
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
-import api from "../../api";
+import api from "../../../api";
 
 const label = { inputProps: { "aria-label": "Checkbox demo" } };
 

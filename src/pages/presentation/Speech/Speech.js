@@ -1,36 +1,34 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import WaveSurfer from "wavesurfer.js";
-import mp3 from "../mp3.mp3";
-// import stt from "../stt.json";
-import * as s from "./SpeechStyle";
 import Pagination from "../Pagination/Pagination";
 import qs from "qs";
 import axios from "axios";
-import api from "../../../component/api";
+import api from "../../../api";
 
+import { keyframes } from "@emotion/react";
 import styled from "@emotion/styled";
 import { createGlobalStyle } from "styled-components";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
 import { Box, IconButton, Button } from "@mui/material";
-import ToolBarPC from "../../script/ToolbarPC";
-import PageBtn from "../../script/PageBtn";
-import ScriptBar from "../../script/ScriptBar";
+import ToolBarPC from "../../../component/script/ToolbarPC";
+import PageBtn from "../../../component/script/PageBtn";
+import ScriptBar from "../../../component/script/ScriptBar";
+import ToolBarMo from "../../../component/script/ToolbarMo";
 import Tooltip from "@mui/material/Tooltip";
-import ToolBarMo from "../../script/ToolbarMo";
 
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
-import FilledBtn from "../../button/FilledBtn";
+import FilledBtn from "../../../component/button/FilledBtn";
 
-import Nav from "../../layout/Nav";
+import Nav from "../../../component/layout/Nav";
+
 import theme from "../../../style/theme";
 
-import AiFeedbackModal from "../../modal/AiFeedbackModal";
-import StatisticsModal from "../../modal/StatisticsModal";
+import AiFeedbackModal from "../../../component/modal/AiFeedbackModal";
+import StatisticsModal from "../../../component/modal/StatisticsModal";
 
-// import peanut_run from "../../../image/peanut_run.png";
 import peanut_run from "../../../image/peanut_run.png";
 
 // custom hook (timer)
@@ -699,7 +697,7 @@ const Speech = () => {
                           >
                             &nbsp;
                           </CorrectionLine>
-                          <s.Text
+                          <Text
                             key={i}
                             $played={
                               started[i] < count
@@ -748,18 +746,18 @@ const Speech = () => {
                               {
                                 // 수정 전 단어 툴팁
                                 edited[i] ? (
-                                  <s.OriginalText
+                                  <OriginalText
                                     contentEditable={false}
                                     $len={word.length + 5}
                                   >
                                     수정 전: {word}
-                                  </s.OriginalText>
+                                  </OriginalText>
                                 ) : null
                               }
                             </span>
-                          </s.Text>
+                          </Text>
                           {highlighted[i] && (
-                            <s.Highlight
+                            <Highlight
                               color={highlighted[i]}
                               $width={widthList[i]}
                               $continued={
@@ -790,7 +788,7 @@ const Speech = () => {
               ) : (
                 <div className="text">analyzing...</div>
               )}
-              <s.WaveWrapper
+              <WaveWrapper
                 ref={wavesurferRef}
                 $ready={isDone && waveFormLoaded ? 1 : 0}
               />
@@ -1298,6 +1296,111 @@ const PlayBtn = styled(IconButton)`
       height: 3rem;
     }
   }
+`;
+
+// 스크립트 재생 애니메이션
+export const PlayingText = keyframes`
+from {
+  background-position-x: 0%;
+}
+to {
+  background-position-x: 100%;
+}
+`;
+
+export const Highlight = styled.span`
+  background-color: ${(props) => props.color};
+  /* position: absolute; */
+  position: relative;
+  top: -5rem;
+  margin-bottom: -5rem;
+  height: 4rem;
+  width: ${(props) => props.$width}px;
+  margin-top: 1rem;
+  z-index: 0;
+  padding-right: ${(props) => (props.$continued ? "5px" : "none")};
+`;
+
+// 스크립트의 단어
+export const Text = styled.span`
+  z-index: 10;
+  flex-direction: column;
+  position: relative;
+  background-clip: ${(props) => (props.$played === "playing" ? "text" : "")};
+  -webkit-background-clip: ${(props) =>
+    props.$played === "playing" ? "text" : ""};
+  color: ${(props) =>
+    props.$played === "playing"
+      ? "transparent"
+      : props.$played === "played"
+      ? "#ff7134"
+      : "black"};
+  background-image: ${(props) =>
+    props.$played === "playing"
+      ? "linear-gradient(to right, #ff7134 50%, black 50% 100%)"
+      : ""};
+
+  background-size: 200% 100%;
+  background-position-x: 0%;
+  animation-name: ${(props) =>
+    props.$played === "playing" ? PlayingText : ""};
+  animation-duration: ${(props) => props.$duration}s;
+  animation-timing-function: linear;
+  animation-iteration-count: 1;
+  animation-direction: reverse;
+  animation-fill-mode: forwards;
+
+  margin-right: 5px;
+  /* margin-right: ${(props) => (props.$continued ? "none" : "5px")};
+  padding-right: ${(props) => (props.$continued ? "5px" : "none")}; */
+  text-decoration: ${(props) => (props.$edited ? "underline" : "none")};
+
+  &:hover {
+    /* text-decoration: orange dashed underline; */
+    font-weight: bold;
+  }
+`;
+
+// 수정 전 단어 + 툴팁
+export const OriginalText = styled.span`
+  visibility: hidden;
+  width: ${(props) => props.$len * 1.5}rem;
+  bottom: 100%;
+  left: 50%;
+  /* margin-left: calc(-60% - 0.5rem); */
+  margin-left: ${(props) => props.$len * -0.75 - 0.5}rem;
+  font-size: 1.5rem;
+  background-color: rgba(0, 0, 0, 0.3);
+  color: #fff;
+  text-align: center;
+  /* padding: 0.5rem 0.2rem; */
+  border-radius: 5px;
+  position: absolute;
+  z-index: 100;
+  transition: all 0.1s ease-in-out;
+
+  ${Text}:hover & {
+    visibility: visible;
+  }
+
+  // 아래 화살표
+  &::after {
+    content: " ";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: rgba(0, 0, 0, 0.3) transparent transparent transparent;
+  }
+`;
+
+// 파형 ref
+export const WaveWrapper = styled.div`
+  display: ${(props) => (props.$ready ? "block" : "none")};
+  width: 100%;
+  height: 100%;
 `;
 
 export default Speech;

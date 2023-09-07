@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import styled from "@emotion/styled";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
 import { Box, IconButton, Button } from "@mui/material";
-import Nav from "./layout/Nav";
+import Nav from "../component/layout/Nav";
 import theme from "../style/theme";
 import FilledBtn from "../component/button/FilledBtn";
 

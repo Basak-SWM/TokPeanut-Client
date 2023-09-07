@@ -2,7 +2,7 @@ import React from "react";
 import peanut_run from "../image/peanut_run.png";
 import styled, { ThemeProvider, createGlobalStyle } from "styled-components";
 import { createTheme, Box } from "@mui/material";
-import Nav from "./layout/Nav";
+import Nav from "../component/layout/Nav";
 
 const NotReady = () => {
   const theme = createTheme({
