@@ -1,4 +1,10 @@
-import React, { useState, useRef, useCallback, useEffect } from "react";
+import React, {
+  useState,
+  useRef,
+  useCallback,
+  useEffect,
+  useReducer,
+} from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import WaveSurfer from "wavesurfer.js";
 import Pagination from "../Pagination/Pagination";
@@ -7,7 +13,9 @@ import axios from "axios";
 import api from "../../../api";
 
 import { keyframes } from "@emotion/react";
-import styled from "@emotion/styled";
+// import styled from "@emotion/styled";
+import styled from "@emotion/styled/macro";
+// import styled from "styled-components";
 import { createGlobalStyle } from "styled-components";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
 import { Box, IconButton, Button } from "@mui/material";
@@ -59,6 +67,36 @@ const useCounter = (initialValue, ms) => {
   return { count, start, stop, reset, setCount };
 };
 
+// simple symbol reducer
+const simpleSymbolsReducer = (state, action) => {
+  switch (action.type) {
+    case "INIT":
+      console.log("init simple symbols: ", action.payload);
+      return action.payload;
+    case "ADD":
+      console.log("add simple symbol: ", action.symbol, action.idx, state);
+      return state.map((symbol, i) => {
+        if (i == action.idx) {
+          console.log("add symbol: ", symbol, action.symbol);
+          return [...new Set([...symbol, action.symbol])];
+        } else {
+          return symbol;
+        }
+      });
+    case "REMOVE":
+      return state.map((symbol, i) => {
+        if (i == action.idx) {
+          // return new Set();
+          return [];
+        } else {
+          return symbol;
+        }
+      });
+    default:
+      throw new Error("Unhandled action");
+  }
+};
+
 const Speech = () => {
   const theme = createTheme({
     typography: {
@@ -83,10 +121,6 @@ const Speech = () => {
   const [correction, setCorrection] = useState({
     PAUSE_TOO_LONG: new Set(),
     PAUSE_TOO_SHORT: new Set(),
-    // TOO_FAST: new Set(),
-    // startFast: new Set(),
-    // TOO_SLOW: new Set(),
-    // startSlow: new Set(),
   });
   const getCorrection = useCallback(async (url) => {
     try {
@@ -96,26 +130,6 @@ const Speech = () => {
       const correction = {
         PAUSE_TOO_LONG: new Set(correctionList.PAUSE_TOO_LONG),
         PAUSE_TOO_SHORT: new Set(correctionList.PAUSE_TOO_SHORT),
-        // TOO_FAST: new Set(
-        //   correctionList.TOO_FAST.map((seg) => {
-        //     let fastSeg = [];
-        //     for (let i = seg[0]; i <= seg[1]; i++) {
-        //       fastSeg.push(i);
-        //     }
-        //     return fastSeg;
-        //   }).flat()
-        // ),
-        // startFast: new Set(correctionList.TOO_FAST.map((seg) => seg[0])),
-        // TOO_SLOW: new Set(
-        //   correctionList.TOO_SLOW.map((seg) => {
-        //     let slowSeg = [];
-        //     for (let i = seg[0]; i <= seg[1]; i++) {
-        //       slowSeg.push(i);
-        //     }
-        //     return slowSeg;
-        //   }).flat()
-        // ),
-        // startSlow: new Set(correctionList.TOO_SLOW.map((seg) => seg[0])),
       };
       setCorrection(correction);
     } catch (err) {
@@ -184,14 +198,15 @@ const Speech = () => {
       console.log("🩸audio error:", err);
     }
   }, []);
-  // full audio url 가져오기
+  // full audio url, 사용자 기호 가져오기
   const getSpeech = useCallback(async () => {
     let res = null;
     try {
       res = await api.get(
         `/presentations/${presentation_id}/speeches/${speech_id}`
       );
-      // console.log("speech response:", res);
+      console.log("speech response:", res);
+      console.log("speech response user symbol:", res.data.userSymbol);
       // 여기서 사용자 기호 초기화
       initUserSymbols(res.data.userSymbol);
       const audioUrl = res.data.fullAudioS3Url;
@@ -211,9 +226,10 @@ const Speech = () => {
       console.log("분석 결과 url response:", res, res.status);
       // 분석 완료 여부 확인
       if (res.status === 200) {
-        setIsDone(true);
-        getSpeech();
+        // setIsDone(true);
         getSTT(res.data.STT);
+        await getSpeech();
+        setIsDone(true);
         getCorrection(res.data.SPEECH_CORRECTION); // 휴지 긺/짧음 가져오기
         getLPM(res.data.LPM);
         // 음높이(HERTZ_AVG), 속도(LPM_AVG), 휴지(PAUSE_RATIO) 가져오기
@@ -240,13 +256,6 @@ const Speech = () => {
 
   // 스크립트를 위한 스피치 정보 조회
   useEffect(() => {
-    // let polling = setInterval(async () => {
-    //   const status = await getResult();
-    //   if (status === 200) {
-    //     clearInterval(polling);
-    //   }
-    // }, 3000);
-
     const polling = async () => {
       const status = await getResult();
       if (status === 200) {
@@ -263,29 +272,30 @@ const Speech = () => {
   const [started, setStarted] = useState([]);
   const [ended, setEnded] = useState([]);
   const [duration, setDuration] = useState([]);
-  // 각 기호의 렌더링 여부
-  // 하나의 {객체}로 합치기
-  // option으로 <Text "도심은", option={} />
-  // useReduce로 묶어보기
 
-  const [enterSymbol, setEnterSymbol] = useState([]);
-  const [pauseSymbol, setPauseSymbol] = useState([]);
-  const [mouseSymbol, setMouseSymbol] = useState([]);
-  const [slashSymbol, setSlashSymbol] = useState([]);
+  // 단순 기호 관리
+  const [simpleSymbols, dispatch] = useReducer(
+    simpleSymbolsReducer, // reducer
+    [] // initial state
+  );
   const [highlighted, setHighlighted] = useState([]);
   const [edited, setEdited] = useState([]);
+
   const initUserSymbols = (userSymbol) => {
-    const symbols = JSON.parse(userSymbol);
-    // console.log("user symbols:", symbols);
-
-    if (!symbols) return;
-
-    setEnterSymbol(symbols.enter);
-    setPauseSymbol(symbols.pause);
-    setMouseSymbol(symbols.mouse);
-    setSlashSymbol(symbols.slash);
-    setHighlighted(symbols.highlight);
-    setEdited(symbols.edit);
+    const initialSymbols = JSON.parse(userSymbol);
+    if (!initialSymbols.simpleSymbols) {
+      dispatch({
+        type: "INIT",
+        payload: Array(100).fill([]),
+      });
+    } else {
+      dispatch({
+        type: "INIT",
+        payload: initialSymbols.simpleSymbols,
+      });
+    }
+    setHighlighted(initialSymbols.highlight);
+    setEdited(initialSymbols.edit);
   };
 
   const wordRef = useRef([]);
@@ -302,21 +312,11 @@ const Speech = () => {
   };
 
   const patchUserSymbol = useCallback(
-    async (
-      enterSymbol,
-      pauseSymbol,
-      mouseSymbol,
-      slashSymbol,
-      highlighted,
-      edited
-    ) => {
+    async (simpleSymbols, highlighted, edited) => {
       if (!isDone) return;
       try {
         const symbolObj = {
-          enter: enterSymbol,
-          pause: pauseSymbol,
-          mouse: mouseSymbol,
-          slash: slashSymbol,
+          simpleSymbols: simpleSymbols,
           highlight: highlighted,
           edit: edited,
         };
@@ -339,43 +339,25 @@ const Speech = () => {
   );
 
   // tool bar
-  const [cursor, setCursor] = useState("");
-  const [selectedSymbol, setSelectedSymbol] = useState(NaN); // 커서 관리를 위한 현재 선택된 기호 인덱스
+  const [cursor, setCursor] = useState("BASIC");
 
-  const symbols = [
-    { name: "강조", src: "/img/script/toolbar/color/pencil1.svg" },
-    { name: "빠르게", src: "/img/script/toolbar/color/pencil2.svg" },
-    { name: "느리게", src: "/img/script/toolbar/color/pencil3.svg" },
-    { name: "수정", src: "/img/script/toolbar/edit.svg" },
-    { name: "엔터", src: "/img/script/toolbar/down-left.svg" },
-    { name: "쉬기", src: "/img/script/toolbar/pause.svg" },
-    { name: "클릭", src: "/img/script/toolbar/mouse.svg" },
-    { name: "끊어읽기", src: "/img/script/toolbar/slash.svg" },
-    { name: "지우개", src: "/img/script/toolbar/eraser.svg" },
-  ];
+  const symbolIcons = {
+    BASIC: null,
+    HIGHLIGHT: "/img/script/toolbar/color/pencil1.svg",
+    FASTER: "/img/script/toolbar/color/pencil2.svg",
+    SLOWER: "/img/script/toolbar/color/pencil3.svg",
+    EDIT: "/img/script/toolbar/edit.svg",
+    ENTER: "/img/script/toolbar/down-left.svg",
+    PAUSE: "/img/script/toolbar/pause.svg",
+    MOUSE: "/img/script/toolbar/mouse.svg",
+    SLASH: "/img/script/toolbar/slash.svg",
+    ERASER: "/img/script/toolbar/eraser.svg",
+  };
 
   const correctionIcons = [
     { name: "휴지 긺", src: "/img/script/space_long.svg" },
     { name: "휴지 짧음", src: "/img/script/space_short.svg" },
   ];
-
-  // 기호 클릭시 selectedSymbol을 해당 기호 이미지로 변경 -> 커서 변경
-  // 한 번 더 클릭시 기본 커서로 변경
-  const clickTool = (i) => {
-    // const selectedSymbolIdx = e.target.id;
-    const selectedSymbolIdx = i;
-    console.log(i);
-
-    if (!isNaN(selectedSymbol)) {
-      setSelectedSymbol(NaN);
-    } else {
-      setSelectedSymbol(selectedSymbolIdx);
-    }
-    // 커서 변경
-    !isNaN(selectedSymbol)
-      ? setCursor("")
-      : setCursor(symbols[selectedSymbolIdx].src);
-  };
 
   const [waveFormLoaded, setWaveFormLoaded] = useState(false);
   const [waveSurferInstance, setWaveSurferInstance] = useState(null);
@@ -387,67 +369,47 @@ const Speech = () => {
     const selectedWordIdx = e.currentTarget.id; // 클릭된 단어 인덱스
     wordRef.current[selectedWordIdx].focus();
 
-    switch (selectedSymbol) {
+    switch (cursor) {
       // 기호 표시
-      case 0:
+      case "HIGHLIGHT":
         highlighted[selectedWordIdx] = "rgba(255,255,204)";
         setHighlighted([...highlighted]);
         break;
-      case 1:
+      case "FASTER":
         highlighted[selectedWordIdx] = "rgb(255, 204, 255)";
         setHighlighted([...highlighted]);
         break;
-      case 2:
+      case "SLOWER":
         highlighted[selectedWordIdx] = "rgb(204, 255, 204)";
         setHighlighted([...highlighted]);
         break;
-      case 3:
+      case "EDIT":
         edited[selectedWordIdx] = edited[selectedWordIdx]
           ? edited[selectedWordIdx]
           : text[selectedWordIdx]; // 원래 단어로 초기화
         setEdited([...edited]);
         break;
-      case 4:
-        enterSymbol[selectedWordIdx] = true;
-        setEnterSymbol([...enterSymbol]);
+      case "ENTER":
+      case "PAUSE":
+      case "MOUSE":
+      case "SLASH":
+        dispatch({ type: "ADD", symbol: cursor, idx: selectedWordIdx });
         break;
-      case 5:
-        pauseSymbol[selectedWordIdx] = true;
-        setPauseSymbol([...pauseSymbol]);
-        break;
-      case 6:
-        mouseSymbol[selectedWordIdx] = true;
-        setMouseSymbol([...mouseSymbol]);
-        break;
-      case 7:
-        slashSymbol[selectedWordIdx] = true;
-        setSlashSymbol([...slashSymbol]);
-        break;
-      case 8:
-        enterSymbol[selectedWordIdx] = false;
-        setEnterSymbol([...enterSymbol]);
-        pauseSymbol[selectedWordIdx] = false;
-        setPauseSymbol([...pauseSymbol]);
-        mouseSymbol[selectedWordIdx] = false;
-        setMouseSymbol([...mouseSymbol]);
-        slashSymbol[selectedWordIdx] = false;
-        setSlashSymbol([...slashSymbol]);
+      case "ERASER":
+        dispatch({ type: "REMOVE", idx: selectedWordIdx });
         highlighted[selectedWordIdx] = "";
         setHighlighted([...highlighted]);
         edited[selectedWordIdx] = null;
-        // edited[selectedWordIdx] = false;
         setEdited([...edited]);
         break;
       // 재생 바 조절
-      default:
+      case "BASIC":
         waveSurferInstance.setCurrentTime(started[selectedWordIdx] * 0.1);
         setCount(started[selectedWordIdx]);
         break;
+      default:
+        break;
     }
-    // if (!isNaN(selectedSymbol)) {
-    //   patchUserSymbol();
-    //   console.log("클릭: ", edited[selectedWordIdx]);
-    // }
   };
 
   const onReset = () => {
@@ -493,12 +455,10 @@ const Speech = () => {
         // 플레이/퍼즈 때 버튼 텍스트 변경
         wavesurfer.on("play", () => {
           start();
-          // playButton.current.textContent = "pause";
           setPlaying(true);
         });
         wavesurfer.on("pause", () => {
           stop();
-          // playButton.current.textContent = "play";
           setPlaying(false);
         });
 
@@ -548,23 +508,8 @@ const Speech = () => {
     [edited, text]
   );
   useEffect(() => {
-    patchUserSymbol(
-      enterSymbol,
-      pauseSymbol,
-      mouseSymbol,
-      slashSymbol,
-      highlighted,
-      edited
-    );
-  }, [
-    enterSymbol,
-    pauseSymbol,
-    mouseSymbol,
-    slashSymbol,
-    highlighted,
-    edited,
-    // patchUserSymbol,
-  ]);
+    patchUserSymbol(simpleSymbols, highlighted, edited);
+  }, [simpleSymbols, highlighted, edited, patchUserSymbol]);
 
   const createSpeech = async () => {
     let res = null;
@@ -586,6 +531,7 @@ const Speech = () => {
 
   const [widthList, setWidthList] = useState([]);
   useEffect(() => {
+    if (!isDone) return;
     let list = [];
     for (let i = 0; i < text.length; i++) {
       list.push(document.getElementById(i).offsetWidth);
@@ -598,24 +544,25 @@ const Speech = () => {
       <ThemeProvider theme={theme}>
         <GlobalStyle />
         <Nav />
-        <Container cursor={cursor}>
+        <Container cursor={symbolIcons[cursor]}>
           {
             // 툴바
             isDone ? (
               <Activate>
-                <ToolBarWrap cursor={cursor}>
+                <ToolBarWrap cursor={symbolIcons[cursor]}>
                   <ul className="activate">
-                    {symbols.map((c, i) => (
-                      <li key={i}>
+                    {Object.entries(symbolIcons).map(([name, src]) => (
+                      <li key={name}>
                         <Button
                           className="color"
                           id="color1"
                           onClick={() => {
-                            clickTool(i);
+                            // clickTool(name);
+                            setCursor(name);
                           }}
                         >
-                          <img src={c.src} alt={c.name} />
-                          <p>{c.name}</p>
+                          <img src={src} alt={name} />
+                          <p>{name}</p>
                         </Button>
                       </li>
                     ))}
@@ -626,16 +573,14 @@ const Speech = () => {
               <Disabled>
                 <ToolBarWrap>
                   <ul className="disabled">
-                    {symbols.map((c, i) => (
-                      <li key={i}>
+                    {Object.entries(symbolIcons).map(([name, src], i) => (
+                      <li key={name}>
                         <Button disabled>
                           <img
-                            src={
-                              i < 3 ? "/img/script/toolbar/pencil.svg" : c.src
-                            }
+                            src={i < 3 ? "/img/script/toolbar/pencil.svg" : src}
                             alt="symbol"
                           />
-                          <p>{c.name}</p>
+                          <p>{name}</p>
                         </Button>
                       </li>
                     ))}
@@ -653,9 +598,9 @@ const Speech = () => {
                     {text.map((word, i) => (
                       <span key={i}>
                         <Symbol>
-                          {enterSymbol[i] && (
+                          {simpleSymbols[i].includes("ENTER") && (
                             <>
-                              <img src={symbols[4].src} alt="enter" />
+                              {/* <img src={symbolIcons["ENTER"]} alt="enter" /> */}
                               <br />
                             </>
                           )}
@@ -707,23 +652,20 @@ const Speech = () => {
                                 : "not played"
                             }
                             $duration={duration[i]}
-                            // color={highlighted[i]}
-                            // $continued={
-                            //   highlighted[i] === highlighted[i + 1] ? 1 : 0
-                            // }
                             onClick={clickWord}
                             id={i}
                             $edited={edited[i] ? 1 : 0}
                           >
-                            {pauseSymbol[i] && (
-                              <img src={symbols[5].src} alt="pause" />
-                            )}
-                            {mouseSymbol[i] && (
-                              <img src={symbols[6].src} alt="click" />
-                            )}
-                            {slashSymbol[i] && (
-                              <img src={symbols[7].src} alt="slash" />
-                            )}
+                            {
+                              // 단순 기호
+                              simpleSymbols[i].map((symbol) => (
+                                <img
+                                  src={symbolIcons[symbol]}
+                                  alt={symbol}
+                                  key={symbol}
+                                />
+                              ))
+                            }
                             <span>
                               <span
                                 ref={(el) => (wordRef.current[i] = el)}
@@ -736,7 +678,7 @@ const Speech = () => {
                                 onBlur={(e) => {
                                   handleBlur(e, i);
                                 }}
-                                contentEditable={selectedSymbol === 3} // 현재 커서가 수정펜일 때만 수정 모드
+                                contentEditable={cursor === "EDIT"} // 현재 커서가 수정펜일 때만 수정 모드
                                 edited={edited[i]}
                                 spellCheck={false}
                                 suppressContentEditableWarning={true} // warning 무시
@@ -857,6 +799,7 @@ const Speech = () => {
   );
 };
 
+// styled components
 const GlobalStyle = createGlobalStyle`
     body{
         background-color: #FAFAFA;
@@ -864,6 +807,8 @@ const GlobalStyle = createGlobalStyle`
 `;
 const Container = styled(Box)`
   cursor: url(${(props) => props.cursor}) 50 50, auto;
+  /* cursor: ${(props) =>
+    props.cursor ? "url(" + props.cursor + ") 50 50, auto" : "auto"}; */
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
