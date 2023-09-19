@@ -252,6 +252,7 @@ const Speech = () => {
     getCorrection,
     getStatistics,
     getSpeech,
+    getLPM,
   ]);
 
   // 스크립트를 위한 스피치 정보 조회
@@ -276,14 +277,14 @@ const Speech = () => {
   // 단순 기호 관리
   const [simpleSymbols, dispatch] = useReducer(
     simpleSymbolsReducer, // reducer
-    [] // initial state
+    Array(100).fill([]) // initial state
   );
   const [highlighted, setHighlighted] = useState([]);
   const [edited, setEdited] = useState([]);
 
   const initUserSymbols = (userSymbol) => {
     const initialSymbols = JSON.parse(userSymbol);
-    if (!initialSymbols.simpleSymbols) {
+    if (!initialSymbols) {
       dispatch({
         type: "INIT",
         payload: Array(100).fill([]),
@@ -293,9 +294,13 @@ const Speech = () => {
         type: "INIT",
         payload: initialSymbols.simpleSymbols,
       });
+      setHighlighted(initialSymbols.highlight);
+      setEdited(initialSymbols.edit);
     }
-    setHighlighted(initialSymbols.highlight);
-    setEdited(initialSymbols.edit);
+    // dispatch({
+    //   type: "INIT",
+    //   payload: Array(100).fill([]),
+    // });
   };
 
   const wordRef = useRef([]);
@@ -342,7 +347,7 @@ const Speech = () => {
   const [cursor, setCursor] = useState("BASIC");
 
   const symbolIcons = {
-    BASIC: null,
+    BASIC: "/img/script/toolbar/basic-cursor.svg",
     HIGHLIGHT: "/img/script/toolbar/color/pencil1.svg",
     FASTER: "/img/script/toolbar/color/pencil2.svg",
     SLOWER: "/img/script/toolbar/color/pencil3.svg",

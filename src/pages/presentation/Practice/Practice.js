@@ -95,25 +95,28 @@ const Practice = ({ isNew }) => {
       console.log("🩸이전 speech의 사용자 기호 error:", err);
     }
   };
-  const [enterSymbol, setEnterSymbol] = useState([]);
-  const [pauseSymbol, setPauseSymbol] = useState([]);
-  const [mouseSymbol, setMouseSymbol] = useState([]);
-  const [slashSymbol, setSlashSymbol] = useState([]);
+  // const [enterSymbol, setEnterSymbol] = useState([]);
+  // const [pauseSymbol, setPauseSymbol] = useState([]);
+  // const [mouseSymbol, setMouseSymbol] = useState([]);
+  // const [slashSymbol, setSlashSymbol] = useState([]);
+  const [simpleSymbols, setSimpleSymbols] = useState([]);
   const [highlighted, setHighlighted] = useState([]);
   const [edited, setEdited] = useState([]);
   const initUserSymbols = (userSymbol) => {
     const symbols = JSON.parse(userSymbol);
-    console.log("user symbols:", symbols);
+    // console.log("user symbols:", symbols);
 
     if (!symbols) return;
 
-    setEnterSymbol(symbols.enter);
-    setPauseSymbol(symbols.pause);
-    setMouseSymbol(symbols.mouse);
-    setSlashSymbol(symbols.slash);
+    // setEnterSymbol(symbols.enter);
+    // setPauseSymbol(symbols.pause);
+    // setMouseSymbol(symbols.mouse);
+    // setSlashSymbol(symbols.slash);
+    setSimpleSymbols(symbols.simpleSymbols);
     setHighlighted(symbols.highlight);
     setEdited(symbols.edit);
   };
+
   const [LPM, setLPM] = useState([]);
   const getLPM = useCallback(async (url) => {
     try {
@@ -202,17 +205,19 @@ const Practice = ({ isNew }) => {
     setText(stt.segments.flatMap((seg) => seg.words.map((w) => w[2])));
   };
 
-  const symbols = [
-    { name: "강조", src: "/img/script/toolbar/color/pencil1.svg" },
-    { name: "빠르게", src: "/img/script/toolbar/color/pencil2.svg" },
-    { name: "느리게", src: "/img/script/toolbar/color/pencil3.svg" },
-    { name: "수정", src: "/img/script/toolbar/pencil.svg" },
-    { name: "엔터", src: "/img/script/toolbar/down-left.svg" },
-    { name: "쉬기", src: "/img/script/toolbar/pause.svg" },
-    { name: "클릭", src: "/img/script/toolbar/mouse.svg" },
-    { name: "끊어읽기", src: "/img/script/toolbar/slash.svg" },
-    { name: "지우개", src: "/img/script/toolbar/eraser.svg" },
-  ];
+  const symbolIcons = {
+    BASIC: "/img/script/toolbar/basic-cursor.svg",
+    HIGHLIGHT: "/img/script/toolbar/color/pencil1.svg",
+    FASTER: "/img/script/toolbar/color/pencil2.svg",
+    SLOWER: "/img/script/toolbar/color/pencil3.svg",
+    EDIT: "/img/script/toolbar/edit.svg",
+    ENTER: "/img/script/toolbar/down-left.svg",
+    PAUSE: "/img/script/toolbar/pause.svg",
+    MOUSE: "/img/script/toolbar/mouse.svg",
+    SLASH: "/img/script/toolbar/slash.svg",
+    ERASER: "/img/script/toolbar/eraser.svg",
+  };
+
   const correctionIcons = [
     { name: "휴지 긺", src: "/img/script/space_long.svg" },
     { name: "휴지 짧음", src: "/img/script/space_short.svg" },
@@ -523,9 +528,8 @@ const Practice = ({ isNew }) => {
                       {text.map((word, i) => (
                         <span key={i}>
                           <Symbol>
-                            {enterSymbol[i] && (
+                            {simpleSymbols[i].includes("ENTER") && (
                               <>
-                                <img src={symbols[4].src} alt="enter" />
                                 <br />
                               </>
                             )}
@@ -576,15 +580,16 @@ const Practice = ({ isNew }) => {
                               id={i}
                               $edited={edited[i] ? 1 : 0}
                             >
-                              {pauseSymbol[i] && (
-                                <img src={symbols[5].src} alt="pause" />
-                              )}
-                              {mouseSymbol[i] && (
-                                <img src={symbols[6].src} alt="click" />
-                              )}
-                              {slashSymbol[i] && (
-                                <img src={symbols[7].src} alt="slash" />
-                              )}
+                              {
+                                // 단순 기호
+                                simpleSymbols[i].map((symbol) => (
+                                  <img
+                                    src={symbolIcons[symbol]}
+                                    alt={symbol}
+                                    key={symbol}
+                                  />
+                                ))
+                              }
                               {edited[i] ? edited[i] : word}
                             </Text>
                           </span>
