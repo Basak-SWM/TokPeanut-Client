@@ -17,8 +17,15 @@ import { keyframes } from "@emotion/react";
 import styled from "@emotion/styled/macro";
 // import styled from "styled-components";
 import { createGlobalStyle } from "styled-components";
-import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
-import { Box, IconButton, Button } from "@mui/material";
+import {
+  createTheme,
+  Divider,
+  Icon,
+  ThemeProvider,
+  Box,
+  IconButton,
+  Button,
+} from "@mui/material";
 import ToolBarPC from "../../../component/script/ToolbarPC";
 import PageBtn from "../../../component/script/PageBtn";
 import ScriptBar from "../../../component/script/ScriptBar";
@@ -148,6 +155,23 @@ const Speech = () => {
     }
   }, []);
 
+  const initUserSymbols = useCallback((userSymbol) => {
+    const initialSymbols = JSON.parse(userSymbol);
+    if (!initialSymbols) {
+      dispatch({
+        type: "INIT",
+        payload: Array(100).fill([]),
+      });
+    } else {
+      dispatch({
+        type: "INIT",
+        payload: initialSymbols.simpleSymbols,
+      });
+      setHighlighted(initialSymbols.highlight);
+      setEdited(initialSymbols.edit);
+    }
+  }, []);
+
   // stt 결과 가져오기
   const getSTT = useCallback(async (url) => {
     try {
@@ -206,7 +230,7 @@ const Speech = () => {
         `/presentations/${presentation_id}/speeches/${speech_id}`
       );
       console.log("speech response:", res);
-      console.log("speech response user symbol:", res.data.userSymbol);
+      // console.log("speech response user symbol:", res.data.userSymbol);
       // 여기서 사용자 기호 초기화
       initUserSymbols(res.data.userSymbol);
       const audioUrl = res.data.fullAudioS3Url;
@@ -214,7 +238,7 @@ const Speech = () => {
     } catch (err) {
       console.log("🩸speech error:", err);
     }
-  }, [presentation_id, speech_id, getAudio]);
+  }, [presentation_id, speech_id, getAudio, initUserSymbols]);
 
   // 분석 결과 url 가져오기
   const getResult = useCallback(async () => {
@@ -277,31 +301,11 @@ const Speech = () => {
   // 단순 기호 관리
   const [simpleSymbols, dispatch] = useReducer(
     simpleSymbolsReducer, // reducer
-    Array(100).fill([]) // initial state
+    // Array(100).fill([]) // initial state
+    [[]] //initial state
   );
   const [highlighted, setHighlighted] = useState([]);
   const [edited, setEdited] = useState([]);
-
-  const initUserSymbols = (userSymbol) => {
-    const initialSymbols = JSON.parse(userSymbol);
-    if (!initialSymbols) {
-      dispatch({
-        type: "INIT",
-        payload: Array(100).fill([]),
-      });
-    } else {
-      dispatch({
-        type: "INIT",
-        payload: initialSymbols.simpleSymbols,
-      });
-      setHighlighted(initialSymbols.highlight);
-      setEdited(initialSymbols.edit);
-    }
-    // dispatch({
-    //   type: "INIT",
-    //   payload: Array(100).fill([]),
-    // });
-  };
 
   const wordRef = useRef([]);
 
@@ -340,7 +344,10 @@ const Speech = () => {
         console.log("🩸patch user symbol error:", err);
       }
     },
-    [isDone, presentation_id, speech_id]
+    [
+      isDone,
+      // , presentation_id, speech_id
+    ]
   );
 
   // tool bar

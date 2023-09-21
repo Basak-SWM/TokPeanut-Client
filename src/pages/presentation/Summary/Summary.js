@@ -522,7 +522,7 @@ const Content = styled(Box)`
     }
     position: sticky;
     top: 21rem;
-    height: 85rem;
+    height: 70rem;
     overflow-y: auto;
     width: 24%;
     h2 {
