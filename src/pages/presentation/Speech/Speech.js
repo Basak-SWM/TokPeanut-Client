@@ -114,6 +114,26 @@ const Speech = () => {
         main: "#FF7134",
       },
     },
+    // 툴팁 커스텀
+    components: {
+      MuiTooltip: {
+        styleOverrides: {
+          tooltip: {
+            fontSize: "1.2rem",
+            backgroundColor: "white",
+            color: "gray",
+            border: "1px solid rgba(0, 0, 0, 0.25)",
+            whiteSpace: "pre-line",
+          },
+          arrow: {
+            color: "white",
+            "&:before": {
+              border: "1px solid rgba(0, 0, 0, 0.25)",
+            },
+          },
+        },
+      },
+    },
   });
   const [isDone, setIsDone] = useState(false); // 서버가 보내주는 결과에 따라 분석 중인지 아닌지 파악
   const location = useLocation();
@@ -370,20 +390,21 @@ const Speech = () => {
 
   const symbolDesc = {
     BASIC:
-      "재생 바를 조절하는 기본 커서입니다. 단어를 클릭해 원하는 위치로 이동하세요.",
-    HIGHLIGHT: "강조를 위한 노란색 형광펜입니다. 원하는 위치에 드래그 하세요.",
+      "재생 바를 조절하는 기본 커서입니다. \n단어를 클릭해 원하는 위치로 이동하세요.",
+    HIGHLIGHT:
+      "강조를 위한 노란색 형광펜입니다. \n원하는 위치에 드래그 하세요.",
     FASTER:
-      "[빠르게] 표시를 위한 분홍색 형광펜입니다. 원하는 위치에 드래그 하세요.",
+      "[빠르게] 표시를 위한 분홍색 형광펜입니다. \n원하는 위치에 드래그 하세요.",
     SLOWER:
-      "[느리게] 표시를 위한 초록색 형광펜입니다. 원하는 위치에 드래그 하세요.",
-    EDIT: "단어를 수정하는 연필입니다. 수정하고 싶은 단어를 클릭하세요.",
-    ENTER: "줄바꿈을 위한 아이콘입니다. 원하는 위치를 클릭해 추가하세요.",
-    PAUSE: "일시정지를 위한 아이콘입니다. 원하는 위치를 클릭해 추가하세요.",
+      "[느리게] 표시를 위한 초록색 형광펜입니다. \n원하는 위치에 드래그 하세요.",
+    EDIT: "단어를 수정하는 연필입니다. \n수정하고 싶은 단어를 클릭하세요.",
+    ENTER: "줄바꿈을 위한 아이콘입니다. \n원하는 위치를 클릭해 추가하세요.",
+    PAUSE: "일시정지를 위한 아이콘입니다. \n원하는 위치를 클릭해 추가하세요.",
     MOUSE:
-      "ppt 애니메이션 등 마우스 클릭 이벤트를 위한 아이콘입니다. 원하는 위치를 클릭해 추가하세요.",
-    SLASH: "끊어읽기를 위한 아이콘입니다. 원하는 위치를 클릭해 추가하세요.",
+      "ppt 애니메이션 등 마우스 클릭 이벤트를 위한 아이콘입니다. \n원하는 위치를 클릭해 추가하세요.",
+    SLASH: "끊어읽기를 위한 아이콘입니다. \n원하는 위치를 클릭해 추가하세요.",
     ERASER:
-      "모든 기호를 지우는 지우개입니다. 초기화 하고싶은 단어를 클릭하세요.",
+      "모든 기호를 지우는 지우개입니다. \n초기화 하고싶은 단어를 클릭하세요.",
   };
 
   const correctionIcons = [
@@ -582,7 +603,12 @@ const Speech = () => {
                   <ul className="activate">
                     {Object.entries(symbolIcons).map(([name, src]) => (
                       <li key={name}>
-                        <Tooltip title={symbolDesc[name]} followCursor>
+                        <Tooltip
+                          title={symbolDesc[name]}
+                          followCursor
+                          arrow
+                          placement="right"
+                        >
                           <Button
                             className="color"
                             id="color1"
