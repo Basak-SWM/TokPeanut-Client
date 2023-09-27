@@ -320,8 +320,8 @@ const Speech = () => {
     );
   };
 
-  const patchUserSymbol = useCallback(
-    async (simpleSymbols, highlighted, edited) => {
+  useEffect(() => {
+    (async (simpleSymbols, highlighted, edited) => {
       if (!isDone) return;
       try {
         const symbolObj = {
@@ -329,7 +329,7 @@ const Speech = () => {
           highlight: highlighted,
           edit: edited,
         };
-        const res = await api.patch(
+        await api.patch(
           `/presentations/${presentation_id}/speeches/${speech_id}`,
           {
             params: {
@@ -343,12 +343,14 @@ const Speech = () => {
       } catch (err) {
         console.log("🩸patch user symbol error:", err);
       }
-    },
-    [
-      isDone,
-      // , presentation_id, speech_id
-    ]
-  );
+    })(simpleSymbols, highlighted, edited);
+  }, [
+    isDone,
+    simpleSymbols,
+    highlighted,
+    edited,
+    // speech_id, presentation_id,
+  ]);
 
   // tool bar
   const [cursor, setCursor] = useState("BASIC");
@@ -364,6 +366,24 @@ const Speech = () => {
     MOUSE: "/img/script/toolbar/mouse.svg",
     SLASH: "/img/script/toolbar/slash.svg",
     ERASER: "/img/script/toolbar/eraser.svg",
+  };
+
+  const symbolDesc = {
+    BASIC:
+      "재생 바를 조절하는 기본 커서입니다. 단어를 클릭해 원하는 위치로 이동하세요.",
+    HIGHLIGHT: "강조를 위한 노란색 형광펜입니다. 원하는 위치에 드래그 하세요.",
+    FASTER:
+      "[빠르게] 표시를 위한 분홍색 형광펜입니다. 원하는 위치에 드래그 하세요.",
+    SLOWER:
+      "[느리게] 표시를 위한 초록색 형광펜입니다. 원하는 위치에 드래그 하세요.",
+    EDIT: "단어를 수정하는 연필입니다. 수정하고 싶은 단어를 클릭하세요.",
+    ENTER: "줄바꿈을 위한 아이콘입니다. 원하는 위치를 클릭해 추가하세요.",
+    PAUSE: "일시정지를 위한 아이콘입니다. 원하는 위치를 클릭해 추가하세요.",
+    MOUSE:
+      "ppt 애니메이션 등 마우스 클릭 이벤트를 위한 아이콘입니다. 원하는 위치를 클릭해 추가하세요.",
+    SLASH: "끊어읽기를 위한 아이콘입니다. 원하는 위치를 클릭해 추가하세요.",
+    ERASER:
+      "모든 기호를 지우는 지우개입니다. 초기화 하고싶은 단어를 클릭하세요.",
   };
 
   const correctionIcons = [
@@ -519,9 +539,6 @@ const Speech = () => {
     },
     [edited, text]
   );
-  useEffect(() => {
-    patchUserSymbol(simpleSymbols, highlighted, edited);
-  }, [simpleSymbols, highlighted, edited, patchUserSymbol]);
 
   const createSpeech = async () => {
     let res = null;
@@ -565,17 +582,18 @@ const Speech = () => {
                   <ul className="activate">
                     {Object.entries(symbolIcons).map(([name, src]) => (
                       <li key={name}>
-                        <Button
-                          className="color"
-                          id="color1"
-                          onClick={() => {
-                            // clickTool(name);
-                            setCursor(name);
-                          }}
-                        >
-                          <img src={src} alt={name} />
-                          <p>{name}</p>
-                        </Button>
+                        <Tooltip title={symbolDesc[name]} followCursor>
+                          <Button
+                            className="color"
+                            id="color1"
+                            onClick={() => {
+                              setCursor(name);
+                            }}
+                          >
+                            <img src={src} alt={name} />
+                            <p>{name}</p>
+                          </Button>
+                        </Tooltip>
                       </li>
                     ))}
                   </ul>
@@ -589,7 +607,7 @@ const Speech = () => {
                       <li key={name}>
                         <Button disabled>
                           <img
-                            src={i < 3 ? "/img/script/toolbar/pencil.svg" : src}
+                            src={i < 4 ? "/img/script/toolbar/pencil.svg" : src}
                             alt="symbol"
                           />
                           <p>{name}</p>
