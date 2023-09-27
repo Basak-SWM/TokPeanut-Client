@@ -395,25 +395,29 @@ const Speech = () => {
   const [waveSurferInstance, setWaveSurferInstance] = useState(null);
 
   const { count, start, stop, reset, setCount } = useCounter(0, 100); //0.1초 단위 타이머
+  const [dragging, setDragging] = useState(false);
 
   const clickWord = (e) => {
     if (!waveFormLoaded) return;
     const selectedWordIdx = e.currentTarget.id; // 클릭된 단어 인덱스
-    wordRef.current[selectedWordIdx].focus();
+    // wordRef.current[selectedWordIdx].focus();
 
     switch (cursor) {
       // 기호 표시
       case "HIGHLIGHT":
         highlighted[selectedWordIdx] = "rgba(255,255,204)";
         setHighlighted([...highlighted]);
+        setDragging(true);
         break;
       case "FASTER":
         highlighted[selectedWordIdx] = "rgb(255, 204, 255)";
         setHighlighted([...highlighted]);
+        setDragging(true);
         break;
       case "SLOWER":
         highlighted[selectedWordIdx] = "rgb(204, 255, 204)";
         setHighlighted([...highlighted]);
+        setDragging(true);
         break;
       case "EDIT":
         edited[selectedWordIdx] = edited[selectedWordIdx]
@@ -433,6 +437,7 @@ const Speech = () => {
         setHighlighted([...highlighted]);
         edited[selectedWordIdx] = null;
         setEdited([...edited]);
+        setDragging(true);
         break;
       // 재생 바 조절
       case "BASIC":
@@ -443,6 +448,27 @@ const Speech = () => {
         break;
     }
   };
+
+  // const handleMouseUp = (e) => {
+  //   if (!waveFormLoaded) return;
+  //   const selectedWordIdx = e.currentTarget.id; // 클릭된 단어 인덱스
+  //   switch (cursor) {
+  //     case "HIGHLIGHT":
+  //       highlighted[selectedWordIdx] = "rgba(255,255,204)";
+  //       setHighlighted([...highlighted]);
+  //       break;
+  //     case "FASTER":
+  //       highlighted[selectedWordIdx] = "rgb(255, 204, 255)";
+  //       setHighlighted([...highlighted]);
+  //       break;
+  //     case "SLOWER":
+  //       highlighted[selectedWordIdx] = "rgb(204, 255, 204)";
+  //       setHighlighted([...highlighted]);
+  //       break;
+  //     default:
+  //       break;
+  //   }
+  // };
 
   const onReset = () => {
     reset();
@@ -569,7 +595,12 @@ const Speech = () => {
   }, [text]);
 
   return (
-    <>
+    <div
+      onMouseUp={() => {
+        // 드래그 중 영역을 벗어나서 마우스를 떼도 드래그 중지
+        setDragging(false);
+      }}
+    >
       <ThemeProvider theme={theme}>
         <GlobalStyle />
         <Nav />
@@ -588,6 +619,7 @@ const Speech = () => {
                             id="color1"
                             onClick={() => {
                               setCursor(name);
+                              setDragging(false);
                             }}
                           >
                             <img src={src} alt={name} />
@@ -682,7 +714,13 @@ const Speech = () => {
                                 : "not played"
                             }
                             $duration={duration[i]}
-                            onClick={clickWord}
+                            // onClick={clickWord}
+                            onMouseDown={clickWord}
+                            onMouseOver={(e) => {
+                              if (dragging) {
+                                clickWord(e);
+                              }
+                            }}
                             id={i}
                             $edited={edited[i] ? 1 : 0}
                           >
@@ -825,7 +863,7 @@ const Speech = () => {
           <Pagination />
         </Container>
       </ThemeProvider>
-    </>
+    </div>
   );
 };
 
@@ -833,6 +871,16 @@ const Speech = () => {
 const GlobalStyle = createGlobalStyle`
     body{
         background-color: #FAFAFA;
+    }
+    // 드래그 색상 없애기
+    ::selection {
+      background: transparent;
+      color: inherit;
+    }
+    // Firefox 전용 
+    ::-moz-selection {
+      background: transparent;
+      color: inherit;
     }
 `;
 const Container = styled(Box)`
