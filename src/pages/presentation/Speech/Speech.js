@@ -449,27 +449,6 @@ const Speech = () => {
     }
   };
 
-  // const handleMouseUp = (e) => {
-  //   if (!waveFormLoaded) return;
-  //   const selectedWordIdx = e.currentTarget.id; // 클릭된 단어 인덱스
-  //   switch (cursor) {
-  //     case "HIGHLIGHT":
-  //       highlighted[selectedWordIdx] = "rgba(255,255,204)";
-  //       setHighlighted([...highlighted]);
-  //       break;
-  //     case "FASTER":
-  //       highlighted[selectedWordIdx] = "rgb(255, 204, 255)";
-  //       setHighlighted([...highlighted]);
-  //       break;
-  //     case "SLOWER":
-  //       highlighted[selectedWordIdx] = "rgb(204, 255, 204)";
-  //       setHighlighted([...highlighted]);
-  //       break;
-  //     default:
-  //       break;
-  //   }
-  // };
-
   const onReset = () => {
     reset();
     waveSurferInstance.setCurrentTime(0);
@@ -584,16 +563,6 @@ const Speech = () => {
     );
   };
 
-  const [widthList, setWidthList] = useState([]);
-  useEffect(() => {
-    if (!isDone) return;
-    let list = [];
-    for (let i = 0; i < text.length; i++) {
-      list.push(document.getElementById(i).offsetWidth);
-    }
-    setWidthList(list);
-  }, [text]);
-
   return (
     <div
       onMouseUp={() => {
@@ -704,77 +673,75 @@ const Speech = () => {
                           >
                             &nbsp;
                           </CorrectionLine>
-                          <Text
-                            key={i}
-                            $played={
-                              started[i] < count
-                                ? count < ended[i]
-                                  ? "playing"
-                                  : "played"
-                                : "not played"
+                          <Highlight
+                            $color={highlighted[i]}
+                            $continued={
+                              highlighted[i] === highlighted[i + 1] ? 1 : 0
                             }
-                            $duration={duration[i]}
-                            // onClick={clickWord}
-                            onMouseDown={clickWord}
-                            onMouseOver={(e) => {
-                              if (dragging) {
-                                clickWord(e);
-                              }
-                            }}
-                            id={i}
-                            $edited={edited[i] ? 1 : 0}
                           >
-                            {
-                              // 단순 기호
-                              simpleSymbols[i].map((symbol) => (
-                                <img
-                                  src={symbolIcons[symbol]}
-                                  alt={symbol}
-                                  key={symbol}
-                                />
-                              ))
-                            }
-                            <span>
-                              <span
-                                ref={(el) => (wordRef.current[i] = el)}
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter") {
-                                    e.preventDefault(); // 줄바꿈 방지
-                                    handleBlur(e, i);
-                                  }
-                                }}
-                                onBlur={(e) => {
-                                  handleBlur(e, i);
-                                }}
-                                contentEditable={cursor === "EDIT"} // 현재 커서가 수정펜일 때만 수정 모드
-                                edited={edited[i]}
-                                spellCheck={false}
-                                suppressContentEditableWarning={true} // warning 무시
-                              >
-                                {edited[i] ? edited[i] : word}
-                              </span>
+                            <Text
+                              key={i}
+                              $played={
+                                started[i] < count
+                                  ? count < ended[i]
+                                    ? "playing"
+                                    : "played"
+                                  : "not played"
+                              }
+                              $duration={duration[i]}
+                              // onClick={clickWord}
+                              onMouseDown={clickWord}
+                              onMouseOver={(e) => {
+                                if (dragging) {
+                                  clickWord(e);
+                                }
+                              }}
+                              id={i}
+                              $edited={edited[i] ? 1 : 0}
+                            >
                               {
-                                // 수정 전 단어 툴팁
-                                edited[i] ? (
-                                  <OriginalText
-                                    contentEditable={false}
-                                    $len={word.length + 5}
-                                  >
-                                    수정 전: {word}
-                                  </OriginalText>
-                                ) : null
+                                // 단순 기호
+                                simpleSymbols[i].map((symbol) => (
+                                  <img
+                                    src={symbolIcons[symbol]}
+                                    alt={symbol}
+                                    key={symbol}
+                                  />
+                                ))
                               }
-                            </span>
-                          </Text>
-                          {highlighted[i] && (
-                            <Highlight
-                              color={highlighted[i]}
-                              $width={widthList[i]}
-                              $continued={
-                                highlighted[i] === highlighted[i + 1] ? 1 : 0
-                              }
-                            />
-                          )}
+                              <span>
+                                <span
+                                  ref={(el) => (wordRef.current[i] = el)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                      e.preventDefault(); // 줄바꿈 방지
+                                      handleBlur(e, i);
+                                    }
+                                  }}
+                                  onBlur={(e) => {
+                                    handleBlur(e, i);
+                                  }}
+                                  contentEditable={cursor === "EDIT"} // 현재 커서가 수정펜일 때만 수정 모드
+                                  edited={edited[i]}
+                                  spellCheck={false}
+                                  suppressContentEditableWarning={true} // warning 무시
+                                >
+                                  {edited[i] ? edited[i] : word}
+                                </span>
+                                {
+                                  // 수정 전 단어 툴팁
+                                  edited[i] ? (
+                                    <OriginalText
+                                      contentEditable={false}
+                                      $len={word.length + 5}
+                                    >
+                                      수정 전: {word}
+                                    </OriginalText>
+                                  ) : null
+                                }
+                              </span>
+                            </Text>
+                          </Highlight>
                         </span>
                       </span>
                     ))}
@@ -1332,15 +1299,8 @@ to {
 `;
 
 export const Highlight = styled.span`
-  background-color: ${(props) => props.color};
-  /* position: absolute; */
-  position: relative;
-  top: -5rem;
-  margin-bottom: -5rem;
-  height: 4rem;
-  width: ${(props) => props.$width}px;
-  margin-top: 1rem;
-  z-index: 0;
+  background-color: ${(props) => props.$color};
+  margin-right: ${(props) => (props.$continued ? "none" : "5px")};
   padding-right: ${(props) => (props.$continued ? "5px" : "none")};
 `;
 
@@ -1373,9 +1333,6 @@ export const Text = styled.span`
   animation-direction: reverse;
   animation-fill-mode: forwards;
 
-  margin-right: 5px;
-  /* margin-right: ${(props) => (props.$continued ? "none" : "5px")};
-  padding-right: ${(props) => (props.$continued ? "5px" : "none")}; */
   text-decoration: ${(props) => (props.$edited ? "underline" : "none")};
 
   &:hover {
