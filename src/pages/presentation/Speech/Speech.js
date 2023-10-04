@@ -114,6 +114,26 @@ const Speech = () => {
         main: "#FF7134",
       },
     },
+    // 툴팁 커스텀
+    components: {
+      MuiTooltip: {
+        styleOverrides: {
+          tooltip: {
+            fontSize: "1.2rem",
+            backgroundColor: "white",
+            color: "gray",
+            border: "1px solid rgba(0, 0, 0, 0.25)",
+            whiteSpace: "pre-line",
+          },
+          arrow: {
+            color: "white",
+            "&:before": {
+              border: "1px solid rgba(0, 0, 0, 0.25)",
+            },
+          },
+        },
+      },
+    },
   });
   const [isDone, setIsDone] = useState(false); // 서버가 보내주는 결과에 따라 분석 중인지 아닌지 파악
   const location = useLocation();
@@ -320,8 +340,8 @@ const Speech = () => {
     );
   };
 
-  const patchUserSymbol = useCallback(
-    async (simpleSymbols, highlighted, edited) => {
+  useEffect(() => {
+    (async (simpleSymbols, highlighted, edited) => {
       if (!isDone) return;
       try {
         const symbolObj = {
@@ -329,7 +349,7 @@ const Speech = () => {
           highlight: highlighted,
           edit: edited,
         };
-        const res = await api.patch(
+        await api.patch(
           `/presentations/${presentation_id}/speeches/${speech_id}`,
           {
             params: {
@@ -343,12 +363,14 @@ const Speech = () => {
       } catch (err) {
         console.log("🩸patch user symbol error:", err);
       }
-    },
-    [
-      isDone,
-      // , presentation_id, speech_id
-    ]
-  );
+    })(simpleSymbols, highlighted, edited);
+  }, [
+    isDone,
+    simpleSymbols,
+    highlighted,
+    edited,
+    // speech_id, presentation_id,
+  ]);
 
   // tool bar
   const [cursor, setCursor] = useState("BASIC");
@@ -366,6 +388,25 @@ const Speech = () => {
     ERASER: "/img/script/toolbar/eraser.svg",
   };
 
+  const symbolDesc = {
+    BASIC:
+      "재생 바를 조절하는 기본 커서입니다. \n단어를 클릭해 원하는 위치로 이동하세요.",
+    HIGHLIGHT:
+      "강조를 위한 노란색 형광펜입니다. \n원하는 위치에 드래그 하세요.",
+    FASTER:
+      "[빠르게] 표시를 위한 분홍색 형광펜입니다. \n원하는 위치에 드래그 하세요.",
+    SLOWER:
+      "[느리게] 표시를 위한 초록색 형광펜입니다. \n원하는 위치에 드래그 하세요.",
+    EDIT: "단어를 수정하는 연필입니다. \n수정하고 싶은 단어를 클릭하세요.",
+    ENTER: "줄바꿈을 위한 아이콘입니다. \n원하는 위치를 클릭해 추가하세요.",
+    PAUSE: "일시정지를 위한 아이콘입니다. \n원하는 위치를 클릭해 추가하세요.",
+    MOUSE:
+      "ppt 애니메이션 등 마우스 클릭 이벤트를 위한 아이콘입니다. \n원하는 위치를 클릭해 추가하세요.",
+    SLASH: "끊어읽기를 위한 아이콘입니다. \n원하는 위치를 클릭해 추가하세요.",
+    ERASER:
+      "모든 기호를 지우는 지우개입니다. \n초기화 하고싶은 단어를 클릭하세요.",
+  };
+
   const correctionIcons = [
     { name: "휴지 긺", src: "/img/script/space_long.svg" },
     { name: "휴지 짧음", src: "/img/script/space_short.svg" },
@@ -375,25 +416,29 @@ const Speech = () => {
   const [waveSurferInstance, setWaveSurferInstance] = useState(null);
 
   const { count, start, stop, reset, setCount } = useCounter(0, 100); //0.1초 단위 타이머
+  const [dragging, setDragging] = useState(false);
 
   const clickWord = (e) => {
     if (!waveFormLoaded) return;
     const selectedWordIdx = e.currentTarget.id; // 클릭된 단어 인덱스
-    wordRef.current[selectedWordIdx].focus();
+    // wordRef.current[selectedWordIdx].focus();
 
     switch (cursor) {
       // 기호 표시
       case "HIGHLIGHT":
         highlighted[selectedWordIdx] = "rgba(255,255,204)";
         setHighlighted([...highlighted]);
+        setDragging(true);
         break;
       case "FASTER":
         highlighted[selectedWordIdx] = "rgb(255, 204, 255)";
         setHighlighted([...highlighted]);
+        setDragging(true);
         break;
       case "SLOWER":
         highlighted[selectedWordIdx] = "rgb(204, 255, 204)";
         setHighlighted([...highlighted]);
+        setDragging(true);
         break;
       case "EDIT":
         edited[selectedWordIdx] = edited[selectedWordIdx]
@@ -413,6 +458,7 @@ const Speech = () => {
         setHighlighted([...highlighted]);
         edited[selectedWordIdx] = null;
         setEdited([...edited]);
+        setDragging(true);
         break;
       // 재생 바 조절
       case "BASIC":
@@ -519,9 +565,6 @@ const Speech = () => {
     },
     [edited, text]
   );
-  useEffect(() => {
-    patchUserSymbol(simpleSymbols, highlighted, edited);
-  }, [simpleSymbols, highlighted, edited, patchUserSymbol]);
 
   const createSpeech = async () => {
     let res = null;
@@ -541,18 +584,13 @@ const Speech = () => {
     );
   };
 
-  const [widthList, setWidthList] = useState([]);
-  useEffect(() => {
-    if (!isDone) return;
-    let list = [];
-    for (let i = 0; i < text.length; i++) {
-      list.push(document.getElementById(i).offsetWidth);
-    }
-    setWidthList(list);
-  }, [text]);
-
   return (
-    <>
+    <div
+      onMouseUp={() => {
+        // 드래그 중 영역을 벗어나서 마우스를 떼도 드래그 중지
+        setDragging(false);
+      }}
+    >
       <ThemeProvider theme={theme}>
         <GlobalStyle />
         <Nav />
@@ -565,17 +603,24 @@ const Speech = () => {
                   <ul className="activate">
                     {Object.entries(symbolIcons).map(([name, src]) => (
                       <li key={name}>
-                        <Button
-                          className="color"
-                          id="color1"
-                          onClick={() => {
-                            // clickTool(name);
-                            setCursor(name);
-                          }}
+                        <Tooltip
+                          title={symbolDesc[name]}
+                          followCursor
+                          arrow
+                          placement="right"
                         >
-                          <img src={src} alt={name} />
-                          <p>{name}</p>
-                        </Button>
+                          <Button
+                            className="color"
+                            id="color1"
+                            onClick={() => {
+                              setCursor(name);
+                              setDragging(false);
+                            }}
+                          >
+                            <img src={src} alt={name} />
+                            <p>{name}</p>
+                          </Button>
+                        </Tooltip>
                       </li>
                     ))}
                   </ul>
@@ -589,7 +634,7 @@ const Speech = () => {
                       <li key={name}>
                         <Button disabled>
                           <img
-                            src={i < 3 ? "/img/script/toolbar/pencil.svg" : src}
+                            src={i < 4 ? "/img/script/toolbar/pencil.svg" : src}
                             alt="symbol"
                           />
                           <p>{name}</p>
@@ -654,71 +699,75 @@ const Speech = () => {
                           >
                             &nbsp;
                           </CorrectionLine>
-                          <Text
-                            key={i}
-                            $played={
-                              started[i] < count
-                                ? count < ended[i]
-                                  ? "playing"
-                                  : "played"
-                                : "not played"
+                          <Highlight
+                            $color={highlighted[i]}
+                            $continued={
+                              highlighted[i] === highlighted[i + 1] ? 1 : 0
                             }
-                            $duration={duration[i]}
-                            onClick={clickWord}
-                            id={i}
-                            $edited={edited[i] ? 1 : 0}
                           >
-                            {
-                              // 단순 기호
-                              simpleSymbols[i].map((symbol) => (
-                                <img
-                                  src={symbolIcons[symbol]}
-                                  alt={symbol}
-                                  key={symbol}
-                                />
-                              ))
-                            }
-                            <span>
-                              <span
-                                ref={(el) => (wordRef.current[i] = el)}
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter") {
-                                    e.preventDefault(); // 줄바꿈 방지
-                                    handleBlur(e, i);
-                                  }
-                                }}
-                                onBlur={(e) => {
-                                  handleBlur(e, i);
-                                }}
-                                contentEditable={cursor === "EDIT"} // 현재 커서가 수정펜일 때만 수정 모드
-                                edited={edited[i]}
-                                spellCheck={false}
-                                suppressContentEditableWarning={true} // warning 무시
-                              >
-                                {edited[i] ? edited[i] : word}
-                              </span>
+                            <Text
+                              key={i}
+                              $played={
+                                started[i] < count
+                                  ? count < ended[i]
+                                    ? "playing"
+                                    : "played"
+                                  : "not played"
+                              }
+                              $duration={duration[i]}
+                              // onClick={clickWord}
+                              onMouseDown={clickWord}
+                              onMouseOver={(e) => {
+                                if (dragging) {
+                                  clickWord(e);
+                                }
+                              }}
+                              id={i}
+                              $edited={edited[i] ? 1 : 0}
+                            >
                               {
-                                // 수정 전 단어 툴팁
-                                edited[i] ? (
-                                  <OriginalText
-                                    contentEditable={false}
-                                    $len={word.length + 5}
-                                  >
-                                    수정 전: {word}
-                                  </OriginalText>
-                                ) : null
+                                // 단순 기호
+                                simpleSymbols[i].map((symbol) => (
+                                  <img
+                                    src={symbolIcons[symbol]}
+                                    alt={symbol}
+                                    key={symbol}
+                                  />
+                                ))
                               }
-                            </span>
-                          </Text>
-                          {highlighted[i] && (
-                            <Highlight
-                              color={highlighted[i]}
-                              $width={widthList[i]}
-                              $continued={
-                                highlighted[i] === highlighted[i + 1] ? 1 : 0
-                              }
-                            />
-                          )}
+                              <span>
+                                <span
+                                  ref={(el) => (wordRef.current[i] = el)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                      e.preventDefault(); // 줄바꿈 방지
+                                      handleBlur(e, i);
+                                    }
+                                  }}
+                                  onBlur={(e) => {
+                                    handleBlur(e, i);
+                                  }}
+                                  contentEditable={cursor === "EDIT"} // 현재 커서가 수정펜일 때만 수정 모드
+                                  edited={edited[i]}
+                                  spellCheck={false}
+                                  suppressContentEditableWarning={true} // warning 무시
+                                >
+                                  {edited[i] ? edited[i] : word}
+                                </span>
+                                {
+                                  // 수정 전 단어 툴팁
+                                  edited[i] ? (
+                                    <OriginalText
+                                      contentEditable={false}
+                                      $len={word.length + 5}
+                                    >
+                                      수정 전: {word}
+                                    </OriginalText>
+                                  ) : null
+                                }
+                              </span>
+                            </Text>
+                          </Highlight>
                         </span>
                       </span>
                     ))}
@@ -807,7 +856,7 @@ const Speech = () => {
           <Pagination />
         </Container>
       </ThemeProvider>
-    </>
+    </div>
   );
 };
 
@@ -815,6 +864,16 @@ const Speech = () => {
 const GlobalStyle = createGlobalStyle`
     body{
         background-color: #FAFAFA;
+    }
+    // 드래그 색상 없애기
+    ::selection {
+      background: transparent;
+      color: inherit;
+    }
+    // Firefox 전용 
+    ::-moz-selection {
+      background: transparent;
+      color: inherit;
     }
 `;
 const Container = styled(Box)`
@@ -1266,15 +1325,8 @@ to {
 `;
 
 export const Highlight = styled.span`
-  background-color: ${(props) => props.color};
-  /* position: absolute; */
-  position: relative;
-  top: -5rem;
-  margin-bottom: -5rem;
-  height: 4rem;
-  width: ${(props) => props.$width}px;
-  margin-top: 1rem;
-  z-index: 0;
+  background-color: ${(props) => props.$color};
+  margin-right: ${(props) => (props.$continued ? "none" : "5px")};
   padding-right: ${(props) => (props.$continued ? "5px" : "none")};
 `;
 
@@ -1307,9 +1359,6 @@ export const Text = styled.span`
   animation-direction: reverse;
   animation-fill-mode: forwards;
 
-  margin-right: 5px;
-  /* margin-right: ${(props) => (props.$continued ? "none" : "5px")};
-  padding-right: ${(props) => (props.$continued ? "5px" : "none")}; */
   text-decoration: ${(props) => (props.$edited ? "underline" : "none")};
 
   &:hover {
