@@ -41,16 +41,17 @@ const Nav = () => {
                 <div className="logo">
                   <a href="/">
                     {/* 임시 로고 */}
-                    <div
+                    {/* <div
                       style={{
                         fontWeight: "bold",
-                        fontSize: "25px",
+                        fontSize: "2rem",
                         textAlign: "center",
                         color: "#ff7134",
                       }}
                     >
                       TOKPEANUT
-                    </div>
+                    </div> */}
+                    <img src="/img/tokpeanut.png" alt="logo" />
                   </a>
                 </div>
                 <ul>
@@ -92,16 +93,7 @@ const Nav = () => {
                 <div className="dp-flex mobileNav">
                   <div className="logo">
                     <a href="/">
-                      <div
-                        style={{
-                          fontWeight: "bolder",
-                          fontSize: "25px",
-                          textAlign: "center",
-                          color: "#ff7134",
-                        }}
-                      >
-                        TOKPEANUT
-                      </div>
+                      <img src="/img/tokpeanut.png" alt="logo" />
                     </a>
                   </div>
                   <MenuBtn onClick={handleClick}>
@@ -159,7 +151,8 @@ const Mobile = styled(Box)`
 
 const NavWrap = styled(Box)`
   background-color: #fff;
-  width: 100%;
+  width: 90%;
+  padding: 0 5%;
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   position: fixed;
   top: 0;
@@ -169,7 +162,7 @@ const NavWrap = styled(Box)`
     align-items: center;
   }
   .nav-wrap {
-    padding: 1.3rem 3%;
+    padding: 1.3rem 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -187,6 +180,26 @@ const NavWrap = styled(Box)`
           color: #3b3b3b;
           font-weight: 500;
         }
+        &:hover {
+          a {
+            color: #ff7134;
+            transition: all 0.3s;
+            font-weight: 700;
+          }
+        }
+      }
+    }
+  }
+  .logo {
+    img {
+      width: 3rem;
+      padding: 0 0.25rem;
+    }
+    &:hover {
+      img {
+        width: 3.5rem;
+        padding: 0;
+        transition: all 0.3s ease-in-out;
       }
     }
   }
@@ -214,11 +227,6 @@ const StyledList = styled(List)`
       button:last-of-type {
         padding: 0 1rem;
         min-width: auto;
-      }
-      .logo {
-        img {
-          width: 80%;
-        }
       }
     }
   }
@@ -281,70 +289,3 @@ const RBtn = styled(Button)`
 `;
 
 export default Nav;
-
-// import React from "react";
-// import { Link } from "react-router-dom";
-// // import Logo from "../../image/Logo.png";
-// import styled from "styled-components";
-
-// const StyledLink = styled(Link)`
-//   color: black;
-//   text-decoration: none;
-
-//   &:hover,
-//   &:focus {
-//     font-weight: bold;
-//   }
-// `;
-
-// const Topbar = () => {
-//   return (
-//     <>
-//       <div
-//         style={{
-//           display: "flex",
-//           flexDirection: "row",
-//           justifyContent: "space-between",
-//           width: "100vw",
-//           borderBottom: "1px solid orange",
-//           height: "8vh",
-//         }}
-//       >
-//         <StyledLink to="/">
-//           {/* <img src={Logo} alt="TokPeanut Logo" style={{ height: "8vh" }} /> */}
-//           <div
-//             style={{
-//               fontWeight: "bold",
-//               width: "15vw",
-//               lineHeight: "8vh",
-//               fontSize: "30px",
-//               textAlign: "center",
-//               color: "#F38025",
-//             }}
-//           >
-//             TokPeanut
-//           </div>
-//         </StyledLink>
-
-//         <div
-//           style={{
-//             height: "8vh",
-//             width: "70vw",
-//             display: "flex",
-//             flexDirection: "row",
-//             alignItems: "center",
-//             justifyContent: "space-around",
-//           }}
-//         >
-//           <StyledLink to="/coach">코치</StyledLink>
-//           <StyledLink to="/user/mymatching">내 의뢰</StyledLink>
-//           <StyledLink to="/presentation">프레젠테이션</StyledLink>
-//           <StyledLink to="/login">로그인</StyledLink>
-//           <StyledLink to="/user/mypage">마이페이지</StyledLink>
-//         </div>
-//       </div>
-//     </>
-//   );
-// };
-
-// export default Topbar;
