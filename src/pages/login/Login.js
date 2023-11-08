@@ -23,53 +23,40 @@ const Login = () => {
     },
   });
   return (
-    <>
-      <ThemeProvider theme={theme}>
-        <GlobalStyle />
-        <Nav />
-        <LoginWrap>
-          <LoginBox>
-            <PaddingWrap>
-              <h1>LOGIN</h1>
-              <div className="input-wrap">
-                <StyledTextField
-                  id="id"
-                  variant="outlined"
-                  type="text"
-                  placeholder="아이디를 입력하세요"
-                  fullWidth
-                />
-                <StyledTextField
-                  id="pw"
-                  variant="outlined"
-                  type="password"
-                  placeholder="비밀번호를 입력하세요"
-                  fullWidth
-                />
-              </div>
-              <div className="join-text">
-                <h3>톡피넛이 처음이신가요?</h3>
-                <JoinModal />
-              </div>
-              <LoginBtn variant="contained" fullWidth>
-                로그인
-              </LoginBtn>
-              <Divider />
-              <div className="social-login">
-                <OutlinedBtn variant="outlined" color="secondary" fullWidth>
-                  <img src="/img/logo/google.svg" />
-                  구글로 시작하기
-                </OutlinedBtn>
-                <OutlinedBtn variant="outlined" color="secondary" fullWidth>
-                  <img src="/img/logo/kakao.svg" />
-                  카카오로 시작하기
-                </OutlinedBtn>
-              </div>
-            </PaddingWrap>
-          </LoginBox>
-        </LoginWrap>
-      </ThemeProvider>
-    </>
+    <ThemeProvider theme={theme}>
+      <GlobalStyle />
+      <Nav />
+      <LoginWrap>
+        <LoginBox>
+          <PaddingWrap>
+            <h1>LOGIN</h1>
+            <div className="input-wrap">
+              <StyledTextField
+                id="id"
+                variant="outlined"
+                type="text"
+                placeholder="아이디를 입력하세요"
+                fullWidth
+              />
+              <StyledTextField
+                id="pw"
+                variant="outlined"
+                type="password"
+                placeholder="비밀번호를 입력하세요"
+                fullWidth
+              />
+            </div>
+            <div className="join-text">
+              <h3>톡피넛이 처음이신가요?</h3>
+              <JoinModal />
+            </div>
+            <LoginBtn variant="contained" fullWidth>
+              로그인
+            </LoginBtn>
+          </PaddingWrap>
+        </LoginBox>
+      </LoginWrap>
+    </ThemeProvider>
   );
 };
 

@@ -169,7 +169,7 @@ const Banner = styled(Box)`
   height: 30rem;
   margin-top: 5rem;
   background-color: #fff8f3;
-  background-image: url(../img/banner.png);
+  /* background-image: url(../img/banner.png); */
   background-position: center;
   background-size: cover;
   .text-wrap {

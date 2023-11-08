@@ -170,15 +170,18 @@ const NavWrap = styled(Box)`
       display: flex;
       align-items: center;
     }
+    .right-box {
+      margin-right: 2rem;
+    }
     ul {
       display: flex;
       align-items: center;
       li {
-        margin-left: 5rem;
+        margin-left: 7rem;
         a {
           font-size: 1.6rem;
           color: #3b3b3b;
-          font-weight: 500;
+          font-weight: 570;
         }
         &:hover {
           a {

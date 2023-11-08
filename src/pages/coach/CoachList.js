@@ -39,107 +39,105 @@ const CoachList = () => {
   };
 
   return (
-    <>
-      <ThemeProvider theme={theme}>
-        <Nav />
-        <Banner>
-          <Container>
-            <div className="text-wrap">
-              <h4>coach list</h4>
-              <h1>코치 리스트</h1>
-              <p>
-                모든 발표 준비를 한 번에
-                <br />
-                여러 번 연습하고 피드백을 받으며 말하기 실력을 키워요.
-              </p>
-            </div>
-          </Container>
-        </Banner>
+    <ThemeProvider theme={theme}>
+      <Nav />
+      <Banner>
         <Container>
-          <SearchBar>
-            <StyledTextField
-              id="search"
-              variant="outlined"
-              type="text"
-              placeholder="검색어를 입력하세요"
-              fullWidth
-            />
-            <Button variant="contained">
-              <SearchIcon />
-              검색
-            </Button>
-          </SearchBar>
-          <SelectWrap>
-            <h3>
-              <strong>9명 </strong>코치
-            </h3>
-            <FormControl size="small" sx={{ m: 1, minWidth: 120 }}>
-              <StyledSelect
-                value={select}
-                onChange={handleChange}
-                displayEmpty
-                inputProps={{ "aria-label": "Without label" }}
-              >
-                <StyledMenuItem value={10}>인기순</StyledMenuItem>
-                <StyledMenuItem value={20}>이름순</StyledMenuItem>
-                <StyledMenuItem value={30}>추천순</StyledMenuItem>
-              </StyledSelect>
-            </FormControl>
-          </SelectWrap>
-          <Grid container spacing={1}>
-            <Card item xs={6} md={4}>
-              <Item>
-                <CoachCard />
-              </Item>
-            </Card>
-            <Card item xs={6} md={4}>
-              <Item>
-                <CoachCard />
-              </Item>
-            </Card>
-            <Card item xs={6} md={4}>
-              <Item>
-                <CoachCard />
-              </Item>
-            </Card>
-            <Card item xs={6} md={4}>
-              <Item>
-                <CoachCard />
-              </Item>
-            </Card>
-            <Card item xs={6} md={4}>
-              <Item>
-                <CoachCard />
-              </Item>
-            </Card>
-            <Card item xs={6} md={4}>
-              <Item>
-                <CoachCard />
-              </Item>
-            </Card>
-            <Card item xs={6} md={4}>
-              <Item>
-                <CoachCard />
-              </Item>
-            </Card>
-            <Card item xs={6} md={4}>
-              <Item>
-                <CoachCard />
-              </Item>
-            </Card>
-            <Card item xs={6} md={4}>
-              <Item>
-                <CoachCard />
-              </Item>
-            </Card>
-          </Grid>
-          <PaginationBox />
-          {/* <PaginationWrap>
+          <div className="text-wrap">
+            <h4>coach list</h4>
+            <h1>코치 리스트</h1>
+            <p>
+              모든 발표 준비를 한 번에
+              <br />
+              여러 번 연습하고 피드백을 받으며 말하기 실력을 키워요.
+            </p>
+          </div>
+        </Container>
+      </Banner>
+      <Container>
+        <SearchBar>
+          <StyledTextField
+            id="search"
+            variant="outlined"
+            type="text"
+            placeholder="검색어를 입력하세요"
+            fullWidth
+          />
+          <Button variant="contained">
+            <SearchIcon />
+            검색
+          </Button>
+        </SearchBar>
+        <SelectWrap>
+          <h3>
+            <strong>9명 </strong>코치
+          </h3>
+          <FormControl size="small" sx={{ m: 1, minWidth: 120 }}>
+            <StyledSelect
+              value={select}
+              onChange={handleChange}
+              displayEmpty
+              inputProps={{ "aria-label": "Without label" }}
+            >
+              <StyledMenuItem value={10}>인기순</StyledMenuItem>
+              <StyledMenuItem value={20}>이름순</StyledMenuItem>
+              <StyledMenuItem value={30}>추천순</StyledMenuItem>
+            </StyledSelect>
+          </FormControl>
+        </SelectWrap>
+        <Grid container spacing={1}>
+          <Card item xs={6} md={4}>
+            <Item>
+              <CoachCard />
+            </Item>
+          </Card>
+          <Card item xs={6} md={4}>
+            <Item>
+              <CoachCard />
+            </Item>
+          </Card>
+          <Card item xs={6} md={4}>
+            <Item>
+              <CoachCard />
+            </Item>
+          </Card>
+          <Card item xs={6} md={4}>
+            <Item>
+              <CoachCard />
+            </Item>
+          </Card>
+          <Card item xs={6} md={4}>
+            <Item>
+              <CoachCard />
+            </Item>
+          </Card>
+          <Card item xs={6} md={4}>
+            <Item>
+              <CoachCard />
+            </Item>
+          </Card>
+          <Card item xs={6} md={4}>
+            <Item>
+              <CoachCard />
+            </Item>
+          </Card>
+          <Card item xs={6} md={4}>
+            <Item>
+              <CoachCard />
+            </Item>
+          </Card>
+          <Card item xs={6} md={4}>
+            <Item>
+              <CoachCard />
+            </Item>
+          </Card>
+        </Grid>
+        <PaginationBox />
+        {/* <PaginationWrap>
             <StyledPagination count={50} color="primary" />
           </PaginationWrap> */}
-        </Container>
-      </ThemeProvider>
-    </>
+      </Container>
+    </ThemeProvider>
   );
 };
 

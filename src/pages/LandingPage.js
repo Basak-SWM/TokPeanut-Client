@@ -102,7 +102,7 @@ const LandingPage = () => {
           </div>
         </Container>
 
-        <Divider />
+        {/* <Divider /> */}
 
         <Banner>
           <div className="text-wrap">
@@ -202,6 +202,7 @@ const Container = styled(Box)`
   }
   .section {
     height: 60vh;
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -303,6 +304,7 @@ const Container = styled(Box)`
 `;
 
 const Banner = styled(Box)`
+  margin-top: 10vh;
   background: rgb(255, 113, 52);
   background: linear-gradient(
     45deg,

@@ -17,9 +17,9 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 
 export default function JoinModal() {
-  const [open, setOpen] = React.useState(false);
-  const [coach, setCoach] = React.useState(false);
-  const [select, setSelect] = React.useState("");
+  const [open, setOpen] = useState(false);
+  const [coach, setCoach] = useState(false);
+  const [select, setSelect] = useState("");
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down("md"));
 
@@ -50,6 +50,7 @@ export default function JoinModal() {
       },
     },
   });
+  const join = () => {};
 
   return (
     <ThemeProvider theme={theme2}>
@@ -69,10 +70,8 @@ export default function JoinModal() {
               </IconButton>
             </div>
             <div className="select-option">
-              {!coach ? (
+              {!coach && (
                 <Button onClick={handleCoach}>코치로 가입하시나요?</Button>
-              ) : (
-                <></>
               )}
             </div>
             <div className="join-input-wrap">
@@ -120,9 +119,7 @@ export default function JoinModal() {
                     fullWidth
                   />
                 </li>
-                {!coach ? (
-                  <></>
-                ) : (
+                {coach && (
                   <>
                     <li>
                       <h3>닉네임</h3>
@@ -166,7 +163,7 @@ export default function JoinModal() {
                   />
                   <a href="">이용약관</a>
                 </li>
-                {!coach ? (
+                {!coach && (
                   <li>
                     <FormControlLabel
                       control={<Checkbox defaultChecked size="large" />}
@@ -176,12 +173,12 @@ export default function JoinModal() {
                       <ErrorOutlineIcon />
                     </IconButton>
                   </li>
-                ) : (
-                  <></>
                 )}
               </ul>
             </div>
-            <JoinBtn variant="contained">회원가입</JoinBtn>
+            <JoinBtn variant="contained" onClick={join}>
+              회원가입
+            </JoinBtn>
           </JoinContent>
         </StyledDialog>
       </JoinModalWrap>
