@@ -24,7 +24,10 @@ jobs:
         run: npm ci
 
       - name: Build
-        run: CI='false' npm run build
+        run: |
+          CI='false' npm run build
+          cp ./build/index.html ./build/404.html
+
         env:
           REACT_APP_API_BASE_URL: ${{vars.BASE_API_URL}}
 
@@ -33,4 +36,4 @@ jobs:
         with:
           github_token: ${{ secrets.GH_PAGES_TOKEN }}
           external_repository: Basak-SWM/Basak-SWM
-          # publish_dir: public
+          publish_dir: ./build
