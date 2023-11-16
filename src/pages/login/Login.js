@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styled from "@emotion/styled";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
 import { createGlobalStyle } from "styled-components";
@@ -7,6 +8,7 @@ import Nav from "../../component/layout/Nav";
 import theme from "../../style/theme";
 import TextField from "@mui/material/TextField";
 import JoinModal from "../../component/modal/JoinModal";
+import api from "../../api";
 
 const Login = () => {
   const theme = createTheme({
@@ -22,6 +24,32 @@ const Login = () => {
       },
     },
   });
+  const navigate = useNavigate();
+
+  const [id, setId] = useState("");
+  const [password, setPassword] = useState("");
+  const onChangeId = (e) => {
+    setId(e.target.value);
+  };
+  const onChangePassword = (e) => {
+    setPassword(e.target.value);
+  };
+  const login = async () => {
+    try {
+      const res = await api.post("/accounts/login", {
+        username: id,
+        password: password,
+      });
+      console.log("login response:", res);
+
+      const res_me = await api.get("/accounts/me");
+      console.log("me response:", res_me);
+      navigate("/presentation");
+    } catch (err) {
+      console.log("login error:", err);
+    }
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <GlobalStyle />
@@ -29,7 +57,7 @@ const Login = () => {
       <LoginWrap>
         <LoginBox>
           <PaddingWrap>
-            <h1>LOGIN</h1>
+            <h1>TOKPEANUT</h1>
             <div className="input-wrap">
               <StyledTextField
                 id="id"
@@ -37,6 +65,7 @@ const Login = () => {
                 type="text"
                 placeholder="아이디를 입력하세요"
                 fullWidth
+                onChange={onChangeId}
               />
               <StyledTextField
                 id="pw"
@@ -44,13 +73,14 @@ const Login = () => {
                 type="password"
                 placeholder="비밀번호를 입력하세요"
                 fullWidth
+                onChange={onChangePassword}
               />
             </div>
             <div className="join-text">
               <h3>톡피넛이 처음이신가요?</h3>
               <JoinModal />
             </div>
-            <LoginBtn variant="contained" fullWidth>
+            <LoginBtn variant="contained" fullWidth onClick={login}>
               로그인
             </LoginBtn>
           </PaddingWrap>
@@ -62,12 +92,13 @@ const Login = () => {
 
 const GlobalStyle = createGlobalStyle`
     body{
-        background-color: #FAFAFA;
+        background-color: #fff;
     }
 `;
 
 const LoginWrap = styled(Box)`
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100vh;
@@ -76,7 +107,8 @@ const LoginWrap = styled(Box)`
 const LoginBox = styled(Box)`
   background-color: #fff;
   border-radius: 10px;
-  box-shadow: 0 0 10px 10px rgba(0, 0, 0, 0.05);
+  /* box-shadow: 0 0 10px 10px rgba(0, 0, 0, 0.05); */
+  border: 0.5px solid #3b3b3b;
   margin-top: 8rem;
   h1 {
     font-size: 4rem;
@@ -109,14 +141,14 @@ const LoginBox = styled(Box)`
   }
   @media ${() => theme.device.mobile} {
     margin-top: 0;
-    box-shadow: none;
+    border: none;
     height: 100%;
     width: 100%;
   }
 `;
 
 const PaddingWrap = styled(Box)`
-  padding: 10rem 8rem;
+  padding: 5rem 8rem;
   @media ${() => theme.device.mobile} {
     padding: 10rem 2rem 0 2rem;
   }
