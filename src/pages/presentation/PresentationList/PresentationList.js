@@ -84,75 +84,73 @@ const PresentationList = () => {
   };
 
   return (
-    <>
-      <ThemeProvider theme={theme}>
-        <Nav />
-        <Banner>
-          <Container>
-            <div className="text-wrap">
-              <h4>presentation list</h4>
-              <h1>모든 발표 준비를 한 번에</h1>
-              <p>여러 번 연습하고 피드백을 받으며 말하기 실력을 키워요.</p>
-            </div>
-          </Container>
-        </Banner>
+    <ThemeProvider theme={theme}>
+      <Nav />
+      <Banner>
         <Container>
-          <ListWrap>
-            <Guide>
-              <div className="new-btn">
-                <Link to="/presentation/new">
-                  <SolidBtn text={"새 프레젠테이션"}></SolidBtn>
-                </Link>
-              </div>
-              <div id="edit">
-                <div id="edit_text"> 편집 모드 </div>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={editMode}
-                      onChange={() => setEditMode(!editMode)}
-                    />
-                  }
-                />
-              </div>
-            </Guide>
-            <ul className="list-wrap">
-              {presentationList
-                .map((p) => (
-                  <li key={p.id}>
-                    <ListBox
-                      variant="outlined"
-                      onClick={() => navigateToPresentation(p.id)}
-                      editmode={editMode ? 1 : 0}
-                    >
-                      <div className="name">
-                        <h3>{p.outline}</h3>
-                        <h2>{p.title}</h2>
-                      </div>
-                      <span>
-                        {p.createdDate}
-                        <Grow
-                          in={editMode}
-                          {...(editMode ? { timeout: 700 } : {})}
-                          className="delete"
-                        >
-                          {
-                            <FolderDeleteIcon
-                              onClick={(e) => handleDelete(e, p.id)}
-                              className="delete"
-                            />
-                          }
-                        </Grow>
-                      </span>
-                    </ListBox>
-                  </li>
-                ))
-                .reverse()}
-            </ul>
-          </ListWrap>
+          <div className="text-wrap">
+            <h4>presentation list</h4>
+            <h1>모든 발표 준비를 한 번에</h1>
+            <p>여러 번 연습하고 피드백을 받으며 말하기 실력을 키워요.</p>
+          </div>
         </Container>
-      </ThemeProvider>
-    </>
+      </Banner>
+      <Container>
+        <ListWrap>
+          <Guide>
+            <div className="new-btn">
+              <Link to="/presentation/new">
+                <SolidBtn text={"새 프레젠테이션"}></SolidBtn>
+              </Link>
+            </div>
+            <div id="edit">
+              <div id="edit_text"> 편집 모드 </div>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={editMode}
+                    onChange={() => setEditMode(!editMode)}
+                  />
+                }
+              />
+            </div>
+          </Guide>
+          <ul className="list-wrap">
+            {presentationList
+              .map((p) => (
+                <li key={p.id}>
+                  <ListBox
+                    variant="outlined"
+                    onClick={() => navigateToPresentation(p.id)}
+                    editmode={editMode ? 1 : 0}
+                  >
+                    <div className="name">
+                      <h3>{p.outline}</h3>
+                      <h2>{p.title}</h2>
+                    </div>
+                    <span>
+                      {p.createdDate}
+                      <Grow
+                        in={editMode}
+                        {...(editMode ? { timeout: 700 } : {})}
+                        className="delete"
+                      >
+                        {
+                          <FolderDeleteIcon
+                            onClick={(e) => handleDelete(e, p.id)}
+                            className="delete"
+                          />
+                        }
+                      </Grow>
+                    </span>
+                  </ListBox>
+                </li>
+              ))
+              .reverse()}
+          </ul>
+        </ListWrap>
+      </Container>
+    </ThemeProvider>
   );
 };
 
