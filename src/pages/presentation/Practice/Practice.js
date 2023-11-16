@@ -493,9 +493,7 @@ const Practice = ({ isNew }) => {
         }
       );
       // console.log("cancel recording response: ", res);
-      navigate(
-        `/presentation/speech?presentation_id=${presentation_id}&&speech_id=${refSpeechId}`
-      );
+      navigate(`/presentation/summary?presentation_id=${presentation_id}`);
     } catch (err) {
       console.log("🩸cancel recording error: ", err);
     }
