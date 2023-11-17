@@ -28,11 +28,14 @@ import Notfound from "./pages/Notfound";
 import dayjs from "dayjs";
 import "dayjs/locale/ko";
 import * as relativeTime from "dayjs/plugin/relativeTime";
+
+import { AuthProvider } from "./AuthContext";
+
 dayjs.locale("ko");
 dayjs.extend(relativeTime);
 function App() {
   return (
-    <>
+    <AuthProvider>
       <GlobalStyle />
       <Router>
         {/* <Topbar /> */}
@@ -66,7 +69,7 @@ function App() {
           <Route path="/*" element={<Notfound />} />
         </Routes>
       </Router>
-    </>
+    </AuthProvider>
   );
 }
 

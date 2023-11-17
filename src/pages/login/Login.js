@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "@emotion/styled";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
@@ -9,6 +9,7 @@ import theme from "../../style/theme";
 import TextField from "@mui/material/TextField";
 import JoinModal from "../../component/modal/JoinModal";
 import api from "../../api";
+import AuthContext from "../../AuthContext";
 
 const Login = () => {
   const theme = createTheme({
@@ -25,6 +26,8 @@ const Login = () => {
     },
   });
   const navigate = useNavigate();
+
+  const { authInfo, setAuthInfo } = useContext(AuthContext);
 
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
@@ -44,7 +47,13 @@ const Login = () => {
 
       const res_me = await api.get("/accounts/me");
       console.log("me response:", res_me);
-      navigate("/presentation");
+      if (res_me.data.coachProfile) {
+        setAuthInfo("coach");
+        navigate("/user/coachmatching");
+      } else {
+        setAuthInfo("user");
+        navigate("/presentation");
+      }
     } catch (err) {
       console.log("login error:", err);
     }

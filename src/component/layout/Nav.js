@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "@emotion/styled";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
 import { Box, IconButton, Button } from "@mui/material";
 import theme from "../../style/theme";
+import AuthContext from "../../AuthContext";
 
 import MenuIcon from "@mui/icons-material/Menu";
 
@@ -24,7 +25,10 @@ const Nav = () => {
     },
   });
 
-  const [open, setOpen] = React.useState(false);
+  const { authInfo } = useContext(AuthContext);
+  console.log("authInfo:", authInfo);
+
+  const [open, setOpen] = useState(false);
 
   const handleClick = () => {
     setOpen(!open);
@@ -40,17 +44,6 @@ const Nav = () => {
               <div className="left-box">
                 <div className="logo">
                   <a href="/">
-                    {/* 임시 로고 */}
-                    {/* <div
-                      style={{
-                        fontWeight: "bold",
-                        fontSize: "2rem",
-                        textAlign: "center",
-                        color: "#ff7134",
-                      }}
-                    >
-                      TOKPEANUT
-                    </div> */}
                     <img src="/img/tokpeanut.png" alt="logo" />
                   </a>
                 </div>
@@ -59,17 +52,33 @@ const Nav = () => {
                     <a href="/coach">코치</a>
                   </li>
                   <li>
-                    <a href="/user/mymatching">내 의뢰</a>
+                    <a
+                      href={
+                        authInfo.type === "user"
+                          ? "/user/mymatching"
+                          : "/user/coachmatching"
+                      }
+                    >
+                      내 의뢰
+                    </a>
                   </li>
-                  <li>
-                    <a href="/presentation">프레젠테이션</a>
-                  </li>
+                  {authInfo === "user" && (
+                    <li>
+                      <a href="/presentation">프레젠테이션</a>
+                    </li>
+                  )}
                 </ul>
               </div>
               <div className="right-box">
                 <ul>
                   <li>
-                    <a href="/login">로그인</a>
+                    {authInfo.type === "user" ? (
+                      <a>{authInfo.nickname} 님 | 로그아웃</a>
+                    ) : authInfo.type === "coach" ? (
+                      <a>{authInfo.nickname} 코치 | 로그아웃</a>
+                    ) : (
+                      <a href="/login">로그인</a>
+                    )}
                   </li>
                   <li>
                     <RBtn
@@ -105,7 +114,13 @@ const Nav = () => {
                     <StyledLink href="" underline="none">
                       <ListItemButton sx={{ p: 1 }}>
                         <div className="dp-flex login-wrap">
-                          <a href="/login">로그인</a>
+                          {authInfo.type === "user" ? (
+                            `${authInfo.nickname} 님 | 로그아웃`
+                          ) : authInfo.type === "coach" ? (
+                            `${authInfo.nickname} 코치 | 로그아웃`
+                          ) : (
+                            <a href="/login">로그인</a>
+                          )}
                           <span>|</span>
                           <a href="/user/mypage">마이페이지</a>
                         </div>
@@ -116,7 +131,14 @@ const Nav = () => {
                         <StyledListItemText primary="코치" />
                       </ListItemButton>
                     </StyledLink>
-                    <StyledLink href="/user/mymatching" underline="none">
+                    <StyledLink
+                      href={
+                        authInfo.type === "user"
+                          ? "/user/mymatching"
+                          : "/user/coachmatching"
+                      }
+                      underline="none"
+                    >
                       <ListItemButton sx={{ p: 1 }}>
                         <StyledListItemText primary="내 의뢰" />
                       </ListItemButton>
