@@ -12,10 +12,8 @@ export const AuthProvider = ({ children }) => {
       // console.log("me response:", res);
       if (res.data.coachProfile) {
         setAuthInfo({ nickname: res.data.nickname, type: "coach" });
-        console.log(res.data.nickname, "coach");
       } else {
         setAuthInfo({ nickname: res.data.nickname, type: "user" });
-        console.log(res.data.nickname, "user");
       }
     } catch (err) {
       console.log("me error:", err);

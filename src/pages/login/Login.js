@@ -48,10 +48,11 @@ const Login = () => {
       const res_me = await api.get("/accounts/me");
       console.log("me response:", res_me);
       if (res_me.data.coachProfile) {
-        setAuthInfo("coach");
+        setAuthInfo({ nickname: res_me.data.nickname, type: "coach" });
         navigate("/user/coachmatching");
       } else {
-        setAuthInfo("user");
+        setAuthInfo({ nickname: res_me.data.nickname, type: "user" });
+        console.log(authInfo);
         navigate("/presentation");
       }
     } catch (err) {
