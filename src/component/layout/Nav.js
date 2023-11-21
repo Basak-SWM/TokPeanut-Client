@@ -1,9 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "@emotion/styled";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
 import { Box, IconButton, Button } from "@mui/material";
+import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import theme from "../../style/theme";
+import AuthContext from "../../AuthContext";
+import api from "../../api";
 
 import MenuIcon from "@mui/icons-material/Menu";
 
@@ -24,12 +28,27 @@ const Nav = () => {
     },
   });
 
-  const [open, setOpen] = React.useState(false);
+  const { authInfo, setAuthInfo } = useContext(AuthContext);
+
+  const [open, setOpen] = useState(false);
 
   const handleClick = () => {
     setOpen(!open);
   };
 
+  const logout = async () => {
+    const logoutChk = window.confirm("로그아웃 하시겠습니까?");
+    if (!logoutChk) return;
+    try {
+      const res = await api.patch("/accounts/logout");
+      // console.log("logout res: ", res);
+      setAuthInfo({ nickname: "", type: "" });
+      alert("로그아웃 되었습니다.");
+      navigate("/login");
+    } catch (err) {
+      console.log("logout err: ", err);
+    }
+  };
   const navigate = useNavigate();
   return (
     <>
@@ -40,17 +59,6 @@ const Nav = () => {
               <div className="left-box">
                 <div className="logo">
                   <a href="/">
-                    {/* 임시 로고 */}
-                    {/* <div
-                      style={{
-                        fontWeight: "bold",
-                        fontSize: "2rem",
-                        textAlign: "center",
-                        color: "#ff7134",
-                      }}
-                    >
-                      TOKPEANUT
-                    </div> */}
                     <img src="/img/tokpeanut.png" alt="logo" />
                   </a>
                 </div>
@@ -59,17 +67,51 @@ const Nav = () => {
                     <a href="/coach">코치</a>
                   </li>
                   <li>
-                    <a href="/user/mymatching">내 의뢰</a>
+                    <a
+                      href={
+                        authInfo.type === "user"
+                          ? "/user/mymatching"
+                          : "/user/coachmatching"
+                      }
+                    >
+                      내 의뢰
+                    </a>
                   </li>
-                  <li>
-                    <a href="/presentation">프레젠테이션</a>
-                  </li>
+                  {authInfo.type === "user" && (
+                    <li>
+                      <a href="/presentation">프레젠테이션</a>
+                    </li>
+                  )}
                 </ul>
               </div>
               <div className="right-box">
                 <ul>
                   <li>
-                    <a href="/login">로그인</a>
+                    {authInfo.type === "user" ? (
+                      <>
+                        <AccountCircleIcon
+                          sx={{ color: "#FF7134" }}
+                          fontSize="large"
+                        />
+                        &nbsp;&nbsp;
+                        <span className="nickname">{authInfo.nickname} 님</span>
+                        <LgBtn onClick={logout}>로그아웃</LgBtn>
+                      </>
+                    ) : authInfo.type === "coach" ? (
+                      <>
+                        <AccountCircleIcon
+                          sx={{ color: "#FF7134" }}
+                          fontSize="large"
+                        />
+                        &nbsp;&nbsp;
+                        <span className="nickname">
+                          {authInfo.nickname} 코치
+                        </span>
+                        <LgBtn onClick={logout}>로그아웃</LgBtn>
+                      </>
+                    ) : (
+                      <a href="/login">로그인</a>
+                    )}
                   </li>
                   <li>
                     <RBtn
@@ -105,7 +147,33 @@ const Nav = () => {
                     <StyledLink href="" underline="none">
                       <ListItemButton sx={{ p: 1 }}>
                         <div className="dp-flex login-wrap">
-                          <a href="/login">로그인</a>
+                          {authInfo.type === "user" ? (
+                            <>
+                              <AccountCircleIcon
+                                sx={{ color: "#FF7134" }}
+                                fontSize="large"
+                              />
+                              &nbsp;&nbsp;
+                              <span className="nickname">
+                                {authInfo.nickname} 님
+                              </span>
+                              <LgBtn onClick={logout}>로그아웃</LgBtn>
+                            </>
+                          ) : authInfo.type === "coach" ? (
+                            <>
+                              <AccountCircleIcon
+                                sx={{ color: "#FF7134" }}
+                                fontSize="large"
+                              />
+                              &nbsp;&nbsp;
+                              <span className="nickname">
+                                {authInfo.nickname} 코치
+                              </span>
+                              <LgBtn onClick={logout}>로그아웃</LgBtn>
+                            </>
+                          ) : (
+                            <a href="/login">로그인</a>
+                          )}
                           <span>|</span>
                           <a href="/user/mypage">마이페이지</a>
                         </div>
@@ -116,16 +184,25 @@ const Nav = () => {
                         <StyledListItemText primary="코치" />
                       </ListItemButton>
                     </StyledLink>
-                    <StyledLink href="/user/mymatching" underline="none">
+                    <StyledLink
+                      href={
+                        authInfo.type === "user"
+                          ? "/user/mymatching"
+                          : "/user/coachmatching"
+                      }
+                      underline="none"
+                    >
                       <ListItemButton sx={{ p: 1 }}>
                         <StyledListItemText primary="내 의뢰" />
                       </ListItemButton>
                     </StyledLink>
-                    <StyledLink href="/presentation" underline="none">
-                      <ListItemButton sx={{ p: 1 }}>
-                        <StyledListItemText primary="프레젠테이션" />
-                      </ListItemButton>
-                    </StyledLink>
+                    {authInfo.type === "user" && (
+                      <StyledLink href="/presentation" underline="none">
+                        <ListItemButton sx={{ p: 1 }}>
+                          <StyledListItemText primary="프레젠테이션" />
+                        </ListItemButton>
+                      </StyledLink>
+                    )}
                   </List>
                 </StyledCollapse>
               </StyledList>
@@ -172,11 +249,19 @@ const NavWrap = styled(Box)`
     }
     .right-box {
       margin-right: 2rem;
+      .nickname {
+        font-size: 1.6rem;
+        color: #3b3b3b;
+        font-weight: 570;
+        margin-right: 1rem;
+      }
     }
     ul {
       display: flex;
       align-items: center;
       li {
+        display: flex;
+        align-items: center;
         margin-left: 7rem;
         a {
           font-size: 1.6rem;
@@ -288,6 +373,20 @@ const RBtn = styled(Button)`
   font-size: 1.6rem;
   @media ${() => theme.device.mobile} {
     font-size: 1.4rem;
+  }
+`;
+
+const LgBtn = styled(Button)`
+  color: gray;
+  text-decoration: underline;
+  font-size: 1.6rem;
+  @media ${() => theme.device.mobile} {
+    font-size: 1.4rem;
+  }
+  &:hover {
+    text-decoration: underline;
+    font-weight: 700;
+    background-color: #fff;
   }
 `;
 

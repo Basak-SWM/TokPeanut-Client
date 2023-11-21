@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "@emotion/styled";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
@@ -9,6 +9,7 @@ import theme from "../../style/theme";
 import TextField from "@mui/material/TextField";
 import JoinModal from "../../component/modal/JoinModal";
 import api from "../../api";
+import AuthContext from "../../AuthContext";
 
 const Login = () => {
   const theme = createTheme({
@@ -25,6 +26,8 @@ const Login = () => {
     },
   });
   const navigate = useNavigate();
+
+  const { authInfo, setAuthInfo } = useContext(AuthContext);
 
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
@@ -43,17 +46,25 @@ const Login = () => {
       console.log("login response:", res);
 
       const res_me = await api.get("/accounts/me");
-      console.log("me response:", res_me);
-      navigate("/presentation");
+      // console.log("me response:", res_me);
+      if (res_me.data.coachProfile) {
+        setAuthInfo({ nickname: res_me.data.nickname, type: "coach" });
+        navigate("/user/coachmatching");
+      } else {
+        setAuthInfo({ nickname: res_me.data.nickname, type: "user" });
+        console.log(authInfo);
+        navigate("/presentation");
+      }
     } catch (err) {
-      console.log("login error:", err);
+      // console.log("login error:", err);
+      alert("로그인에 실패했습니다. \nID와 PW를 확인하세요.");
     }
   };
 
   return (
     <ThemeProvider theme={theme}>
       <GlobalStyle />
-      <Nav />
+      {/* <Nav /> */}
       <LoginWrap>
         <LoginBox>
           <PaddingWrap>
