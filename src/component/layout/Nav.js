@@ -5,6 +5,7 @@ import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
 import { Box, IconButton, Button } from "@mui/material";
 import theme from "../../style/theme";
 import AuthContext from "../../AuthContext";
+import api from "../../api";
 
 import MenuIcon from "@mui/icons-material/Menu";
 
@@ -25,7 +26,7 @@ const Nav = () => {
     },
   });
 
-  const { authInfo } = useContext(AuthContext);
+  const { authInfo, setAuthInfo } = useContext(AuthContext);
 
   const [open, setOpen] = useState(false);
 
@@ -33,6 +34,19 @@ const Nav = () => {
     setOpen(!open);
   };
 
+  const logout = async () => {
+    const logoutChk = window.confirm("로그아웃 하시겠습니까?");
+    if (!logoutChk) return;
+    try {
+      const res = await api.patch("/accounts/logout");
+      // console.log("logout res: ", res);
+      setAuthInfo({ nickname: "", type: "" });
+      alert("로그아웃 되었습니다.");
+      navigate("/login");
+    } catch (err) {
+      console.log("logout err: ", err);
+    }
+  };
   const navigate = useNavigate();
   return (
     <>
@@ -72,9 +86,13 @@ const Nav = () => {
                 <ul>
                   <li>
                     {authInfo.type === "user" ? (
-                      <a>{authInfo.nickname} 님 | 로그아웃</a>
+                      <RBtn onClick={logout}>
+                        {authInfo.nickname} 님 | 로그아웃
+                      </RBtn>
                     ) : authInfo.type === "coach" ? (
-                      <a>{authInfo.nickname} 코치 | 로그아웃</a>
+                      <RBtn onClick={logout}>
+                        {authInfo.nickname} 코치 | 로그아웃
+                      </RBtn>
                     ) : (
                       <a href="/login">로그인</a>
                     )}
