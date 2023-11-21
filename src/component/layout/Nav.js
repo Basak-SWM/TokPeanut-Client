@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "@emotion/styled";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
@@ -26,7 +26,6 @@ const Nav = () => {
   });
 
   const { authInfo } = useContext(AuthContext);
-  console.log("authInfo:", authInfo);
 
   const [open, setOpen] = useState(false);
 
@@ -62,7 +61,7 @@ const Nav = () => {
                       내 의뢰
                     </a>
                   </li>
-                  {authInfo === "user" && (
+                  {authInfo.type === "user" && (
                     <li>
                       <a href="/presentation">프레젠테이션</a>
                     </li>
