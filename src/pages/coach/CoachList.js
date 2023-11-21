@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import styled from "@emotion/styled";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
 import { Box, IconButton, Button, Grid } from "@mui/material";
 import Nav from "../../component/layout/Nav";
+import api from "../../api";
 
 import theme from "../../style/theme";
 import TextField from "@mui/material/TextField";
@@ -38,6 +39,21 @@ const CoachList = () => {
     setSelect(event.target.value);
   };
 
+  const [coachList, setCoachList] = useState([]);
+  const getCoachList = useCallback(async () => {
+    try {
+      const res = await api.get("/coach-profile");
+      console.log(res);
+      setCoachList(res.data);
+    } catch (err) {
+      console.log(err);
+    }
+  }, [setCoachList]);
+
+  useEffect(() => {
+    getCoachList();
+  }, [getCoachList]);
+
   return (
     <ThemeProvider theme={theme}>
       <Nav />
@@ -70,7 +86,7 @@ const CoachList = () => {
         </SearchBar>
         <SelectWrap>
           <h3>
-            <strong>9명 </strong>코치
+            <strong>{coachList.length}명 </strong>코치
           </h3>
           <FormControl size="small" sx={{ m: 1, minWidth: 120 }}>
             <StyledSelect
@@ -86,51 +102,18 @@ const CoachList = () => {
           </FormControl>
         </SelectWrap>
         <Grid container spacing={1}>
-          <Card item xs={6} md={4}>
+          {coachList.map((coach) => (
+            <Card item xs={6} md={4} key={coach.nickname}>
+              <Item>
+                <CoachCard profile={coach} />
+              </Item>
+            </Card>
+          ))}
+          {/* <Card item xs={6} md={4}>
             <Item>
               <CoachCard />
             </Item>
-          </Card>
-          <Card item xs={6} md={4}>
-            <Item>
-              <CoachCard />
-            </Item>
-          </Card>
-          <Card item xs={6} md={4}>
-            <Item>
-              <CoachCard />
-            </Item>
-          </Card>
-          <Card item xs={6} md={4}>
-            <Item>
-              <CoachCard />
-            </Item>
-          </Card>
-          <Card item xs={6} md={4}>
-            <Item>
-              <CoachCard />
-            </Item>
-          </Card>
-          <Card item xs={6} md={4}>
-            <Item>
-              <CoachCard />
-            </Item>
-          </Card>
-          <Card item xs={6} md={4}>
-            <Item>
-              <CoachCard />
-            </Item>
-          </Card>
-          <Card item xs={6} md={4}>
-            <Item>
-              <CoachCard />
-            </Item>
-          </Card>
-          <Card item xs={6} md={4}>
-            <Item>
-              <CoachCard />
-            </Item>
-          </Card>
+          </Card> */}
         </Grid>
         <PaginationBox />
         {/* <PaginationWrap>
