@@ -46,7 +46,7 @@ const Login = () => {
       console.log("login response:", res);
 
       const res_me = await api.get("/accounts/me");
-      console.log("me response:", res_me);
+      // console.log("me response:", res_me);
       if (res_me.data.coachProfile) {
         setAuthInfo({ nickname: res_me.data.nickname, type: "coach" });
         navigate("/user/coachmatching");
@@ -56,14 +56,15 @@ const Login = () => {
         navigate("/presentation");
       }
     } catch (err) {
-      console.log("login error:", err);
+      // console.log("login error:", err);
+      alert("로그인에 실패했습니다. \nID와 PW를 확인하세요.");
     }
   };
 
   return (
     <ThemeProvider theme={theme}>
       <GlobalStyle />
-      <Nav />
+      {/* <Nav /> */}
       <LoginWrap>
         <LoginBox>
           <PaddingWrap>

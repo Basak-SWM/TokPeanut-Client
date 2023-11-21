@@ -148,9 +148,29 @@ const Nav = () => {
                       <ListItemButton sx={{ p: 1 }}>
                         <div className="dp-flex login-wrap">
                           {authInfo.type === "user" ? (
-                            `${authInfo.nickname} 님 | 로그아웃`
+                            <>
+                              <AccountCircleIcon
+                                sx={{ color: "#FF7134" }}
+                                fontSize="large"
+                              />
+                              &nbsp;&nbsp;
+                              <span className="nickname">
+                                {authInfo.nickname} 님
+                              </span>
+                              <LgBtn onClick={logout}>로그아웃</LgBtn>
+                            </>
                           ) : authInfo.type === "coach" ? (
-                            `${authInfo.nickname} 코치 | 로그아웃`
+                            <>
+                              <AccountCircleIcon
+                                sx={{ color: "#FF7134" }}
+                                fontSize="large"
+                              />
+                              &nbsp;&nbsp;
+                              <span className="nickname">
+                                {authInfo.nickname} 코치
+                              </span>
+                              <LgBtn onClick={logout}>로그아웃</LgBtn>
+                            </>
                           ) : (
                             <a href="/login">로그인</a>
                           )}
@@ -176,11 +196,13 @@ const Nav = () => {
                         <StyledListItemText primary="내 의뢰" />
                       </ListItemButton>
                     </StyledLink>
-                    <StyledLink href="/presentation" underline="none">
-                      <ListItemButton sx={{ p: 1 }}>
-                        <StyledListItemText primary="프레젠테이션" />
-                      </ListItemButton>
-                    </StyledLink>
+                    {authInfo.type === "user" && (
+                      <StyledLink href="/presentation" underline="none">
+                        <ListItemButton sx={{ p: 1 }}>
+                          <StyledListItemText primary="프레젠테이션" />
+                        </ListItemButton>
+                      </StyledLink>
+                    )}
                   </List>
                 </StyledCollapse>
               </StyledList>
