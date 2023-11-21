@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import styled from "@emotion/styled";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
 import { Box, IconButton, Button } from "@mui/material";
+import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import theme from "../../style/theme";
 import AuthContext from "../../AuthContext";
 import api from "../../api";
@@ -86,13 +88,27 @@ const Nav = () => {
                 <ul>
                   <li>
                     {authInfo.type === "user" ? (
-                      <RBtn onClick={logout}>
-                        {authInfo.nickname} 님 | 로그아웃
-                      </RBtn>
+                      <>
+                        <AccountCircleIcon
+                          sx={{ color: "#FF7134" }}
+                          fontSize="large"
+                        />
+                        &nbsp;&nbsp;
+                        <span className="nickname">{authInfo.nickname} 님</span>
+                        <LgBtn onClick={logout}>로그아웃</LgBtn>
+                      </>
                     ) : authInfo.type === "coach" ? (
-                      <RBtn onClick={logout}>
-                        {authInfo.nickname} 코치 | 로그아웃
-                      </RBtn>
+                      <>
+                        <AccountCircleIcon
+                          sx={{ color: "#FF7134" }}
+                          fontSize="large"
+                        />
+                        &nbsp;&nbsp;
+                        <span className="nickname">
+                          {authInfo.nickname} 코치
+                        </span>
+                        <LgBtn onClick={logout}>로그아웃</LgBtn>
+                      </>
                     ) : (
                       <a href="/login">로그인</a>
                     )}
@@ -211,11 +227,19 @@ const NavWrap = styled(Box)`
     }
     .right-box {
       margin-right: 2rem;
+      .nickname {
+        font-size: 1.6rem;
+        color: #3b3b3b;
+        font-weight: 570;
+        margin-right: 1rem;
+      }
     }
     ul {
       display: flex;
       align-items: center;
       li {
+        display: flex;
+        align-items: center;
         margin-left: 7rem;
         a {
           font-size: 1.6rem;
@@ -327,6 +351,20 @@ const RBtn = styled(Button)`
   font-size: 1.6rem;
   @media ${() => theme.device.mobile} {
     font-size: 1.4rem;
+  }
+`;
+
+const LgBtn = styled(Button)`
+  color: gray;
+  text-decoration: underline;
+  font-size: 1.6rem;
+  @media ${() => theme.device.mobile} {
+    font-size: 1.4rem;
+  }
+  &:hover {
+    text-decoration: underline;
+    font-weight: 700;
+    background-color: #fff;
   }
 `;
 
