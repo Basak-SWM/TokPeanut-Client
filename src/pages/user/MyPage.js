@@ -8,6 +8,7 @@ import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
+import { Link } from "react-router-dom";
 
 const Mypage = () => {
   const theme = createTheme({
@@ -85,7 +86,7 @@ const Mypage = () => {
                 <li>
                   <h3>포트폴리오</h3>
                   <div className="w-100">
-                    <a href="/user/portfolio/update">포트폴리오 수정</a>
+                    <Link to="/user/portfolio/update">포트폴리오 수정</Link>
                   </div>
                 </li>
               </ul>
@@ -100,7 +101,7 @@ const Mypage = () => {
                 <li>
                   <h3>비밀번호</h3>
                   <div className="w-100">
-                    <a href="">비밀번호 변경</a>
+                    <Link to="">비밀번호 변경</Link>
                   </div>
                 </li>
               </ul>

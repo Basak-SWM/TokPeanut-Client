@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 import CoachingModal from "../modal/CoachingModal";
 import SpeechModal from "../modal/SpeechModal";
 
-export default function CoachCard() {
+export default function CoachCard({ profile, n }) {
   const theme = createTheme({
     typography: {
       fontFamily: "Pretendard",
@@ -21,17 +21,18 @@ export default function CoachCard() {
       },
     },
   });
+
   return (
     <>
       <ThemeProvider theme={theme}>
-        <CoachCardWrap>
-          <Link to="/coach/portfolio">
+        <CoachCardWrap props={{ bgUrl: `../img/coach${n}.png` }}>
+          <Link to={`/coach/portfolio?uuid=${profile.uuid}`}>
             <div className="img-box" id="img1"></div>
           </Link>
           <h2>
-            <strong>용감한쿠키</strong> 코치
+            <strong>{profile.nickname}</strong> 코치
           </h2>
-          <p>안녕하세요~ 오븐 탈출 경력 10년차의 용감쿠입니다~^^</p>
+          <p>{profile.shortIntroduce}&nbsp;</p>
           <div className="btn-wrap">
             <CoachingModal />
             <SpeechModal />
@@ -50,7 +51,7 @@ const CoachCardWrap = styled(Box)`
     border-radius: 1rem;
   }
   #img1 {
-    background-image: url(../img/coachSample.png);
+    background-image: url(${({ props }) => props.bgUrl});
     background-repeat: no-repeat;
     background-position: center;
     background-size: cover;

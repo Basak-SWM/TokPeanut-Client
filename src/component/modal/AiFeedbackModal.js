@@ -1,22 +1,20 @@
 import React, { useCallback, useEffect, useState, useRef } from "react";
 import Box from "@mui/material/Box";
 import { createTheme, Dialog, ThemeProvider } from "@mui/material";
-import Modal from "@mui/material/Modal";
 import styled from "@emotion/styled";
 import FilledBtn from "../button/FilledBtn";
 import { IconButton, CircularProgress } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import theme from "../../style/theme";
-import api from "../../api";
+import axios from "axios";
 
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 
-export default function AiFeedbackModal({ presentation_id, speech_id }) {
+export default function AiFeedbackModal({ speech_id }) {
   const theme = createTheme({
     typography: {
       fontFamily: "Pretendard",
@@ -44,52 +42,23 @@ export default function AiFeedbackModal({ presentation_id, speech_id }) {
     setOpen(false);
   };
 
-  // mock data
-  // const [data, setData] = useState([
-  //   {
-  //     checkpoint: "초기 요구사항(프레젠테이션 생성 시 입력)",
-  //     feedback: "첫번째 피드백",
-  //   },
-  //   {
-  //     checkpoint: "두 번쩨 요구사항~ 전 이거이거를 잘 하고 싶어요~",
-  //     feedback: "두 번째 피드백: 어쩌고저쩌고 이런걸 신경 써보세요",
-  //   },
-  //   {
-  //     checkpoint:
-  //       "세 번째 요구사항: 텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트텍스트",
-  //     feedback:
-  //       "세번째 피드백: 피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백피드백",
-  //   },
-  //   {
-  //     checkpoint: "네 번째 요구사항",
-  //     feedback: "네번째 피드백",
-  //   },
-  // ]);
-
   const [data, setData] = useState([]);
 
   const setLogs = (logs) => {
-    const completedLogs = logs.completedChatLogs.map((log) => ({
-      prompt: log.prompt,
-      result: log.result,
-    }));
-    const uncompletedLogs = logs.uncompletedChatLogs.map((log) => ({
-      prompt: log.prompt,
-      result: "waiting",
-    }));
-    setData([...completedLogs, ...uncompletedLogs]);
+    let chatLogs = [];
+    for (let i = 0; i < logs.length; i += 2) {
+      chatLogs.push({
+        prompt: logs[i].content,
+        result: logs[i + 1].content,
+      });
+    }
+    setData(chatLogs);
   };
   const getLogs = useCallback(async () => {
     let res = null;
     try {
-      res = await api.get(
-        `/presentations/${presentation_id}/speeches/${speech_id}/ai-chat-logs`,
-        {
-          params: {
-            "presentation-id": presentation_id,
-            "speech-id": speech_id,
-          },
-        }
+      res = await axios.get(
+        `https://api2.tokpeanut.com/api/v1/ai-chat-logs/${speech_id}`
       );
       if (res.status === 200) setLogs(res.data);
       // console.log("ai 피드백 목록 조회 응답: ", res);
@@ -97,50 +66,33 @@ export default function AiFeedbackModal({ presentation_id, speech_id }) {
       console.log("🩸ai 피드백 목록 조회 에러: ", err);
     }
     return res.status;
-  }, [presentation_id, speech_id]);
+  }, [speech_id]);
+
+  const [promptDone, setPromptDone] = useState(false);
+
+  const setPrompt = useCallback(async () => {
+    try {
+      const res = await axios.post(
+        `https://api2.tokpeanut.com/api/v1/ai-chat-logs/${speech_id}/initialize`
+      );
+      if (res.status === 200 || res.status === 409) {
+        setPromptDone(true);
+        setAiDone(true);
+        console.log("ai 피드백 프롬프트 준비: ", res);
+      }
+    } catch (err) {
+      console.log("🩸ai 피드백 프롬프트 준비: ", err);
+    }
+  }, [speech_id]);
 
   useEffect(() => {
-    // ai 챗 리스트 폴링
-    const polling = async () => {
-      const status = await getLogs();
-      if (status === 200) {
-        setAiDone(true);
-        clearInterval(repeat);
-      }
-    };
-    polling();
-    const repeat = setInterval(polling, 3000);
-  }, [getLogs]);
+    setPrompt();
+  }, [setPrompt]);
 
-  const getAdditionalLogs = async (id) => {
-    try {
-      const res = await api.get(
-        `/presentations/${presentation_id}/speeches/${speech_id}/ai-chat-logs/${id}`,
-        {
-          params: {
-            "presentation-id": presentation_id,
-            "speech-id": speech_id,
-            "log-id": id,
-          },
-        }
-      );
-      // 답변 완료
-      if (res.status === 200) {
-        const newLog = {
-          prompt: res.data.prompt,
-          result: res.data.result,
-        };
-        setData([...data, newLog]);
-      }
-      // 답변 폴링
-      if (res.status === 202) {
-        setTimeout(() => getAdditionalLogs(id), 3000);
-      }
-      // console.log("ai 피드백 추가 조회 응답: ", res);
-    } catch (err) {
-      console.log("🩸ai 피드백 추가 조회 에러: ", err);
-    }
-  };
+  useEffect(() => {
+    if (!promptDone) return;
+    getLogs();
+  }, [getLogs, promptDone]);
 
   const newCheckPoint = async (e) => {
     e.preventDefault();
@@ -152,18 +104,14 @@ export default function AiFeedbackModal({ presentation_id, speech_id }) {
     };
     setData([...data, tem]);
     try {
-      const res = await api.post(
-        `/presentations/${presentation_id}/speeches/${speech_id}/ai-chat-logs`,
+      const res = await axios.post(
+        `https://api2.tokpeanut.com/api/v1/ai-chat-logs/${speech_id}`,
         {
-          params: {
-            "presentation-id": presentation_id,
-            "speech-id": speech_id,
-          },
           prompt: newPrompt,
         }
       );
-      if (res.status === 202) {
-        getAdditionalLogs(res.data.id);
+      if (res.status === 200) {
+        getLogs();
       }
       // console.log("ai 피드백 추가 응답: ", res);
     } catch (err) {

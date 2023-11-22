@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import styled from "@emotion/styled";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
 import { Box, IconButton, Button, Grid } from "@mui/material";
@@ -6,6 +6,9 @@ import Nav from "../../component/layout/Nav";
 import theme from "../../style/theme";
 import CoachingModal from "../../component/modal/CoachingModal";
 import SpeechModal from "../../component/modal/SpeechModal";
+import api from "../../api";
+import { useLocation } from "react-router-dom";
+import qs from "qs";
 
 const Portfolio = () => {
   const theme = createTheme({
@@ -18,6 +21,36 @@ const Portfolio = () => {
       },
     },
   });
+
+  const location = useLocation();
+  const query = qs.parse(location.search, {
+    ignoreQueryPrefix: true,
+  });
+  const coachUuid = query.uuid;
+
+  const [portfolio, setPortfolio] = useState({
+    acceptCount: null,
+    introduce: "",
+    nickname: "",
+    shortIntroduce: "",
+    speciality: "",
+    username: "",
+    uuid: "",
+    youtubeUrl: "",
+  });
+  const getPortfolio = useCallback(async () => {
+    try {
+      const res = await api.get(`/coach-profile/${coachUuid}`);
+      setPortfolio(res.data);
+      console.log("portfolio res:", res);
+    } catch (err) {
+      console.log(err);
+    }
+  }, [setPortfolio, coachUuid]);
+  useEffect(() => {
+    getPortfolio();
+  }, [getPortfolio]);
+
   return (
     <>
       <ThemeProvider theme={theme}>
@@ -34,21 +67,18 @@ const Portfolio = () => {
                 </div>
                 <div>
                   <h2>
-                    <strong>용감쿠 </strong>
+                    <strong>{portfolio.nickname} </strong>
                     코치
                   </h2>
-                  <p>
-                    용감하게!
-                    <br />
-                    용감하게!
-                    <br />
-                    용감하게!
-                  </p>
+                  <p>{portfolio.shortIntroduce}</p>
                 </div>
               </div>
               <div className="matching-box">
                 <h2>톡피넛 매칭</h2>
-                <h3>7회</h3>
+                <h3>
+                  {portfolio.acceptCount === null ? "0" : portfolio.acceptCount}
+                  &nbsp;회
+                </h3>
               </div>
               <div className="btn-wrap">
                 <CoachingModal />
@@ -58,37 +88,26 @@ const Portfolio = () => {
             <div className="portfolio-content">
               {/* <video></video> */}
               <div className="video">
-                <img src="/img/video.png" width="100%" height="100%" alt="" />
+                {/* <img src="/img/video.png" width="100%" height="100%" alt="" /> */}
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src="https://www.youtube.com/embed/UPx_FNT8vU0?si=A0NaL_kBF4FGLEhn"
+                  // src={portfolio.youtubeUrl}
+                  title="YouTube video player"
+                  // frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                ></iframe>
               </div>
               <ul className="portfolio-list">
                 <li>
-                  <h3>목소리 소개</h3>
-                  <audio controls>
-                    <source src="" type="audio/ogg" />
-                  </audio>
+                  <h3>전문 분야</h3>
+                  <p>{portfolio.speciality}</p>
                 </li>
                 <li>
                   <h3>자기소개</h3>
-                  <p>
-                    저희는 음성 데이터 분석을 통해 스피치에 있어 중요한 요소들을
-                    평가하고, 연습에 유용한 도구를 제공하여 반복을 통한 스피치
-                    실력 향상을 도우며, 스피치 전문가와의 부담 없는 코칭 환경을
-                    제공하는 솔루션인 톡피넛을 개발하려고 합니다.저희는 음성
-                    데이터 분석을 통해 스피치에 있어 중요한 요소들을 평가하고,
-                    연습에 유용한 도구를 제공하여 반복을 통한 스피치 실력 향상을
-                    도우며, 스피치 전문가와의 부담 없는 코칭 환경을 제공하는
-                    솔루션인 톡피넛을 개발하려고 합니다.저희는 음성 데이터
-                    분석을 통해 스피치에 있어 중요한 요소들을 평가하고, 연습에
-                    유용한 도구를 제공하여 반복을 통한 스피치 실력 향상을
-                    도우며, 스피치 전문가와의 부담 없는 코칭 환경을 제공하는
-                    솔루션인 톡피넛을 개발하려고 합니다.
-                    <br />
-                    <br />
-                    저희는 음성 데이터 분석을 통해 스피치에 있어 중요한 요소들을
-                    평가하고, 연습에 유용한 도구를 제공하여 반복을 통한 스피치
-                    실력 향상을 도우며, 스피치 전문가와의 부담 없는 코칭 환경을
-                    제공하는 솔루션인 톡피넛을 개발하려고 합니다.
-                  </p>
+                  <p>{portfolio.introduce}</p>
                 </li>
               </ul>
             </div>
@@ -173,7 +192,7 @@ const Content = styled(Box)`
   .portfolio-content {
     width: 70%;
     .video {
-      height: 35rem;
+      height: 45rem;
       width: auto;
     }
     .portfolio-list {

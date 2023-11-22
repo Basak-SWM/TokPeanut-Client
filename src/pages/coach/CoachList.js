@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import styled from "@emotion/styled";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
 import { Box, IconButton, Button, Grid } from "@mui/material";
 import Nav from "../../component/layout/Nav";
+import api from "../../api";
 
 import theme from "../../style/theme";
 import TextField from "@mui/material/TextField";
@@ -38,6 +39,24 @@ const CoachList = () => {
     setSelect(event.target.value);
   };
 
+  const [coachList, setCoachList] = useState([]);
+  const getCoachList = useCallback(async () => {
+    try {
+      const res = await api.get("/coach-profile");
+      // console.log(res);
+      setCoachList(res.data);
+    } catch (err) {
+      console.log(err);
+    }
+  }, [setCoachList]);
+
+  useEffect(() => {
+    getCoachList();
+  }, [getCoachList]);
+
+  const coachingRequest = async () => {};
+  const speechRequest = async () => {};
+
   return (
     <ThemeProvider theme={theme}>
       <Nav />
@@ -46,11 +65,7 @@ const CoachList = () => {
           <div className="text-wrap">
             <h4>coach list</h4>
             <h1>코치 리스트</h1>
-            <p>
-              모든 발표 준비를 한 번에
-              <br />
-              여러 번 연습하고 피드백을 받으며 말하기 실력을 키워요.
-            </p>
+            <p>더 전문적인 피드백을 위해 스피치 코치를 만나보세요.</p>
           </div>
         </Container>
       </Banner>
@@ -70,7 +85,7 @@ const CoachList = () => {
         </SearchBar>
         <SelectWrap>
           <h3>
-            <strong>9명 </strong>코치
+            <strong>{coachList.length}명 </strong>코치
           </h3>
           <FormControl size="small" sx={{ m: 1, minWidth: 120 }}>
             <StyledSelect
@@ -86,51 +101,18 @@ const CoachList = () => {
           </FormControl>
         </SelectWrap>
         <Grid container spacing={1}>
-          <Card item xs={6} md={4}>
+          {coachList.map((coach, i) => (
+            <Card item xs={6} md={4} key={coach.nickname}>
+              <Item>
+                <CoachCard profile={coach} n={i + 1} />
+              </Item>
+            </Card>
+          ))}
+          {/* <Card item xs={6} md={4}>
             <Item>
               <CoachCard />
             </Item>
-          </Card>
-          <Card item xs={6} md={4}>
-            <Item>
-              <CoachCard />
-            </Item>
-          </Card>
-          <Card item xs={6} md={4}>
-            <Item>
-              <CoachCard />
-            </Item>
-          </Card>
-          <Card item xs={6} md={4}>
-            <Item>
-              <CoachCard />
-            </Item>
-          </Card>
-          <Card item xs={6} md={4}>
-            <Item>
-              <CoachCard />
-            </Item>
-          </Card>
-          <Card item xs={6} md={4}>
-            <Item>
-              <CoachCard />
-            </Item>
-          </Card>
-          <Card item xs={6} md={4}>
-            <Item>
-              <CoachCard />
-            </Item>
-          </Card>
-          <Card item xs={6} md={4}>
-            <Item>
-              <CoachCard />
-            </Item>
-          </Card>
-          <Card item xs={6} md={4}>
-            <Item>
-              <CoachCard />
-            </Item>
-          </Card>
+          </Card> */}
         </Grid>
         <PaginationBox />
         {/* <PaginationWrap>
@@ -153,11 +135,11 @@ const Container = styled(Box)`
 const Banner = styled(Box)`
   width: 100%;
   height: 30rem;
-  margin-top: 8rem;
+  margin-top: 5rem;
   background-color: #fff8f3;
-  background-image: url(../img/banner.png);
+  /* background-image: url(../img/banner.png);
   background-position: center;
-  background-size: cover;
+  background-size: cover; */
   .text-wrap {
     height: 30rem;
     display: flex;
