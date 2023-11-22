@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import styled from "@emotion/styled";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
 import { Box, IconButton, Button } from "@mui/material";
-import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import theme from "../../style/theme";
 import AuthContext from "../../AuthContext";

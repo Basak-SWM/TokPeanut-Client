@@ -43,7 +43,7 @@ const CoachList = () => {
   const getCoachList = useCallback(async () => {
     try {
       const res = await api.get("/coach-profile");
-      console.log(res);
+      // console.log(res);
       setCoachList(res.data);
     } catch (err) {
       console.log(err);
@@ -54,6 +54,9 @@ const CoachList = () => {
     getCoachList();
   }, [getCoachList]);
 
+  const coachingRequest = async () => {};
+  const speechRequest = async () => {};
+
   return (
     <ThemeProvider theme={theme}>
       <Nav />
@@ -62,11 +65,7 @@ const CoachList = () => {
           <div className="text-wrap">
             <h4>coach list</h4>
             <h1>코치 리스트</h1>
-            <p>
-              모든 발표 준비를 한 번에
-              <br />
-              여러 번 연습하고 피드백을 받으며 말하기 실력을 키워요.
-            </p>
+            <p>더 전문적인 피드백을 위해 스피치 코치를 만나보세요.</p>
           </div>
         </Container>
       </Banner>
@@ -136,11 +135,11 @@ const Container = styled(Box)`
 const Banner = styled(Box)`
   width: 100%;
   height: 30rem;
-  margin-top: 8rem;
+  margin-top: 5rem;
   background-color: #fff8f3;
-  background-image: url(../img/banner.png);
+  /* background-image: url(../img/banner.png);
   background-position: center;
-  background-size: cover;
+  background-size: cover; */
   .text-wrap {
     height: 30rem;
     display: flex;
