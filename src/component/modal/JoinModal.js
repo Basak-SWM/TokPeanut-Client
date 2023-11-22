@@ -16,6 +16,7 @@ import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import api from "../../api";
+import { Link } from "react-router-dom";
 
 export default function JoinModal() {
   const [open, setOpen] = useState(false);
@@ -303,7 +304,7 @@ export default function JoinModal() {
                     label="이용약관에 동의합니다."
                     onChange={(e) => setAgreement(e.target.checked)}
                   />
-                  <a href="">이용약관</a>
+                  <Link to="">이용약관</Link>
                 </li>
                 {!coach && (
                   <li>

@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import styled from "@emotion/styled";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
 import { Box, IconButton, Button } from "@mui/material";
@@ -14,7 +14,6 @@ import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import Collapse from "@mui/material/Collapse";
-import Link from "@mui/material/Link";
 const Nav = () => {
   const theme = createTheme({
     typography: {
@@ -57,28 +56,28 @@ const Nav = () => {
             <div className="nav-wrap">
               <div className="left-box">
                 <div className="logo">
-                  <a href="/">
+                  <Link to="/">
                     <img src="/img/tokpeanut.png" alt="logo" />
-                  </a>
+                  </Link>
                 </div>
                 <ul>
                   <li>
-                    <a href="/coach">코치</a>
+                    <Link to="/coach">코치</Link>
                   </li>
                   <li>
-                    <a
-                      href={
+                    <Link
+                      to={
                         authInfo.type === "user"
                           ? "/user/mymatching"
                           : "/user/coachmatching"
                       }
                     >
                       내 의뢰
-                    </a>
+                    </Link>
                   </li>
                   {authInfo.type === "user" && (
                     <li>
-                      <a href="/presentation">프레젠테이션</a>
+                      <Link to="/presentation">프레젠테이션</Link>
                     </li>
                   )}
                 </ul>
@@ -109,7 +108,7 @@ const Nav = () => {
                         <LgBtn onClick={logout}>로그아웃</LgBtn>
                       </>
                     ) : (
-                      <a href="/login">로그인</a>
+                      <Link to="/login">로그인</Link>
                     )}
                   </li>
                   <li>
@@ -133,9 +132,9 @@ const Nav = () => {
               >
                 <div className="dp-flex mobileNav">
                   <div className="logo">
-                    <a href="/">
+                    <Link to="/">
                       <img src="/img/tokpeanut.png" alt="logo" />
-                    </a>
+                    </Link>
                   </div>
                   <MenuBtn onClick={handleClick}>
                     <MenuIcon />
@@ -171,10 +170,10 @@ const Nav = () => {
                               <LgBtn onClick={logout}>로그아웃</LgBtn>
                             </>
                           ) : (
-                            <a href="/login">로그인</a>
+                            <Link to="/login">로그인</Link>
                           )}
                           <span>|</span>
-                          <a href="/user/mypage">마이페이지</a>
+                          <Link to="/user/mypage">마이페이지</Link>
                         </div>
                       </ListItemButton>
                     </StyledLink>

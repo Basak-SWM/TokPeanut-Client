@@ -57,7 +57,7 @@ const LandingPage = () => {
           </div>
         </Main>
         {/* <Nav /> */}
-        <Container $type="left">
+        <Container props={{ type: "left" }}>
           <div className="section">
             <div data-aos="fade-right" data-aos-once="false">
               {/* <h2>톡피넛은 가능해요</h2> */}
@@ -71,7 +71,7 @@ const LandingPage = () => {
             </div>
           </div>
         </Container>
-        <Container $bgc="#fff8f3" $type="right">
+        <Container props={{ bgc: "#fff8f3", type: "right" }}>
           {/* <Background> */}
           <div className="section">
             <div data-aos="fade-left" data-aos-once="false">
@@ -87,7 +87,7 @@ const LandingPage = () => {
           {/* </Background> */}
         </Container>
 
-        <Container $type="left">
+        <Container props={{ type: "left" }}>
           <div className="section">
             <div data-aos="fade-right" data-aos-once="false">
               {/* <h2>톡피넛은 가능해요</h2> */}
@@ -194,7 +194,7 @@ const Main = styled(Box)`
 `;
 
 const Container = styled(Box)`
-  ${(props) => props.$bgc && `background-color: ${props.$bgc};`}
+  ${({ props }) => props.bgc && `background-color: ${props.bgc};`}
   width: 100rem;
   margin: 0 auto;
   .border-bottom {
@@ -227,8 +227,8 @@ const Container = styled(Box)`
     .img-box {
       margin-top: 4rem;
       display: flex;
-      align-items: ${(props) =>
-        props.$type === "left" ? "flex-start" : "flex-end"};
+      align-items: ${({ props }) =>
+        props.type === "left" ? "flex-start" : "flex-end"};
       justify-content: center;
       flex-direction: column;
       img {
@@ -240,8 +240,8 @@ const Container = styled(Box)`
   }
   .section > div {
     display: flex;
-    align-items: ${(props) =>
-      props.$type === "left" ? "flex-start" : "flex-end"};
+    align-items: ${({ props }) =>
+      props.type === "left" ? "flex-start" : "flex-end"};
     justify-content: center;
     flex-direction: column;
     width: 80%;

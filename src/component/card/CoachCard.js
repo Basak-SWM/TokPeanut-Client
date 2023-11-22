@@ -25,7 +25,7 @@ export default function CoachCard({ profile, n }) {
   return (
     <>
       <ThemeProvider theme={theme}>
-        <CoachCardWrap $bgUrl={`../img/coach${n}.png`}>
+        <CoachCardWrap props={{ bgUrl: `../img/coach${n}.png` }}>
           <Link to={`/coach/portfolio?uuid=${profile.uuid}`}>
             <div className="img-box" id="img1"></div>
           </Link>
@@ -51,8 +51,7 @@ const CoachCardWrap = styled(Box)`
     border-radius: 1rem;
   }
   #img1 {
-    background-image: url(${(props) => props.$bgUrl});
-    /* background-image: url("../img/coach1.png"); */
+    background-image: url(${({ props }) => props.bgUrl});
     background-repeat: no-repeat;
     background-position: center;
     background-size: cover;
