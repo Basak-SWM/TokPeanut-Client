@@ -4,7 +4,7 @@ import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
 import { Box, IconButton, Button, Grid } from "@mui/material";
 import theme from "../../style/theme";
 
-export default function RequestCardCoach({ type }) {
+export default function RequestCardCoach({ userName, type }) {
   const theme = createTheme({
     typography: {
       fontFamily: "Pretendard",
@@ -28,12 +28,12 @@ export default function RequestCardCoach({ type }) {
                 <img src="/img/icon/account.svg" alt="" />
               </div>
               <h2>
-                <strong>밈갬밈</strong> <br />
+                <strong>{userName}</strong> <br />
                 고객님
               </h2>
             </div>
             <div className="right-box">
-              {type === "before" ? (
+              {type === "REQUESTED" ? (
                 <>
                   <Button variant="outlined" color="secondary" fullWidth>
                     스크립트보기
@@ -148,7 +148,6 @@ const RequestCardWrap = styled(Box)`
     button {
       box-shadow: none;
       padding: 0.8rem 2rem;
-      /* font-size: 1.4rem; */
     }
   }
 `;

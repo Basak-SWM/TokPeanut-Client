@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+// 일반 사용자 의뢰 리스트
+import React, { useState, useEffect, useCallback } from "react";
 import styled from "@emotion/styled";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
 import { Box, IconButton, Button, Grid } from "@mui/material";
@@ -6,6 +7,7 @@ import Nav from "../../component/layout/Nav";
 import theme from "../../style/theme";
 import RequestCardUser from "../../component/card/RequestCardUser";
 import PaginationBox from "../../component/pagination/Pagination";
+import api from "../../api";
 
 const Item = styled(Box)(({ theme }) => ({
   padding: theme.spacing(1),
@@ -22,6 +24,21 @@ const MyMatching = () => {
       },
     },
   });
+
+  const [requestList, setRequestList] = useState([]);
+  const getRequestList = useCallback(async () => {
+    try {
+      const res = await api.get("/coaching-request");
+      console.log("request list res:", res);
+      setRequestList(res.data);
+    } catch (err) {
+      console.log(err);
+    }
+  }, [setRequestList]);
+  useEffect(() => {
+    getRequestList();
+  }, [getRequestList]);
+
   return (
     <>
       <ThemeProvider theme={theme}>
@@ -32,7 +49,18 @@ const MyMatching = () => {
           </div>
           <RequestListWrap>
             <Grid container spacing={1}>
-              <Card item xs={12} md={6}>
+              {requestList.map((request) => (
+                <Card item xs={12} md={6} key={request.coachUuid}>
+                  <Item>
+                    <RequestCardUser
+                      title={request.title}
+                      coachName={"코치 이름 넣어줘"}
+                      type={request.status}
+                    />
+                  </Item>
+                </Card>
+              ))}
+              {/* <Card item xs={12} md={6}>
                 <Item>
                   <RequestCardUser type={"ing"} />
                 </Item>
@@ -44,34 +72,14 @@ const MyMatching = () => {
               </Card>
               <Card item xs={12} md={6}>
                 <Item>
-                  <RequestCardUser type={"ing"} />
-                </Item>
-              </Card>
-              <Card item xs={12} md={6}>
-                <Item>
                   <RequestCardUser type={"reject"} />
-                </Item>
-              </Card>
-              <Card item xs={12} md={6}>
-                <Item>
-                  <RequestCardUser type={"ing"} />
                 </Item>
               </Card>
               <Card item xs={12} md={6}>
                 <Item>
                   <RequestCardUser type={"done"} />
                 </Item>
-              </Card>
-              <Card item xs={12} md={6}>
-                <Item>
-                  <RequestCardUser type={"ing"} />
-                </Item>
-              </Card>
-              <Card item xs={12} md={6}>
-                <Item>
-                  <RequestCardUser type={"ing"} />
-                </Item>
-              </Card>
+              </Card> */}
             </Grid>
             <PaginationBox />
           </RequestListWrap>

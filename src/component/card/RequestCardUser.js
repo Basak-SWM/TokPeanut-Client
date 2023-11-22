@@ -4,7 +4,7 @@ import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
 import { Box, IconButton, Button, Grid } from "@mui/material";
 import theme from "../../style/theme";
 import { Link } from "react-router-dom";
-export default function RequestCardUser({ type }) {
+export default function RequestCardUser({ title, coachName, type }) {
   const theme = createTheme({
     typography: {
       fontFamily: "Pretendard",
@@ -24,9 +24,7 @@ export default function RequestCardUser({ type }) {
             <div className="coach-info">
               <div className="dp-flex">
                 <h2>
-                  <strong>Presentation 1</strong>
-                  <br />
-                  Speech 3
+                  <strong>{title}</strong>
                 </h2>
                 {type === "done" ? (
                   <div className="feedBack-done">
@@ -37,10 +35,10 @@ export default function RequestCardUser({ type }) {
                 )}
               </div>
               <h3>
-                <strong>김효근</strong> 코치
+                <strong>{coachName}</strong> 코치
               </h3>
               {type === "ing" ? <FeedBackIng>피드백 중</FeedBackIng> : <></>}
-              {type === "waiting" ? <Waiting>수락대기</Waiting> : <></>}
+              {type === "REQUESTED" ? <Waiting>수락대기</Waiting> : <></>}
               {type === "reject" ? <Reject>거절</Reject> : <></>}
               {type === "done" ? (
                 <>
