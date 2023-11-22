@@ -101,10 +101,10 @@ const CoachList = () => {
           </FormControl>
         </SelectWrap>
         <Grid container spacing={1}>
-          {coachList.map((coach) => (
+          {coachList.map((coach, i) => (
             <Card item xs={6} md={4} key={coach.nickname}>
               <Item>
-                <CoachCard profile={coach} />
+                <CoachCard profile={coach} n={i + 1} />
               </Item>
             </Card>
           ))}
