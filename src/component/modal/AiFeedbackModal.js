@@ -1,23 +1,20 @@
 import React, { useCallback, useEffect, useState, useRef } from "react";
 import Box from "@mui/material/Box";
 import { createTheme, Dialog, ThemeProvider } from "@mui/material";
-import Modal from "@mui/material/Modal";
 import styled from "@emotion/styled";
 import FilledBtn from "../button/FilledBtn";
 import { IconButton, CircularProgress } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import theme from "../../style/theme";
-import api from "../../api";
 import axios from "axios";
 
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 
-export default function AiFeedbackModal({ presentation_id, speech_id }) {
+export default function AiFeedbackModal({ speech_id }) {
   const theme = createTheme({
     typography: {
       fontFamily: "Pretendard",
@@ -48,14 +45,6 @@ export default function AiFeedbackModal({ presentation_id, speech_id }) {
   const [data, setData] = useState([]);
 
   const setLogs = (logs) => {
-    // const completedLogs = logs.completedChatLogs.map((log) => ({
-    //   prompt: log.prompt,
-    //   result: log.result,
-    // }));
-    // const uncompletedLogs = logs.uncompletedChatLogs.map((log) => ({
-    //   prompt: log.prompt,
-    //   result: "waiting",
-    // }));
     let chatLogs = [];
     for (let i = 0; i < logs.length; i += 2) {
       chatLogs.push({
@@ -102,41 +91,8 @@ export default function AiFeedbackModal({ presentation_id, speech_id }) {
 
   useEffect(() => {
     if (!promptDone) return;
-    // ai 챗 리스트 폴링
-    // const polling = async () => {
-    //   const status = await getLogs();
-    //   if (status === 200) {
-    //     setAiDone(true);
-    //     clearInterval(repeat);
-    //   }
-    // };
-    // polling();
-    // const repeat = setInterval(polling, 3000);
     getLogs();
   }, [getLogs, promptDone]);
-
-  // const getAdditionalLogs = async (id) => {
-  //   try {
-  //     const res = await axios.get(
-  //       `https://api2.tokpeanut.com/api/v1/ai-chat-logs/${speech_id}`
-  //     );
-  //     // 답변 완료
-  //     if (res.status === 200) {
-  //       const newLog = {
-  //         prompt: res.data.prompt,
-  //         result: res.data.result,
-  //       };
-  //       setData([...data, newLog]);
-  //     }
-  //     // 답변 폴링
-  //     if (res.status === 202) {
-  //       setTimeout(() => getAdditionalLogs(id), 3000);
-  //     }
-  //     // console.log("ai 피드백 추가 조회 응답: ", res);
-  //   } catch (err) {
-  //     console.log("🩸ai 피드백 추가 조회 에러: ", err);
-  //   }
-  // };
 
   const newCheckPoint = async (e) => {
     e.preventDefault();
@@ -155,7 +111,6 @@ export default function AiFeedbackModal({ presentation_id, speech_id }) {
         }
       );
       if (res.status === 200) {
-        // getAdditionalLogs();
         getLogs();
       }
       // console.log("ai 피드백 추가 응답: ", res);
