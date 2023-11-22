@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useEffect, useContext } from "react";
 import styled from "@emotion/styled";
-import { Box, IconButton, Button } from "@mui/material";
+import { Box, IconButton, Button, InputLabel } from "@mui/material";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import useMediaQuery from "@mui/material/useMediaQuery";
@@ -11,31 +11,10 @@ import theme from "../../style/theme";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
+import api from "../../api";
+import AuthContext from "../../AuthContext";
 
-const CoachingModal = () => {
-  const [open, setOpen] = React.useState(false);
-  const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down("md"));
-
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-  const [select, setSelect] = React.useState("10");
-
-  const handleChange = (event) => {
-    setSelect(event.target.value);
-  };
-  const [select2, setSelect2] = React.useState("10");
-
-  const handleChange2 = (event) => {
-    setSelect2(event.target.value);
-  };
-
+const CoachingModal = ({ coachUuid }) => {
   const theme2 = createTheme({
     typography: {
       fontFamily: "Pretendard",
@@ -49,6 +28,88 @@ const CoachingModal = () => {
       },
     },
   });
+
+  const { authInfo } = useContext(AuthContext);
+
+  const [open, setOpen] = useState(false);
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down("md"));
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  // 프레젠테이션 선택 여부
+  const [isPrSelected, setIsPrSelected] = useState(false);
+  // 스피치 선택 여부
+  const [isSpSelected, setIsSpSelected] = useState(false);
+  const [selectedPresentation, setSelectedPresentation] = useState(0);
+  const handleChangePresentation = (event) => {
+    setSelectedPresentation(event.target.value);
+    setIsPrSelected(true);
+  };
+  const [selectedSpeech, setSelectedSpeech] = useState(0);
+  const handleChangeSpeech = (event) => {
+    setSelectedSpeech(event.target.value);
+    setIsSpSelected(true);
+  };
+
+  const [presentationList, setPresentationList] = useState([]);
+  const getPresentationList = useCallback(async () => {
+    try {
+      const res = await api.get("/presentations");
+      console.log("presentation list response:", res);
+      setPresentationList(
+        res.data.map((presentation) => ({
+          id: presentation.id,
+          title: presentation.title,
+        }))
+      );
+      // console.log("presentation list response:", res);
+    } catch (err) {
+      console.log("🩸presentation list error:", err);
+    }
+  }, []);
+  useEffect(() => {
+    getPresentationList();
+  }, [getPresentationList]);
+
+  const [speechList, setSpeechList] = useState([]);
+  const getSpeechList = useCallback(async () => {
+    try {
+      const res = await api.get(
+        `/presentations/${selectedPresentation}/speeches`,
+        {
+          params: { "presentation-id": selectedPresentation },
+        }
+      );
+      console.log("speech list response:", res);
+      setSpeechList(res.data.map((speech) => speech.id));
+    } catch (err) {
+      console.log("🩸speech list error:", err);
+    }
+  }, [selectedPresentation]);
+  useEffect(() => {
+    getSpeechList();
+  }, [getSpeechList]);
+
+  // 코칭 의뢰 신청
+  const requestCoaching = useCallback(async () => {
+    try {
+      const res = await api.post("/coaching-request", {
+        speechId: selectedSpeech,
+        coachUuid: coachUuid,
+        userMessage: "",
+      });
+      console.log("request coaching response:", res);
+      alert("코칭 의뢰가 완료되었습니다.");
+    } catch (err) {
+      console.log("🩸request coaching error:", err);
+    }
+  }, [selectedSpeech, coachUuid]);
+
   return (
     <>
       <ThemeProvider theme={theme2}>
@@ -58,6 +119,7 @@ const CoachingModal = () => {
             color="secondary"
             onClick={handleClickOpen}
             fullWidth
+            disabled={authInfo.type === "coach"}
           >
             코칭 의뢰
           </Button>
@@ -77,36 +139,53 @@ const CoachingModal = () => {
               <ul>
                 <li>
                   <h3>프레젠테이션 선택</h3>
-                  <FormControl size="small" fullWidth>
+                  <FormControl size="small" fullWidth focused={!isPrSelected}>
                     <StyledSelect
-                      value={select}
-                      onChange={handleChange}
+                      value={
+                        selectedPresentation === 0 ? "" : selectedPresentation
+                      }
+                      onChange={handleChangePresentation}
                       displayEmpty
                       inputProps={{ "aria-label": "Without label" }}
                     >
-                      <StyledMenuItem value={10}>선택</StyledMenuItem>
-                      <StyledMenuItem value={20}>선택</StyledMenuItem>
-                      <StyledMenuItem value={30}>선택</StyledMenuItem>
+                      {presentationList.map((p) => (
+                        <StyledMenuItem
+                          value={p.id === undefined ? "" : p.id}
+                          key={p.id}
+                        >
+                          {p.title}
+                        </StyledMenuItem>
+                      ))}
                     </StyledSelect>
                   </FormControl>
                 </li>
                 <li>
                   <h3>스피치 선택</h3>
-                  <FormControl size="small" fullWidth>
+                  <FormControl size="small" fullWidth disabled={!isPrSelected}>
                     <StyledSelect
-                      value={select2}
-                      onChange={handleChange2}
+                      value={selectedSpeech === 0 ? "" : selectedSpeech}
+                      onChange={handleChangeSpeech}
                       displayEmpty
                       inputProps={{ "aria-label": "Without label" }}
                     >
-                      <StyledMenuItem value={10}>선택</StyledMenuItem>
-                      <StyledMenuItem value={20}>선택</StyledMenuItem>
-                      <StyledMenuItem value={30}>선택</StyledMenuItem>
+                      {speechList.map((s, i) => (
+                        <StyledMenuItem
+                          value={s === undefined ? "" : s}
+                          key={s}
+                        >
+                          Speech {i + 1}
+                        </StyledMenuItem>
+                      ))}
                     </StyledSelect>
                   </FormControl>
                 </li>
               </ul>
-              <SendBtn variant="outlined" fullWidth>
+              <SendBtn
+                variant="outlined"
+                fullWidth
+                onClick={requestCoaching}
+                disabled={!isSpSelected}
+              >
                 코칭 의뢰
               </SendBtn>
             </Content>

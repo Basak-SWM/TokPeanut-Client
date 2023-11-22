@@ -5,7 +5,7 @@ import { Box, IconButton, Button } from "@mui/material";
 import theme from "../../style/theme";
 import { Link } from "react-router-dom";
 import CoachingModal from "../modal/CoachingModal";
-import SpeechModal from "../modal/SpeechModal";
+// import SpeechModal from "../modal/SpeechModal";
 
 export default function CoachCard({ profile, n }) {
   const theme = createTheme({
@@ -34,8 +34,8 @@ export default function CoachCard({ profile, n }) {
           </h2>
           <p>{profile.shortIntroduce}&nbsp;</p>
           <div className="btn-wrap">
-            <CoachingModal />
-            <SpeechModal />
+            <CoachingModal coachUuid={profile.uuid} />
+            {/* <SpeechModal /> */}
           </div>
         </CoachCardWrap>
       </ThemeProvider>
@@ -77,7 +77,7 @@ const CoachCardWrap = styled(Box)`
     justify-content: space-between;
     width: 100%;
     & > div {
-      width: 49%;
+      width: 100%;
     }
     button {
       width: 100%;

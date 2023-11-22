@@ -5,7 +5,6 @@ import { Box, IconButton, Button, Grid } from "@mui/material";
 import Nav from "../../component/layout/Nav";
 import theme from "../../style/theme";
 import CoachingModal from "../../component/modal/CoachingModal";
-import SpeechModal from "../../component/modal/SpeechModal";
 import api from "../../api";
 import { useLocation } from "react-router-dom";
 import qs from "qs";
@@ -82,7 +81,6 @@ const Portfolio = () => {
               </div>
               <div className="btn-wrap">
                 <CoachingModal />
-                <SpeechModal />
               </div>
             </div>
             <div className="portfolio-content">

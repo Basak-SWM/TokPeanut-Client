@@ -54,9 +54,6 @@ const CoachList = () => {
     getCoachList();
   }, [getCoachList]);
 
-  const coachingRequest = async () => {};
-  const speechRequest = async () => {};
-
   return (
     <ThemeProvider theme={theme}>
       <Nav />
@@ -87,7 +84,7 @@ const CoachList = () => {
           <h3>
             <strong>{coachList.length}명 </strong>코치
           </h3>
-          <FormControl size="small" sx={{ m: 1, minWidth: 120 }}>
+          {/* <FormControl size="small" sx={{ m: 1, minWidth: 120 }}>
             <StyledSelect
               value={select}
               onChange={handleChange}
@@ -98,7 +95,7 @@ const CoachList = () => {
               <StyledMenuItem value={20}>이름순</StyledMenuItem>
               <StyledMenuItem value={30}>추천순</StyledMenuItem>
             </StyledSelect>
-          </FormControl>
+          </FormControl> */}
         </SelectWrap>
         <Grid container spacing={1}>
           {coachList.map((coach, i) => (
@@ -108,16 +105,8 @@ const CoachList = () => {
               </Item>
             </Card>
           ))}
-          {/* <Card item xs={6} md={4}>
-            <Item>
-              <CoachCard />
-            </Item>
-          </Card> */}
         </Grid>
         <PaginationBox />
-        {/* <PaginationWrap>
-            <StyledPagination count={50} color="primary" />
-          </PaginationWrap> */}
       </Container>
     </ThemeProvider>
   );
@@ -137,9 +126,6 @@ const Banner = styled(Box)`
   height: 30rem;
   margin-top: 5rem;
   background-color: #fff8f3;
-  /* background-image: url(../img/banner.png);
-  background-position: center;
-  background-size: cover; */
   .text-wrap {
     height: 30rem;
     display: flex;
