@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import styled from "@emotion/styled";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
 import { Box, IconButton, Button, Grid } from "@mui/material";
 import theme from "../../style/theme";
+import api from "../../api";
 
-export default function RequestCardCoach({ userName, type }) {
+export default function RequestCardCoach({ userName, type, id }) {
   const theme = createTheme({
     typography: {
       fontFamily: "Pretendard",
@@ -18,6 +19,25 @@ export default function RequestCardCoach({ userName, type }) {
       },
     },
   });
+
+  const accept = useCallback(async () => {
+    try {
+      const res = await api.post(`/coaching-request/${id}/accept`);
+      console.log("accept request res:", res);
+    } catch (err) {
+      console.log("accept request err:", err);
+    }
+  }, [id]);
+
+  const reject = useCallback(async () => {
+    try {
+      const res = await api.post(`/coaching-request/${id}/deny`);
+      console.log("reject request res:", res);
+    } catch (err) {
+      console.log("reject request err:", err);
+    }
+  }, [id]);
+
   return (
     <>
       <ThemeProvider theme={theme}>
@@ -33,33 +53,36 @@ export default function RequestCardCoach({ userName, type }) {
               </h2>
             </div>
             <div className="right-box">
-              {type === "REQUESTED" ? (
+              {type === "REQUESTED" && (
                 <>
                   <Button variant="outlined" color="secondary" fullWidth>
                     스크립트보기
                   </Button>
                   <div className="btn-wrap">
-                    <Button variant="contained">수락</Button>
-                    <Button variant="outlined">거절</Button>
+                    <Button variant="contained" onClick={accept}>
+                      수락
+                    </Button>
+                    <Button variant="outlined" onClick={reject}>
+                      거절
+                    </Button>
                   </div>
                 </>
-              ) : (
-                <></>
               )}
-              {type === "after" ? (
+              {type === "ACCEPTED" && (
                 <>
                   <FeedBackBtn variant="contained">피드백 하기</FeedBackBtn>
                   <Accept>수락함</Accept>
                 </>
-              ) : (
-                <></>
               )}
-              {type === "reject" ? (
+              {type === "DENIED" && (
                 <>
                   <Reject>거절함</Reject>
                 </>
-              ) : (
-                <></>
+              )}
+              {type === "DONE" && (
+                <>
+                  <Accept>피드백 완료</Accept>
+                </>
               )}
             </div>
           </PaddingWrap>

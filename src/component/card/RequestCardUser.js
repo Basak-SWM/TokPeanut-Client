@@ -26,28 +26,22 @@ export default function RequestCardUser({ title, coachName, type }) {
                 <h2>
                   <strong>{title}</strong>
                 </h2>
-                {type === "done" ? (
+                {type === "DONE" && (
                   <div className="feedBack-done">
                     <h4>피드백 완료</h4>
                   </div>
-                ) : (
-                  <></>
                 )}
               </div>
               <h3>
                 <strong>{coachName}</strong> 코치
               </h3>
-              {type === "ing" ? <FeedBackIng>피드백 중</FeedBackIng> : <></>}
-              {type === "REQUESTED" ? <Waiting>수락대기</Waiting> : <></>}
-              {type === "reject" ? <Reject>거절</Reject> : <></>}
-              {type === "done" ? (
-                <>
-                  <Link href="">
-                    <Done>바로가기</Done>
-                  </Link>
-                </>
-              ) : (
-                <></>
+              {type === "ACCEPTED" && <FeedBackIng>피드백 중</FeedBackIng>}
+              {type === "REQUESTED" && <Waiting>수락대기</Waiting>}
+              {type === "DENIED" && <Reject>거절</Reject>}
+              {type === "DONE" && (
+                <Link to="">
+                  <Done>바로가기</Done>
+                </Link>
               )}
             </div>
           </PaddingWrap>
