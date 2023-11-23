@@ -50,7 +50,7 @@ const MyMatching = () => {
           <RequestListWrap>
             <Grid container spacing={1}>
               {requestList.map((request) => (
-                <Card item xs={12} md={6} key={request.coachUuid}>
+                <Card item xs={12} md={6} key={request.id}>
                   <Item>
                     <RequestCardUser
                       title={request.title}
