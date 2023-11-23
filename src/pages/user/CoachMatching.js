@@ -52,7 +52,7 @@ const CoachMatching = () => {
                 <Card item xs={12} md={6} key={request.id}>
                   <Item>
                     <RequestCardCoach
-                      userName={"이름 넣어줘"}
+                      userName={request.userNickname}
                       type={request.status}
                       id={request.id}
                       setter={getRequestList}

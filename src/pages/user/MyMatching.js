@@ -54,7 +54,7 @@ const MyMatching = () => {
                   <Item>
                     <RequestCardUser
                       title={request.title}
-                      coachName={"코치 이름 넣어줘"}
+                      coachName={request.coachNickname}
                       type={request.status}
                       id={request.id}
                     />
