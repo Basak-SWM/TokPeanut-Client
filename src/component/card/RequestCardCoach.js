@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import styled from "@emotion/styled";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
 import { Box, IconButton, Button, Grid } from "@mui/material";
@@ -19,6 +20,7 @@ export default function RequestCardCoach({ userName, type, id, setter }) {
       },
     },
   });
+  const navigate = useNavigate();
 
   const accept = useCallback(async () => {
     try {
@@ -72,7 +74,12 @@ export default function RequestCardCoach({ userName, type, id, setter }) {
               )}
               {type === "ACCEPTED" && (
                 <>
-                  <FeedBackBtn variant="contained">피드백 하기</FeedBackBtn>
+                  <FeedBackBtn
+                    variant="contained"
+                    onClick={() => navigate(`/feedback?matching_id=${id}`)}
+                  >
+                    피드백 하기
+                  </FeedBackBtn>
                   <Accept>수락함</Accept>
                 </>
               )}
@@ -83,7 +90,7 @@ export default function RequestCardCoach({ userName, type, id, setter }) {
               )}
               {type === "DONE" && (
                 <>
-                  <Accept>피드백 완료</Accept>
+                  <Done>피드백 완료</Done>
                 </>
               )}
             </div>
@@ -220,6 +227,19 @@ const Reject = styled(Box)`
   align-items: center;
   justify-content: center;
   width: auto;
-  height: 10.5rem;
+  height: 12rem;
+  border-radius: 4px;
+`;
+
+const Done = styled(Box)`
+  font-size: 1.6rem;
+  color: #0168c2;
+  background-color: #e9f2fe;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  height: 12rem;
   border-radius: 4px;
 `;

@@ -4,7 +4,7 @@ import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
 import { Box, IconButton, Button, Grid } from "@mui/material";
 import theme from "../../style/theme";
 import { Link } from "react-router-dom";
-export default function RequestCardUser({ title, coachName, type }) {
+export default function RequestCardUser({ title, coachName, type, id }) {
   const theme = createTheme({
     typography: {
       fontFamily: "Pretendard",
@@ -39,7 +39,7 @@ export default function RequestCardUser({ title, coachName, type }) {
               {type === "REQUESTED" && <Waiting>수락대기</Waiting>}
               {type === "DENIED" && <Reject>거절</Reject>}
               {type === "DONE" && (
-                <Link to="">
+                <Link to={`/feedback?matching_id=${id}`}>
                   <Done>바로가기</Done>
                 </Link>
               )}

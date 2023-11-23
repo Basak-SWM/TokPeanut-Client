@@ -4,47 +4,37 @@ import React, {
   useCallback,
   useEffect,
   useReducer,
+  useContext,
 } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import WaveSurfer from "wavesurfer.js";
-import Pagination from "../Pagination/Pagination";
 import qs from "qs";
 import axios from "axios";
-import api from "../../../api";
+import api from "../../api";
+import AuthContext from "../../AuthContext";
 
 import { keyframes } from "@emotion/react";
-// import styled from "@emotion/styled";
 import styled from "@emotion/styled/macro";
-// import styled from "styled-components";
 import { createGlobalStyle } from "styled-components";
 import {
   createTheme,
-  Divider,
-  Icon,
   ThemeProvider,
   Box,
   IconButton,
   Button,
 } from "@mui/material";
-import ToolBarPC from "../../../component/script/ToolbarPC";
-import PageBtn from "../../../component/script/PageBtn";
-import ScriptBar from "../../../component/script/ScriptBar";
-import ToolBarMo from "../../../component/script/ToolbarMo";
+import FilledBtn from "../../component/button/FilledBtn";
 import Tooltip from "@mui/material/Tooltip";
 
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
-import FilledBtn from "../../../component/button/FilledBtn";
 
-import Nav from "../../../component/layout/Nav";
+import Nav from "../../component/layout/Nav";
 
-import theme from "../../../style/theme";
+import theme from "../../style/theme";
 
-import AiFeedbackModal from "../../../component/modal/AiFeedbackModal";
-import StatisticsModal from "../../../component/modal/StatisticsModal";
-
-import peanut_run from "../../../image/peanut_run.png";
+import peanut_run from "../../image/peanut_run.png";
 
 // custom hook (timer)
 const useCounter = (initialValue, ms) => {
@@ -78,7 +68,7 @@ const useCounter = (initialValue, ms) => {
 const simpleSymbolsReducer = (state, action) => {
   switch (action.type) {
     case "INIT":
-      console.log("init simple symbols: ", action.payload);
+      // console.log("init simple symbols: ", action.payload);
       return action.payload;
     case "ADD":
       console.log("add simple symbol: ", action.symbol, action.idx, state);
@@ -104,7 +94,7 @@ const simpleSymbolsReducer = (state, action) => {
   }
 };
 
-const Speech = () => {
+const Feedback = () => {
   const theme = createTheme({
     typography: {
       fontFamily: "Pretendard",
@@ -135,45 +125,35 @@ const Speech = () => {
       },
     },
   });
-  const [isDone, setIsDone] = useState(false); // 서버가 보내주는 결과에 따라 분석 중인지 아닌지 파악
+  const { authInfo } = useContext(AuthContext);
   const location = useLocation();
   const query = qs.parse(location.search, {
     ignoreQueryPrefix: true,
   });
-  const presentation_id = query.presentation_id;
-  const speech_id = query.speech_id;
-  const navigate = useNavigate();
-  const [audio, setAudio] = useState(null);
+  const [isLoaded, setIsLoaded] = useState(false);
 
-  const [correction, setCorrection] = useState({
-    PAUSE_TOO_LONG: new Set(),
-    PAUSE_TOO_SHORT: new Set(),
+  const matching_id = query.matching_id;
+
+  const [requestData, setRequestData] = useState({
+    id: 0,
+    userMessage: "",
+    status: "",
+    userUuid: "",
+    coachUuid: "",
+    presentationId: 0,
+    title: "",
+    outline: "",
+    checkpoint: "",
+    speechId: 0,
+    fullAudioUrl: "",
+    sttResult: "",
+    coachMessage: "",
+    jsonUserSymbol: "",
   });
-  const getCorrection = useCallback(async (url) => {
-    try {
-      const res = await axios.get(url);
-      // console.log("correction response:", res);
-      let correctionList = JSON.parse(res.data);
-      const correction = {
-        PAUSE_TOO_LONG: new Set(correctionList.PAUSE_TOO_LONG),
-        PAUSE_TOO_SHORT: new Set(correctionList.PAUSE_TOO_SHORT),
-      };
-      setCorrection(correction);
-    } catch (err) {
-      console.log("🩸correction error:", err);
-    }
-  }, []);
-  const [LPM, setLPM] = useState([]);
-  const getLPM = useCallback(async (url) => {
-    try {
-      const res = await axios.get(url);
-      // console.log("LPM response:", res);
-      const LPM = JSON.parse(res.data);
-      setLPM(LPM);
-    } catch (err) {
-      console.log("🩸LPM error:", err);
-    }
-  }, []);
+
+  const navigate = useNavigate();
+
+  const [audio, setAudio] = useState(null);
 
   const initUserSymbols = useCallback((userSymbol) => {
     const initialSymbols = JSON.parse(userSymbol);
@@ -192,47 +172,10 @@ const Speech = () => {
     }
   }, []);
 
-  // stt 결과 가져오기
-  const getSTT = useCallback(async (url) => {
-    try {
-      const res = await axios.get(url);
-      // console.log("stt response:", res);
-      const stt = JSON.parse(res.data);
-      initSTT(stt);
-    } catch (err) {
-      console.log("🩸stt error:", err);
-    }
-  }, []);
-
-  const [statistics, setStatistics] = useState({
-    hertz: null,
-    lpm: null,
-    pause: null,
-  });
-  const getStatistics = useCallback(
-    async (HERZ, LPM, PAUSE) => {
-      try {
-        const hertzRes = await axios.get(HERZ);
-        statistics.hertz = (hertzRes.data * 1).toFixed(1);
-        // statistics.hertz = 100;
-
-        const lpmRes = await axios.get(LPM);
-        statistics.lpm = (lpmRes.data * 1).toFixed(1);
-
-        const pauseRes = await axios.get(PAUSE);
-        statistics.pause = (pauseRes.data * 1).toFixed(1);
-
-        setStatistics(statistics);
-      } catch (err) {
-        console.log("🩸statistics error:", err);
-      }
-    },
-    [statistics]
-  );
   // audio 가져와서 변환
-  const getAudio = useCallback(async (audioUrl) => {
+  const getAudio = useCallback(async (fullAudioUrl) => {
     try {
-      const res = await axios.get(audioUrl, {
+      const res = await axios.get(fullAudioUrl, {
         responseType: "blob",
       });
       // console.log("audio response:", res);
@@ -242,76 +185,6 @@ const Speech = () => {
       console.log("🩸audio error:", err);
     }
   }, []);
-  // full audio url, 사용자 기호 가져오기
-  const getSpeech = useCallback(async () => {
-    let res = null;
-    try {
-      res = await api.get(
-        `/presentations/${presentation_id}/speeches/${speech_id}`
-      );
-      console.log("speech response:", res);
-      // console.log("speech response user symbol:", res.data.userSymbol);
-      // 여기서 사용자 기호 초기화
-      initUserSymbols(res.data.userSymbol);
-      const audioUrl = res.data.fullAudioS3Url;
-      getAudio(audioUrl);
-    } catch (err) {
-      console.log("🩸speech error:", err);
-    }
-  }, [presentation_id, speech_id, getAudio, initUserSymbols]);
-
-  // 분석 결과 url 가져오기
-  const getResult = useCallback(async () => {
-    let res = null;
-    try {
-      res = await api.get(
-        `/presentations/${presentation_id}/speeches/${speech_id}/analysis-records`
-      );
-      console.log("분석 결과 url response:", res, res.status);
-      // 분석 완료 여부 확인
-      if (res.status === 200) {
-        // setIsDone(true);
-        getSTT(res.data.STT);
-        await getSpeech();
-        setIsDone(true);
-        getCorrection(res.data.SPEECH_CORRECTION); // 휴지 긺/짧음 가져오기
-        getLPM(res.data.LPM);
-        // 음높이(HERTZ_AVG), 속도(LPM_AVG), 휴지(PAUSE_RATIO) 가져오기
-        getStatistics(
-          res.data.HERTZ_AVG,
-          res.data.LPM_AVG,
-          res.data.PAUSE_RATIO
-        );
-        return res.status;
-      } else {
-        console.log("분석 중");
-      }
-    } catch (err) {
-      console.log("🩸분석 결과 url error:", err);
-    }
-  }, [
-    presentation_id,
-    speech_id,
-    getSTT,
-    getCorrection,
-    getStatistics,
-    getSpeech,
-    getLPM,
-  ]);
-
-  // 스크립트를 위한 스피치 정보 조회
-  useEffect(() => {
-    const polling = async () => {
-      const status = await getResult();
-      if (status === 200) {
-        clearInterval(repeat);
-      }
-    };
-    polling(); // 최초(즉시)실행
-    const repeat = setInterval(polling, 3000);
-
-    // getSpeech();
-  }, [presentation_id, speech_id, getResult]);
 
   const [text, setText] = useState([]);
   const [started, setStarted] = useState([]);
@@ -321,7 +194,6 @@ const Speech = () => {
   // 단순 기호 관리
   const [simpleSymbols, dispatch] = useReducer(
     simpleSymbolsReducer, // reducer
-    // Array(100).fill([]) // initial state
     [[]] //initial state
   );
   const [highlighted, setHighlighted] = useState([]);
@@ -329,8 +201,7 @@ const Speech = () => {
 
   const wordRef = useRef([]);
 
-  const initSTT = (stt) => {
-    console.log(stt);
+  const initSTT = useCallback((stt) => {
     setText(stt.segments.flatMap((seg) => seg.words.map((w) => w[2])));
     setStarted(
       stt.segments.flatMap((seg) => seg.words.map((w) => w[0] * 0.01))
@@ -339,39 +210,25 @@ const Speech = () => {
     setDuration(
       stt.segments.flatMap((seg) => seg.words.map((w) => (w[1] - w[0]) * 0.001))
     );
-  };
+  }, []);
+
+  const getRequestData = useCallback(async () => {
+    try {
+      const res = await api.get(`/coaching-request/${matching_id}`);
+      console.log("request data res:", res);
+      setRequestData(res.data);
+      await getAudio(res.data.fullAudioUrl);
+      await initUserSymbols(res.data.jsonUserSymbol);
+      await initSTT(JSON.parse(JSON.parse(res.data.sttResult)));
+      setIsLoaded(true);
+    } catch (err) {
+      console.log(err);
+    }
+  }, [matching_id, getAudio, initUserSymbols, initSTT]);
 
   useEffect(() => {
-    (async (simpleSymbols, highlighted, edited) => {
-      if (!isDone) return;
-      try {
-        const symbolObj = {
-          simpleSymbols: simpleSymbols,
-          highlight: highlighted,
-          edit: edited,
-        };
-        await api.patch(
-          `/presentations/${presentation_id}/speeches/${speech_id}`,
-          {
-            params: {
-              "presentation-id": presentation_id,
-              "speech-id": speech_id,
-            },
-            userSymbol: JSON.stringify(symbolObj),
-          }
-        );
-        // console.log("patch user symbol response:", res);
-      } catch (err) {
-        console.log("🩸patch user symbol error:", err);
-      }
-    })(simpleSymbols, highlighted, edited);
-  }, [
-    isDone,
-    simpleSymbols,
-    highlighted,
-    edited,
-    // speech_id, presentation_id,
-  ]);
+    getRequestData();
+  }, [getRequestData]);
 
   // tool bar
   const [cursor, setCursor] = useState("BASIC");
@@ -408,11 +265,6 @@ const Speech = () => {
       "모든 기호를 지우는 지우개입니다. \n초기화 하고싶은 단어를 클릭하세요.",
   };
 
-  const correctionIcons = [
-    { name: "휴지 긺", src: "/img/script/space_long.svg" },
-    { name: "휴지 짧음", src: "/img/script/space_short.svg" },
-  ];
-
   const [waveFormLoaded, setWaveFormLoaded] = useState(false);
   const [waveSurferInstance, setWaveSurferInstance] = useState(null);
 
@@ -422,7 +274,6 @@ const Speech = () => {
   const clickWord = (e) => {
     if (!waveFormLoaded) return;
     const selectedWordIdx = e.currentTarget.id; // 클릭된 단어 인덱스
-    // wordRef.current[selectedWordIdx].focus();
 
     switch (cursor) {
       // 기호 표시
@@ -567,22 +418,38 @@ const Speech = () => {
     [edited, text]
   );
 
-  const createSpeech = async () => {
-    let res = null;
-    try {
-      res = await api.post(`/presentations/${presentation_id}/speeches`, {
-        params: { "presentation-id": presentation_id },
-        referenceSpeechId: speech_id,
-      });
-      console.log("new speech response:", res);
-    } catch (err) {
-      console.log("🩸new speech error: ", err);
-    }
-    // 새로 생성된 speech의 id로 practice 페이지로 이동
-    navigate(
-      // `/presentation/practice?presentation_id=${presentation_id}&speech_id=${res.data.id}&prev_speech=${speech_id}`
-      `/presentation/practice?presentation_id=${presentation_id}&speech_id=${res.data.id}`
+  useEffect(() => {
+    (async (simpleSymbols, highlighted, edited) => {
+      if (!isLoaded) return;
+      try {
+        const symbolObj = {
+          simpleSymbols: simpleSymbols,
+          highlight: highlighted,
+          edit: edited,
+        };
+        await api.put(`/coaching-request/${matching_id}`, {
+          coachMessage: "",
+          jsonUserSymbol: JSON.stringify(symbolObj),
+        });
+        // console.log("patch user symbol response:", res);
+      } catch (err) {
+        console.log("🩸patch user symbol error:", err);
+      }
+    })(simpleSymbols, highlighted, edited);
+  }, [isLoaded, simpleSymbols, highlighted, edited, matching_id]);
+
+  const finish = async () => {
+    const complete = window.confirm(
+      "피드백을 완료하시겠습니까?\n완료한 후에는 수정이 불가능합니다."
     );
+    if (!complete) return;
+    try {
+      const res = await api.post(`/coaching-request/${matching_id}/finish`);
+      console.log("finish response:", res);
+      // navigate("/user/presentation");
+    } catch (err) {
+      console.log("🩸finish error:", err);
+    }
   };
 
   return (
@@ -598,7 +465,7 @@ const Speech = () => {
         <Container cursor={symbolIcons[cursor]}>
           {
             // 툴바
-            isDone ? (
+            isLoaded ? (
               <Activate>
                 <ToolBarWrap cursor={symbolIcons[cursor]}>
                   <ul className="activate">
@@ -650,35 +517,13 @@ const Speech = () => {
 
           <Script>
             <Screen>
-              {isDone ? (
+              {isLoaded ? (
                 <TextArea>
                   <p>
                     {text.map((word, i) => (
                       <span key={i}>
                         <Symbol>
-                          {simpleSymbols[i].includes("ENTER") && (
-                            <>
-                              {/* <img src={symbolIcons["ENTER"]} alt="enter" /> */}
-                              <br />
-                            </>
-                          )}
-
-                          {correction.PAUSE_TOO_LONG &&
-                            correction.PAUSE_TOO_LONG.has(i - 1) && (
-                              <img
-                                src={correctionIcons[0].src}
-                                alt="pause too long"
-                                className="correction pause_too_long"
-                              />
-                            )}
-                          {correction.PAUSE_TOO_SHORT &&
-                            correction.PAUSE_TOO_SHORT.has(i - 1) && (
-                              <img
-                                src={correctionIcons[1].src}
-                                alt="pause too short"
-                                className="correction pause_too_short"
-                              />
-                            )}
+                          {simpleSymbols[i].includes("ENTER") && <br />}
                         </Symbol>
                         <span
                           style={{
@@ -686,20 +531,6 @@ const Speech = () => {
                             flexDirection: "column",
                           }}
                         >
-                          <CorrectionLine
-                            $status={
-                              LPM[i] > 0 ? "fast" : LPM[i] < 0 ? "slow" : null
-                            }
-                            $opacity={
-                              LPM[i] > 0
-                                ? LPM[i] / 2
-                                : LPM[i] < 0
-                                ? -(LPM[i] / 2)
-                                : null
-                            }
-                          >
-                            &nbsp;
-                          </CorrectionLine>
                           <Highlight
                             $color={highlighted[i]}
                             $continued={
@@ -716,7 +547,6 @@ const Speech = () => {
                                   : "not played"
                               }
                               $duration={duration[i]}
-                              // onClick={clickWord}
                               onMouseDown={clickWord}
                               onMouseOver={(e) => {
                                 if (dragging) {
@@ -776,92 +606,68 @@ const Speech = () => {
                 </TextArea>
               ) : (
                 <>
-                  <div className="logo-box">
-                    {/* <img src={peanut_run} alt="peanut run" /> */}
-                  </div>
-                  <h1>열심히 분석 중입니다.</h1>
+                  <div className="logo-box"></div>
+                  <h1>로딩중 . . .</h1>
                 </>
               )}
             </Screen>
-            {/* <div className="sound-wave"> */}
             <WaveContainer>
-              {isDone ? (
+              {isLoaded ? (
                 waveFormLoaded ? null : (
                   <div className="text">클릭하여 편집을 시작하세요</div>
                 )
               ) : (
-                <div className="text">analyzing...</div>
+                <div className="text">waiting...</div>
               )}
               <WaveWrapper
                 ref={wavesurferRef}
-                $ready={isDone && waveFormLoaded ? 1 : 0}
+                $ready={isLoaded && waveFormLoaded ? 1 : 0}
               />
             </WaveContainer>
             <PC>
               <ScriptBarWrap>
-                {isDone ? (
-                  <ul className="btn-wrap activate">
-                    <li>
-                      <FilledBtn text={"코치 연결하기"} />
-                      <FilledBtn
-                        text={"연습 시작하기"}
-                        onClick={createSpeech}
-                      />
-                    </li>
-                    <li>
+                {isLoaded ? (
+                  <div className="btn-wrap activate">
+                    <div>
                       <PlayBtn variant="contained" ref={playButton}>
                         {playing ? <PauseIcon /> : <PlayArrowIcon />}
                       </PlayBtn>
                       <PlayBtn variant="contained" onClick={onReset}>
                         <RestartAltIcon />
                       </PlayBtn>
-                    </li>
-                    <li>
-                      <FilledBtn text={"X 1"} />
-                      <StatisticsModal
-                        presentation_id={presentation_id}
-                        speech_id={speech_id}
-                        statistics={statistics}
-                      />
-                      <AiFeedbackModal
-                        presentation_id={presentation_id}
-                        speech_id={speech_id}
-                      />
-                    </li>
-                  </ul>
+                    </div>
+                    {authInfo.type === "COACH" && (
+                      <div className="done-btn">
+                        <FilledBtn text={"피드백 완료"} onClick={finish} />
+                      </div>
+                    )}
+                  </div>
                 ) : (
-                  <ul className="btn-wrap">
-                    <li>
-                      <FilledBtn text={"코치 연결하기"} state={"disabled"} />
-                      <FilledBtn text={"연습 시작하기"} state={"disabled"} />
-                    </li>
-                    <li>
-                      <PlayBtn variant="contained" disabled>
+                  <div className="btn-wrap">
+                    <div>
+                      <PlayBtn variant="contained" ref={playButton} disabled>
                         <PlayArrowIcon />
                       </PlayBtn>
-                      <PlayBtn variant="contained" disabled>
+                      <PlayBtn variant="contained" onClick={onReset} disabled>
                         <RestartAltIcon />
                       </PlayBtn>
-                    </li>
-                    <li>
-                      <FilledBtn text={"X 1"} state={"disabled"} />
-                      <FilledBtn text={"통계보기"} state={"disabled"} />
-                      <FilledBtn text={"AI 피드백"} state={"disabled"} />
-                    </li>
-                  </ul>
+                    </div>
+                    {authInfo.type === "COACH" && (
+                      <div className="done-btn">
+                        <FilledBtn text={"피드백 완료"} disabled />
+                      </div>
+                    )}
+                  </div>
                 )}
               </ScriptBarWrap>
             </PC>
           </Script>
-
-          <Pagination />
         </Container>
       </ThemeProvider>
     </div>
   );
 };
 
-// styled components
 const GlobalStyle = createGlobalStyle`
     body{
         background-color: #FAFAFA;
@@ -883,7 +689,7 @@ const Container = styled(Box)`
     props.cursor ? "url(" + props.cursor + ") 50 50, auto" : "auto"}; */
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
+  justify-content: flex-start;
   width: 100%;
   height: 100vh;
   @media ${() => theme.device.mobile} {
@@ -896,7 +702,6 @@ const Container = styled(Box)`
 `;
 
 const Script = styled(Box)`
-  /* width: 100%; */
   width: 80vw;
   height: 80vh;
   margin: 13rem 10rem 0 5rem;
@@ -925,8 +730,6 @@ const WaveContainer = styled.div`
   .text {
     width: 100%;
     height: 64px;
-    /* background-color: #f5f5f5; */
-    /* background-color: rgb(255, 112, 51, 0.2); */
     font-size: 1.5rem;
     display: flex;
     align-items: center;
@@ -960,10 +763,6 @@ const Screen = styled(Box)`
     height: 30vh;
     width: 30vh;
     will-change: transform;
-    img {
-      /* width: 45rem;
-      opacity: 0.8; */
-    }
   }
 
   h1 {
@@ -1002,9 +801,6 @@ const TextArea = styled(Box)`
   height: 100%;
   padding: 3rem;
   p {
-    /* height: fit-content; */
-    /* display: flex; */
-    /* align-items: center; */
     flex-direction: row;
     height: 50vh;
     overflow-y: scroll;
@@ -1013,7 +809,6 @@ const TextArea = styled(Box)`
     font-size: 2rem;
     line-height: 200%;
     color: #3b3b3b;
-    /* word-spacing: 5px; */
     .pencil3 {
       background-color: #cbf5ca;
     }
@@ -1040,19 +835,6 @@ const TextArea = styled(Box)`
   }
 `;
 
-const CorrectionLine = styled.span`
-  line-height: 100%;
-  background-color: ${(props) =>
-    props.$status === "fast"
-      ? "#D71313"
-      : props.$status === "slow"
-      ? "#0D1282"
-      : "transparent"};
-  opacity: ${(props) => props.$opacity};
-  font-size: 1rem;
-  font-weight: bold;
-  color: white;
-`;
 const Symbol = styled.span`
   /* margin: auto; */
   height: 3rem;
@@ -1060,7 +842,6 @@ const Symbol = styled.span`
   padding-bottom: 1rem;
   .correction {
     width: 2.5rem;
-    /* margin-left: -5px; */
   }
   .pause_too_long {
     filter: invert(5%) sepia(86%) saturate(7388%) hue-rotate(247deg)
@@ -1232,7 +1013,11 @@ const ScriptBarWrap = styled(Box)`
     justify-content: space-evenly;
     flex-wrap: wrap;
     width: 65%;
-    li {
+    /* li {
+      display: flex;
+      align-items: center;
+    } */
+    div {
       display: flex;
       align-items: center;
     }
@@ -1240,6 +1025,11 @@ const ScriptBarWrap = styled(Box)`
       font-size: 1.6rem;
       padding: 1rem 3rem;
       margin-right: 2rem;
+    }
+    .done-btn {
+      position: absolute;
+      right: 0;
+      bottom: 5rem;
     }
     .Mui-disabled {
       background-color: #e0e0e0;
@@ -1410,4 +1200,4 @@ export const WaveWrapper = styled.div`
   height: 100%;
 `;
 
-export default Speech;
+export default Feedback;

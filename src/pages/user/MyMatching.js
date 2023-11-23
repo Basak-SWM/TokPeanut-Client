@@ -56,30 +56,11 @@ const MyMatching = () => {
                       title={request.title}
                       coachName={"코치 이름 넣어줘"}
                       type={request.status}
+                      id={request.id}
                     />
                   </Item>
                 </Card>
               ))}
-              {/* <Card item xs={12} md={6}>
-                <Item>
-                  <RequestCardUser type={"ing"} />
-                </Item>
-              </Card>
-              <Card item xs={12} md={6}>
-                <Item>
-                  <RequestCardUser type={"waiting"} />
-                </Item>
-              </Card>
-              <Card item xs={12} md={6}>
-                <Item>
-                  <RequestCardUser type={"reject"} />
-                </Item>
-              </Card>
-              <Card item xs={12} md={6}>
-                <Item>
-                  <RequestCardUser type={"done"} />
-                </Item>
-              </Card> */}
             </Grid>
             <PaginationBox />
           </RequestListWrap>

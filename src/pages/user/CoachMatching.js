@@ -6,7 +6,6 @@ import { Box, IconButton, Button, Grid } from "@mui/material";
 import Nav from "../../component/layout/Nav";
 import theme from "../../style/theme";
 import RequestCardCoach from "../../component/card/RequestCardCoach";
-import PaginationBox from "../../component/pagination/Pagination";
 import api from "../../api";
 
 const Item = styled(Box)(({ theme }) => ({
@@ -61,23 +60,7 @@ const CoachMatching = () => {
                   </Item>
                 </Card>
               ))}
-              {/* <Card item xs={12} md={6}>
-                <Item>
-                  <RequestCardCoach type={"after"} />
-                </Item>
-              </Card>
-              <Card item xs={12} md={6}>
-                <Item>
-                  <RequestCardCoach type={"before"} />
-                </Item>
-              </Card>
-              <Card item xs={12} md={6}>
-                <Item>
-                  <RequestCardCoach type={"reject"} />
-                </Item>
-              </Card> */}
             </Grid>
-            <PaginationBox />
           </RequestListWrap>
         </Container>
       </ThemeProvider>
