@@ -105,7 +105,7 @@ const Mypage = () => {
                   </div>
                 </li>
               </ul>
-              <h2>크레딧</h2>
+              {/* <h2>크레딧</h2>
               <ul className="info-box">
                 <li>
                   <div className="icon-wrap">
@@ -117,7 +117,7 @@ const Mypage = () => {
                   </div>
                   <Button variant="contained">출금신청</Button>
                 </li>
-              </ul>
+              </ul> */}
               <div className="end-btn">
                 <SaveBtn variant="outlined">저장</SaveBtn>
               </div>
