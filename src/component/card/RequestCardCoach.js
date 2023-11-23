@@ -5,7 +5,7 @@ import { Box, IconButton, Button, Grid } from "@mui/material";
 import theme from "../../style/theme";
 import api from "../../api";
 
-export default function RequestCardCoach({ userName, type, id }) {
+export default function RequestCardCoach({ userName, type, id, setter }) {
   const theme = createTheme({
     typography: {
       fontFamily: "Pretendard",
@@ -24,19 +24,21 @@ export default function RequestCardCoach({ userName, type, id }) {
     try {
       const res = await api.post(`/coaching-request/${id}/accept`);
       console.log("accept request res:", res);
+      setter();
     } catch (err) {
       console.log("accept request err:", err);
     }
-  }, [id]);
+  }, [id, setter]);
 
   const reject = useCallback(async () => {
     try {
       const res = await api.post(`/coaching-request/${id}/deny`);
       console.log("reject request res:", res);
+      setter();
     } catch (err) {
       console.log("reject request err:", err);
     }
-  }, [id]);
+  }, [id, setter]);
 
   return (
     <>

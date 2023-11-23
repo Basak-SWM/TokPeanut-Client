@@ -50,11 +50,13 @@ const CoachMatching = () => {
           <RequestListWrap>
             <Grid container spacing={1}>
               {requestList.map((request) => (
-                <Card item xs={12} md={6} key={request.userUuid}>
+                <Card item xs={12} md={6} key={request.id}>
                   <Item>
                     <RequestCardCoach
                       userName={"이름 넣어줘"}
                       type={request.status}
+                      id={request.id}
+                      setter={getRequestList}
                     />
                   </Item>
                 </Card>
