@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import styled from "@emotion/styled";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
 import { Box, IconButton, Button, Grid } from "@mui/material";
 import theme from "../../style/theme";
+import api from "../../api";
 
-export default function RequestCardCoach({ type }) {
+export default function RequestCardCoach({ userName, type, id, setter }) {
   const theme = createTheme({
     typography: {
       fontFamily: "Pretendard",
@@ -18,6 +20,28 @@ export default function RequestCardCoach({ type }) {
       },
     },
   });
+  const navigate = useNavigate();
+
+  const accept = useCallback(async () => {
+    try {
+      const res = await api.post(`/coaching-request/${id}/accept`);
+      console.log("accept request res:", res);
+      setter();
+    } catch (err) {
+      console.log("accept request err:", err);
+    }
+  }, [id, setter]);
+
+  const reject = useCallback(async () => {
+    try {
+      const res = await api.post(`/coaching-request/${id}/deny`);
+      console.log("reject request res:", res);
+      setter();
+    } catch (err) {
+      console.log("reject request err:", err);
+    }
+  }, [id, setter]);
+
   return (
     <>
       <ThemeProvider theme={theme}>
@@ -28,38 +52,46 @@ export default function RequestCardCoach({ type }) {
                 <img src="/img/icon/account.svg" alt="" />
               </div>
               <h2>
-                <strong>밈갬밈</strong> <br />
+                <strong>{userName}</strong> <br />
                 고객님
               </h2>
             </div>
             <div className="right-box">
-              {type === "before" ? (
+              {type === "REQUESTED" && (
                 <>
                   <Button variant="outlined" color="secondary" fullWidth>
                     스크립트보기
                   </Button>
                   <div className="btn-wrap">
-                    <Button variant="contained">수락</Button>
-                    <Button variant="outlined">거절</Button>
+                    <Button variant="contained" onClick={accept}>
+                      수락
+                    </Button>
+                    <Button variant="outlined" onClick={reject}>
+                      거절
+                    </Button>
                   </div>
                 </>
-              ) : (
-                <></>
               )}
-              {type === "after" ? (
+              {type === "ACCEPTED" && (
                 <>
-                  <FeedBackBtn variant="contained">피드백 하기</FeedBackBtn>
+                  <FeedBackBtn
+                    variant="contained"
+                    onClick={() => navigate(`/feedback?matching_id=${id}`)}
+                  >
+                    피드백 하기
+                  </FeedBackBtn>
                   <Accept>수락함</Accept>
                 </>
-              ) : (
-                <></>
               )}
-              {type === "reject" ? (
+              {type === "DENIED" && (
                 <>
                   <Reject>거절함</Reject>
                 </>
-              ) : (
-                <></>
+              )}
+              {type === "DONE" && (
+                <>
+                  <Done>피드백 완료</Done>
+                </>
               )}
             </div>
           </PaddingWrap>
@@ -148,7 +180,6 @@ const RequestCardWrap = styled(Box)`
     button {
       box-shadow: none;
       padding: 0.8rem 2rem;
-      /* font-size: 1.4rem; */
     }
   }
 `;
@@ -196,6 +227,19 @@ const Reject = styled(Box)`
   align-items: center;
   justify-content: center;
   width: auto;
-  height: 10.5rem;
+  height: 12rem;
+  border-radius: 4px;
+`;
+
+const Done = styled(Box)`
+  font-size: 1.6rem;
+  color: #0168c2;
+  background-color: #e9f2fe;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  height: 12rem;
   border-radius: 4px;
 `;

@@ -24,6 +24,8 @@ import MyMatching from "./pages/user/MyMatching";
 import CoachMatching from "./pages/user/CoachMatching";
 import UpdatePortfolio from "./pages/user/UpdatePortfolio";
 
+import Feedback from "./pages/user/Feedback";
+
 import Notfound from "./pages/Notfound";
 import dayjs from "dayjs";
 import "dayjs/locale/ko";
@@ -65,6 +67,8 @@ function App() {
           <Route path="/user/mymatching" element={<MyMatching />} />
           <Route path="/user/coachmatching" element={<CoachMatching />} />
           <Route path="/user/portfolio/update" element={<UpdatePortfolio />} />
+
+          <Route path="/feedback" element={<Feedback />} />
 
           <Route path="/*" element={<Notfound />} />
         </Routes>

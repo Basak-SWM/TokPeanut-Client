@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+// 코치 사용자 의뢰 리스트
+import React, { useState, useEffect, useCallback } from "react";
 import styled from "@emotion/styled";
 import { createTheme, Divider, Icon, ThemeProvider } from "@mui/material";
 import { Box, IconButton, Button, Grid } from "@mui/material";
 import Nav from "../../component/layout/Nav";
 import theme from "../../style/theme";
 import RequestCardCoach from "../../component/card/RequestCardCoach";
-import PaginationBox from "../../component/pagination/Pagination";
+import api from "../../api";
 
 const Item = styled(Box)(({ theme }) => ({
   padding: theme.spacing(1),
@@ -22,6 +23,21 @@ const CoachMatching = () => {
       },
     },
   });
+
+  const [requestList, setRequestList] = useState([]);
+  const getRequestList = useCallback(async () => {
+    try {
+      const res = await api.get("/coaching-request");
+      console.log("request list res:", res);
+      setRequestList(res.data);
+    } catch (err) {
+      console.log(err);
+    }
+  }, [setRequestList]);
+  useEffect(() => {
+    getRequestList();
+  }, [getRequestList]);
+
   return (
     <>
       <ThemeProvider theme={theme}>
@@ -32,48 +48,19 @@ const CoachMatching = () => {
           </div>
           <RequestListWrap>
             <Grid container spacing={1}>
-              <Card item xs={12} md={6}>
-                <Item>
-                  <RequestCardCoach type={"after"} />
-                </Item>
-              </Card>
-              <Card item xs={12} md={6}>
-                <Item>
-                  <RequestCardCoach type={"before"} />
-                </Item>
-              </Card>
-              <Card item xs={12} md={6}>
-                <Item>
-                  <RequestCardCoach type={"after"} />
-                </Item>
-              </Card>
-              <Card item xs={12} md={6}>
-                <Item>
-                  <RequestCardCoach type={"reject"} />
-                </Item>
-              </Card>
-              <Card item xs={12} md={6}>
-                <Item>
-                  <RequestCardCoach type={"after"} />
-                </Item>
-              </Card>
-              <Card item xs={12} md={6}>
-                <Item>
-                  <RequestCardCoach type={"before"} />
-                </Item>
-              </Card>
-              <Card item xs={12} md={6}>
-                <Item>
-                  <RequestCardCoach type={"after"} />
-                </Item>
-              </Card>
-              <Card item xs={12} md={6}>
-                <Item>
-                  <RequestCardCoach type={"after"} />
-                </Item>
-              </Card>
+              {requestList.map((request) => (
+                <Card item xs={12} md={6} key={request.id}>
+                  <Item>
+                    <RequestCardCoach
+                      userName={"이름 넣어줘"}
+                      type={request.status}
+                      id={request.id}
+                      setter={getRequestList}
+                    />
+                  </Item>
+                </Card>
+              ))}
             </Grid>
-            <PaginationBox />
           </RequestListWrap>
         </Container>
       </ThemeProvider>
