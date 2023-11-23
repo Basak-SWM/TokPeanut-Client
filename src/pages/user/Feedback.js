@@ -130,28 +130,10 @@ const Feedback = () => {
   const query = qs.parse(location.search, {
     ignoreQueryPrefix: true,
   });
+  const navigate = useNavigate();
   const [isLoaded, setIsLoaded] = useState(false);
 
   const matching_id = query.matching_id;
-
-  const [requestData, setRequestData] = useState({
-    id: 0,
-    userMessage: "",
-    status: "",
-    userUuid: "",
-    coachUuid: "",
-    presentationId: 0,
-    title: "",
-    outline: "",
-    checkpoint: "",
-    speechId: 0,
-    fullAudioUrl: "",
-    sttResult: "",
-    coachMessage: "",
-    jsonUserSymbol: "",
-  });
-
-  const navigate = useNavigate();
 
   const [audio, setAudio] = useState(null);
 
@@ -216,7 +198,6 @@ const Feedback = () => {
     try {
       const res = await api.get(`/coaching-request/${matching_id}`);
       console.log("request data res:", res);
-      setRequestData(res.data);
       await getAudio(res.data.fullAudioUrl);
       await initUserSymbols(res.data.jsonUserSymbol);
       await initSTT(JSON.parse(JSON.parse(res.data.sttResult)));
@@ -445,8 +426,9 @@ const Feedback = () => {
     if (!complete) return;
     try {
       const res = await api.post(`/coaching-request/${matching_id}/finish`);
-      console.log("finish response:", res);
-      // navigate("/user/presentation");
+      // console.log("finish response:", res);
+      alert("피드백이 완료되었습니다.");
+      navigate("/user/coachmatching");
     } catch (err) {
       console.log("🩸finish error:", err);
     }
@@ -463,9 +445,8 @@ const Feedback = () => {
         <GlobalStyle />
         <Nav />
         <Container cursor={symbolIcons[cursor]}>
-          {
-            // 툴바
-            isLoaded ? (
+          {authInfo.type === "coach" &&
+            (isLoaded ? (
               <Activate>
                 <ToolBarWrap cursor={symbolIcons[cursor]}>
                   <ul className="activate">
@@ -512,10 +493,9 @@ const Feedback = () => {
                   </ul>
                 </ToolBarWrap>
               </Disabled>
-            )
-          }
+            ))}
 
-          <Script>
+          <Script props={{ user: authInfo.type === "user" }}>
             <Screen>
               {isLoaded ? (
                 <TextArea>
@@ -636,7 +616,7 @@ const Feedback = () => {
                         <RestartAltIcon />
                       </PlayBtn>
                     </div>
-                    {authInfo.type === "COACH" && (
+                    {authInfo.type === "coach" && (
                       <div className="done-btn">
                         <FilledBtn text={"피드백 완료"} onClick={finish} />
                       </div>
@@ -652,7 +632,7 @@ const Feedback = () => {
                         <RestartAltIcon />
                       </PlayBtn>
                     </div>
-                    {authInfo.type === "COACH" && (
+                    {authInfo.type === "coach" && (
                       <div className="done-btn">
                         <FilledBtn text={"피드백 완료"} disabled />
                       </div>
@@ -702,9 +682,10 @@ const Container = styled(Box)`
 `;
 
 const Script = styled(Box)`
-  width: 80vw;
+  width: ${({ props }) => (props.user ? "100vw" : "80vw")};
   height: 80vh;
-  margin: 13rem 10rem 0 5rem;
+  margin: ${({ props }) =>
+    props.user ? "13rem 10rem 0 10rem" : "13rem 10rem 0 5rem"};
   background-color: #fff;
   border-radius: 4px;
   border: 1px solid rgba(0, 0, 0, 0.1);

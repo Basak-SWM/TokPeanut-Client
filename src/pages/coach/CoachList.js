@@ -84,18 +84,6 @@ const CoachList = () => {
           <h3>
             <strong>{coachList.length}명 </strong>코치
           </h3>
-          {/* <FormControl size="small" sx={{ m: 1, minWidth: 120 }}>
-            <StyledSelect
-              value={select}
-              onChange={handleChange}
-              displayEmpty
-              inputProps={{ "aria-label": "Without label" }}
-            >
-              <StyledMenuItem value={10}>인기순</StyledMenuItem>
-              <StyledMenuItem value={20}>이름순</StyledMenuItem>
-              <StyledMenuItem value={30}>추천순</StyledMenuItem>
-            </StyledSelect>
-          </FormControl> */}
         </SelectWrap>
         <Grid container spacing={1}>
           {coachList.map((coach, i) => (
